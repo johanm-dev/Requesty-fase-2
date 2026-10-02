@@ -1,0 +1,17 @@
+REQUESTY - sitio web unificado
+
+Abre index.html para iniciar sesión. En la primera ejecución, "Crear cuenta"
+permite configurar la cuenta inicial de Administrador. Después, el formulario
+permite crear cuentas de Cajero, Mesero, Cocina o Cliente. La gestión de cuentas,
+incluida la asignación de Administrador, permisos y estado, está reservada al
+administrador en Reportes > Cuentas del personal.
+Las cuentas de esta versión de demostración se guardan en el almacenamiento local
+del navegador.
+Menu lateral: Pedidos, Cocina, Menu, Caja y facturacion, Reportes, Mesas.
+
+La autenticación actual es solo del lado del navegador y no protege datos en
+producción. Para uso real, conecta el login a un servidor con autorización por rol.
+
+Para publicar: sube TODA esta carpeta a GitHub Pages
+o arrastrala a app.netlify.com/drop.
+(Reportes y Pedidos cargan Chart.js y Font Awesome desde internet.)

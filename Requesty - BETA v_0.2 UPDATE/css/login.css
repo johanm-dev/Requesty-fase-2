@@ -1,0 +1,199 @@
+*{
+    box-sizing: border-box;
+}
+body{
+    min-height: 100vh;
+    background-color: #ECD2C5;
+    margin: 0;
+}
+
+
+#general{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 10px;
+    grid-template-areas: "titulo registro";
+    width: 100%;
+    min-height: 100vh;
+}
+
+
+#titulo{
+    font-family: Arial, Helvetica, sans-serif;
+    display: grid;
+    align-items: center;
+    text-align: center;
+    animation: aparecerInicio 0.8s ease-out forwards;
+    grid-area: titulo;
+    padding: 5%;
+
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+
+}
+
+#general h1{
+    font-size: clamp(32px, 5vw, 60px);
+    margin: 0px;
+    
+}
+#eslogan{
+    color: grey;
+    margin-top: 0px;
+    font-size: clamp(14px, 2vw, 18px);
+
+}
+
+#general h3{
+    font-size: clamp(12px, 1.5vw, 15px);
+    margin-top: 0px;
+    color: rgb(170, 170, 170);
+
+}
+
+
+#registro{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto auto auto auto auto auto;
+    grid-template-areas: "titulo titulo"
+                         "subtitulo subtitulo"
+                         "correo correo"
+                         "contraseña contraseña"
+                         "reduerdame recuperar"
+                         "iniciar iniciar"
+                         "o o"
+                         "iniciarg iniciarg";
+    font-family: Arial, Helvetica, sans-serif;
+    align-items: center;
+    padding: 5%;
+    width: min(450px, 90%);
+    margin: 40px auto;
+    background-color: #faf8f6;
+    border-radius: 15px;
+    border: 2px solid #36353A;
+    grid-area: registro;
+
+    animation: aparecerInicio 0.8s ease-out forwards;
+}
+
+@keyframes aparecerInicio {
+  from {
+    opacity: 0;
+    transform: translateY(20px); 
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);    
+  }
+}
+
+
+#titulo2{
+    grid-area: titulo;
+}
+
+#subtitulo{
+    grid-area: subtitulo;
+    margin-top: 1%;
+}
+
+#usuario{
+    grid-area: correo;
+    width: 100%;
+    height: 2.5rem;
+    border-radius: 10px;
+    background-color: #ECD2C5;
+    border: 2px solid #36353A;
+}
+
+#contraseña{
+    grid-area: contraseña;
+    width: 100%;
+    height: 2.5rem;
+    border-radius: 10px;
+    background-color: #ECD2C5;
+    border: 2px solid #36353A;
+}
+
+.campo-recuerdame{
+    grid-area: reduerdame;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+.campo-recuerdame input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #1e1e1e;
+}
+
+#a1{
+    grid-area: recuperar;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    text-decoration: none;
+    margin:5px;
+}
+
+#boton_inicio_de_sesion{
+    grid-area: iniciar;
+    width: 100%;
+    height: 2.5rem;
+    border-radius: 10px;
+    background-color: #36353A;
+    color: #ECD2C5;
+    border: 2px solid #36353A;
+}
+#boton_inicio_de_sesion:hover {
+    background-color: #E4CEC1;
+    cursor: pointer;
+    transform: scale(1.05);
+    color: #36353A;
+}
+
+#o{
+    grid-area: o;
+    text-align: center;
+    margin: 0;
+}
+
+#a2{
+     grid-area: iniciarg;
+}
+
+#boton_crear_cuenta{
+    width: 100%;
+    height: 2.5rem;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+@media (max-width: 900px) {
+    #general{
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        grid-template-areas: "titulo"
+                             "registro";
+    }
+    #titulo{
+        padding: 30px 5% 10px;
+    }
+}
+
+
+@media (max-width: 480px) {
+    #registro{
+        width: 95%;
+        margin: 20px auto;
+        padding: 6%;
+    }
+    #general h1{
+        font-size: 32px;
+    }
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requesty</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <main>
+        <div id="general">
+        <section id="titulo">
+            <h1>Requesty</h1>
+            <h2 id="eslogan">Tu restaurante, más eficiencia</h2>
+            <h3>Gestiona tu caja, controla tus pedidos <br>
+                y toma mejores decisiones.</h3>
+        </section>
+        <section id="registro">
+            <h2 id="titulo2">INICIO DE SESIÓN</h2>
+            <p id="subtitulo">Accede a tu cuenta para continuar</p>
+
+            <input type="text" placeholder="Correo electrónico" id="usuario">
+            <input type="password" placeholder="Contraseña" id="contraseña">
+
+            <div class="campo-recuerdame">
+                <input type="checkbox" id="checkbox_recuerdame">
+                <label for="checkbox_recuerdame">Recuérdame</label>
+            </div>
+
+            <a id="a1" href="#">¿Olvidaste tu contraseña?</a>
+
+            <button id="boton_inicio_de_sesion" class="boton" type="button">Iniciar sesión</button>
+            <p id="loginMensaje" aria-live="polite"></p>
+
+            <p id="o"> o </p>
+
+            <a id="a2" href="registro.html">
+                <button id="boton_crear_cuenta" class="boton">Crear cuenta</button>
+            </a>
+        </section>
+        </div>
+    </main>
+    <script src="js/auth.js"></script>
+</body>
+</html>

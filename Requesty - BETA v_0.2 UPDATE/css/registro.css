@@ -1,0 +1,226 @@
+*{
+    box-sizing: border-box;
+}
+
+:root{
+
+    --fondo: #ECD2C5;
+    --c1: #faf8f6;
+    --c2: #36353a;
+    --c3: #1e1e1e;
+    --c4: #d7b4a1;
+    --c5:#e4cec1;
+    --c6:#725f5b;
+}
+
+body{
+    background-color: var(--fondo);
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+}
+
+header{
+
+    background-color: var(--fondo);
+    padding: 20px;
+    margin: 0;
+    border-bottom: 3px solid var(--c3);
+}
+
+.logo{
+    margin: 0;
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--c3);
+}
+
+img{
+
+    width: 60px;
+
+}
+
+
+
+main {
+
+    background-color: var(--fondo);
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding: 30px 15px;
+}
+
+/* ===================== */
+/* TARJETA DEL FORMULARIO */
+/* ===================== */
+.seccion-formulario{
+    background-color: var(--c1);
+    border: 3px solid var(--c3);
+    border-radius: 20px;
+    padding: 30px 40px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.seccion-formulario h2{
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--c3);
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.seccion-intro{
+    font-size: 13px;
+    color: var(--c2);
+    margin-bottom: 20px;
+}
+
+/* ===================== */
+/* CAMPOS DEL FORMULARIO */
+/* ===================== */
+.campo{
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.campo label{
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--c3);
+}
+
+.campo input,
+.campo select{
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--c3);
+    border-radius: 10px;
+    background-color: var(--c4);
+    font-size: 14px;
+    color: var(--c3);
+    font-family: inherit;
+}
+
+.campo input::placeholder{
+    color: var(--c2);
+    opacity: 0.75;
+}
+
+.campo input:focus,
+.campo select:focus{
+    outline: none;
+    background-color: var(--c5);
+}
+
+/* ===================== */
+/* BOTONES PEQUEÑOS (borrar un campo) */
+/* ===================== */
+.fila-botones-pequenos{
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0 12px 0;
+}
+
+.btn-borrar-campo{
+    background-color: var(--c5);
+    border: 2px solid var(--c3);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--c3);
+    cursor: pointer;
+}
+
+.btn-borrar-campo:hover{
+    background-color: var(--c4);
+}
+
+/* ===================== */
+/* BOTONES GRANDES (borrar todo / enviar) */
+/* ===================== */
+.fila-botones-grandes{
+    display: flex;
+    gap: 10px;
+}
+
+.btn-primario,
+.btn-secundario{
+    flex: 1;
+    padding: 14px;
+    border: 2px solid var(--c3);
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+}
+
+.btn-primario{
+    background-color: var(--c3);
+}
+
+.btn-primario:hover{
+    background-color: #000000;
+}
+
+.btn-secundario{
+    background-color: var(--c2);
+}
+
+.btn-secundario:hover{
+    background-color: #000000;
+}
+
+/* ===================== */
+/* MENSAJE DEL FORMULARIO */
+/* ===================== */
+.formulario-mensaje{
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 14px;
+    min-height: 18px;
+}
+
+.formulario-mensaje.exito{
+    color: #2e7d32;
+}
+
+.formulario-mensaje.error{
+    color: #b00020;
+}
+
+/* ===================== */
+/* RESPONSIVE */
+/* ===================== */
+@media (max-width: 480px){
+    .seccion-formulario{
+        padding: 25px 20px;
+    }
+
+    .fila-botones-grandes{
+        flex-direction: column;
+    }
+}
+
+
+/* Enlace para volver al login */
+.enlace-login{
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--c3);
+}
+.enlace-login a{
+    color: var(--c6);
+    font-weight: bold;
+}
