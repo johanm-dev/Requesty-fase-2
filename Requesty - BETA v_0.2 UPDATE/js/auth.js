@@ -106,8 +106,11 @@ function protegerPagina(pagina) {
 
     const rol = claveRol(cuenta.rol);
     const permisosBase = permisosPorRol[rol] || [];
-    const paginasPermitidas = Array.isArray(cuenta.permisos) ? cuenta.permisos : permisosBase;
     const esAdministrador = rol === "admin" || rol === "administrador";
+    // El administrador siempre ve todas las interfaces (evita quedar bloqueado por permisos guardados)
+    const paginasPermitidas = esAdministrador
+        ? permisosPorRol.administrador
+        : (Array.isArray(cuenta.permisos) ? cuenta.permisos : permisosBase);
     const puedeVerMenu = ["mesero", "cliente", "admin", "administrador"].includes(rol);
     const accesoCajaCliente = pagina === "caja" && rol === "cliente";
     const puedeAbrirPagina = (pagina === "reportes" && esAdministrador || accesoCajaCliente || paginasPermitidas.includes(pagina))
