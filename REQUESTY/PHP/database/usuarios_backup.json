@@ -1,0 +1,81 @@
+[
+    {
+        "id_usuario": 1,
+        "nombre": "Juan Pérez",
+        "correo": "admin@requesty.com",
+        "telefono": "3101234567",
+        "rol": "Administrador",
+        "contrasena": "admin123",
+        "activo": true,
+        "estado": "Activo",
+        "permisos": [
+            "menu",
+            "mesas",
+            "pedidos",
+            "cocina",
+            "caja",
+            "pqrs",
+            "reportes"
+        ]
+    },
+    {
+        "id_usuario": 2,
+        "nombre": "Carlos Cajero",
+        "correo": "cajero@requesty.com",
+        "telefono": "3119876543",
+        "rol": "Cajero",
+        "contrasena": "caja123",
+        "activo": true,
+        "estado": "Activo",
+        "permisos": [
+            "menu",
+            "mesas",
+            "pedidos",
+            "caja"
+        ]
+    },
+    {
+        "id_usuario": 3,
+        "nombre": "Mateo Mesero",
+        "correo": "mesero@requesty.com",
+        "telefono": "3124567890",
+        "rol": "Mesero",
+        "contrasena": "mesero123",
+        "activo": true,
+        "estado": "Activo",
+        "permisos": [
+            "menu",
+            "mesas",
+            "pedidos"
+        ]
+    },
+    {
+        "id_usuario": 4,
+        "nombre": "Claudia Cocina",
+        "correo": "cocina@requesty.com",
+        "telefono": "3131122334",
+        "rol": "Cocina",
+        "contrasena": "cocina123",
+        "activo": true,
+        "estado": "Activo",
+        "permisos": [
+            "menu",
+            "pedidos",
+            "cocina"
+        ]
+    },
+    {
+        "id_usuario": 5,
+        "nombre": "Cliente Demo",
+        "correo": "cliente@gmail.com",
+        "telefono": "3145566778",
+        "rol": "Cliente",
+        "contrasena": "cliente123",
+        "activo": true,
+        "estado": "Activo",
+        "permisos": [
+            "menu",
+            "pqrs"
+        ]
+    }
+]
