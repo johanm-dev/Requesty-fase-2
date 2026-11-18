@@ -16,7 +16,9 @@ if (empty($iniciales)) $iniciales = 'RQ';
 <aside class="sidebar" id="appSidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo">
-            <i class="fa-solid fa-utensils logo-icon"></i>
+            <div class="sidebar-logo-circle" title="Requesty">
+                <i class="fa-solid fa-utensils logo-icon"></i>
+            </div>
             <span class="logo-text">Requesty</span>
         </div>
         <button type="button" class="sidebar-toggle-btn" id="sidebarCollapseBtn" title="Alternar menú lateral" aria-label="Alternar menú">
@@ -26,34 +28,42 @@ if (empty($iniciales)) $iniciales = 'RQ';
 
     <nav class="sidebar-menu">
         <a class="sidebar-item <?= ($currentPage === 'inicio') ? 'active' : '' ?>" href="<?= url('pedidos') ?>" title="Inicio" data-title="Inicio">
+            <span class="active-indicator"></span>
             <i class="fa-solid fa-house nav-icon"></i>
             <span class="nav-text">Inicio</span>
         </a>
         <a class="sidebar-item <?= ($currentPage === 'pedidos') ? 'active' : '' ?>" href="<?= url('pedidos') ?>" title="Pedidos" data-title="Pedidos">
+            <span class="active-indicator"></span>
             <i class="fa-solid fa-clipboard-list nav-icon"></i>
             <span class="nav-text">Pedidos</span>
         </a>
         <a class="sidebar-item <?= ($currentPage === 'cocina') ? 'active' : '' ?>" href="<?= url('cocina') ?>" title="Cocina" data-title="Cocina">
+            <span class="active-indicator"></span>
             <i class="fa-solid fa-fire-burner nav-icon"></i>
             <span class="nav-text">Cocina</span>
         </a>
         <a class="sidebar-item <?= ($currentPage === 'menu') ? 'active' : '' ?>" href="<?= url('menu') ?>" title="Menú" data-title="Menú">
+            <span class="active-indicator"></span>
             <i class="fa-solid fa-book-open nav-icon"></i>
             <span class="nav-text">Menú</span>
         </a>
         <a class="sidebar-item <?= ($currentPage === 'caja') ? 'active' : '' ?>" href="<?= url('caja') ?>" title="Caja y facturación" data-title="Caja y facturación">
+            <span class="active-indicator"></span>
             <i class="fa-solid fa-cash-register nav-icon"></i>
             <span class="nav-text">Caja y facturación</span>
         </a>
         <a class="sidebar-item <?= ($currentPage === 'reportes') ? 'active' : '' ?>" href="<?= url('reportes') ?>" title="Reportes" data-title="Reportes">
+            <span class="active-indicator"></span>
             <i class="fa-solid fa-chart-line nav-icon"></i>
             <span class="nav-text">Reportes</span>
         </a>
         <a class="sidebar-item <?= ($currentPage === 'mesas') ? 'active' : '' ?>" href="<?= url('mesas') ?>" title="Mesas" data-title="Mesas">
+            <span class="active-indicator"></span>
             <i class="fa-solid fa-chair nav-icon"></i>
             <span class="nav-text">Mesas</span>
         </a>
         <a class="sidebar-item <?= ($currentPage === 'pqrs') ? 'active' : '' ?>" href="<?= url('pqrs') ?>" title="PQRS" data-title="PQRS">
+            <span class="active-indicator"></span>
             <i class="fa-solid fa-comments nav-icon"></i>
             <span class="nav-text">PQRS</span>
         </a>
