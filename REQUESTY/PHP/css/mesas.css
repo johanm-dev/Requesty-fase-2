@@ -138,29 +138,8 @@
     color: var(--color-sidebar);
 }
 @media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-        flex-direction: row;
-        padding: var(--space-md);
-    }
-    .sidebar-logo {
-        padding: 0 var(--space-md);
-        margin-bottom: 0;
-    }
-    .sidebar-menu {
-        display: flex;
-        gap: var(--space-sm);
-        flex: 1;
-    }
-    .sidebar-item {
-        padding: var(--space-sm) var(--space-md);
-        margin: 0;
-    }
     .main-content {
-        height: calc(100vh - 60px);
+        min-height: 0;
     }
     .content {
         padding: var(--space-lg);

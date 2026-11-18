@@ -25,7 +25,7 @@
         (function() {
             try {
                 if (localStorage.getItem('rq_sidebar_collapsed') === '1') {
-                    document.documentElement.classList.add('sidebar-is-collapsed');
+                    document.documentElement.classList.add('sidebar-collapsed');
                 }
             } catch (e) {}
         })();
