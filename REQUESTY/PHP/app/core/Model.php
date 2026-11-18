@@ -1,67 +1,55 @@
 <?php
 /**
- * Modelo Base MVC
+ * Modelo Base MVC sobre PostgreSQL 17 (consultas 100% parametrizadas).
  */
 abstract class Model {
-    protected ?PDO $db = null;
+    protected PDO $db;
 
     public function __construct() {
         $this->db = Database::getConnection();
     }
 
-    /**
-     * Verificar si la BD está conectada
-     */
     public function isDbConnected(): bool {
-        return $this->db !== null;
+        return true;
     }
 
-    /**
-     * Ejecutar una consulta con parámetros seguros
-     */
-    protected function query(string $sql, array $params = []): ?PDOStatement {
-        if (!$this->isDbConnected()) {
-            return null;
-        }
-        try {
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-            return $stmt;
-        } catch (PDOException $e) {
-            error_log("Error en consulta SQL: " . $e->getMessage());
-            return null;
-        }
+    protected function query(string $sql, array $params = []): PDOStatement {
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt;
     }
 
-    /**
-     * Obtener todos los registros de una consulta
-     */
     protected function fetchAll(string $sql, array $params = []): array {
         $stmt = $this->query($sql, $params);
-        return $stmt ? $stmt->fetchAll() : [];
+        return $stmt->fetchAll();
     }
 
-    /**
-     * Obtener un solo registro
-     */
     protected function fetchOne(string $sql, array $params = []): ?array {
         $stmt = $this->query($sql, $params);
-        $result = $stmt ? $stmt->fetch() : null;
+        $result = $stmt->fetch();
         return $result ?: null;
     }
 
-    /**
-     * Ejecutar INSERT, UPDATE o DELETE
-     */
     protected function execute(string $sql, array $params = []): bool {
-        $stmt = $this->query($sql, $params);
-        return $stmt !== null;
+        $this->query($sql, $params);
+        return true;
     }
 
-    /**
-     * Obtener último ID insertado
-     */
-    protected function lastInsertId(): int {
-        return $this->isDbConnected() ? (int)$this->db->lastInsertId() : 0;
+    protected function beginTransaction(): void {
+        if (!$this->db->inTransaction()) {
+            $this->db->beginTransaction();
+        }
+    }
+
+    protected function commit(): void {
+        if ($this->db->inTransaction()) {
+            $this->db->commit();
+        }
+    }
+
+    protected function rollBack(): void {
+        if ($this->db->inTransaction()) {
+            $this->db->rollBack();
+        }
     }
 }

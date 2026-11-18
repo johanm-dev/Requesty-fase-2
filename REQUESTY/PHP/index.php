@@ -1,15 +1,20 @@
 <?php
 /**
  * Requesty - Front Controller Principal (MVC)
- * Punto de entrada único para la aplicación web
+ * Punto de entrada unico endurecido.
  */
 
-// Reporte de errores en desarrollo
 error_reporting(E_ALL);
-ini_set('display_errors', '1');
+ini_set('display_errors', '0');
 
-// Cargar el núcleo de la aplicación
+$reqPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+if (preg_match('#^/(app|tests|storage|database)(/|$)|/\.(env|htaccess|gitignore)|\\.(sql|log|md|json|lock|example|bak)$#i', $reqPath) === 1) {
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo '403 Forbidden';
+    exit;
+}
+
 require_once __DIR__ . '/app/core/App.php';
 
-// Inicializar la aplicación
 App::run();

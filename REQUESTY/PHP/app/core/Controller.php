@@ -1,14 +1,10 @@
 <?php
 /**
- * Controlador Base MVC
+ * Controlador Base MVC con soporte JWT + RBAC + Anti-IDOR.
  */
 abstract class Controller {
+    protected ?array $jwtUser = null;
 
-    /**
-     * Cargar e instanciar un Modelo
-     * @param string $model Nombre del modelo (ej: 'Usuario', 'Pedido')
-     * @return object
-     */
     public function model(string $model) {
         $modelClass = ucfirst($model);
         $modelFile = APPROOT . '/models/' . $modelClass . '.php';
@@ -18,85 +14,109 @@ abstract class Controller {
             return new $modelClass();
         }
 
-        throw new Exception("El modelo {$modelClass} no existe en {$modelFile}");
+        throw new RuntimeException("Modelo {$modelClass} no disponible.");
     }
 
-    /**
-     * Cargar y renderizar una Vista
-     * @param string $view Ruta de la vista relativa a app/views/ (ej: 'pedidos/index')
-     * @param array $data Datos pasados a la vista
-     */
     public function view(string $view, array $data = []) {
         $viewFile = APPROOT . '/views/' . $view . '.php';
 
         if (file_exists($viewFile)) {
-            // Extraer variables para la vista
             extract($data);
             require_once $viewFile;
         } else {
-            throw new Exception("La vista {$view} no existe en {$viewFile}");
+            throw new RuntimeException("Vista {$view} no disponible.");
         }
     }
 
-    /**
-     * Responder en formato JSON (para APIs y llamadas AJAX)
-     * @param mixed $data
-     * @param int $status
-     */
     public function json($data, int $status = 200) {
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
         exit;
     }
 
-    /**
-     * Redireccionar a una ruta
-     * @param string $route
-     */
     public function redirect(string $route) {
         header('Location: ' . url($route));
         exit;
     }
 
-    /**
-     * Obtener el usuario autenticado en sesión
-     * @return array|null
-     */
     public function getUser(): ?array {
+        if ($this->jwtUser !== null) {
+            return $this->jwtUser;
+        }
         return $_SESSION['usuario'] ?? null;
     }
 
-    /**
-     * Verificar si hay una sesión activa
-     * @return bool
-     */
     public function isLoggedIn(): bool {
-        return isset($_SESSION['usuario']);
+        return $this->getUser() !== null;
     }
 
-    /**
-     * Exigir inicio de sesión (redirecciona a login si no está logueado)
-     */
-    public function requireAuth() {
-        if (!$this->isLoggedIn()) {
+    public function requireAuth(): void {
+        if (!isset($_SESSION['usuario'])) {
             $this->redirect('login');
         }
     }
 
-    /**
-     * Verificar si el usuario tiene un rol determinado
-     * @param array|string $roles
-     * @return bool
-     */
+    public function requireRole(array $roles): void {
+        $this->requireAuth();
+        if (!$this->hasRole($roles)) {
+            throw new ForbiddenException('Tu rol no tiene autorizacion para este modulo.');
+        }
+    }
+
+    protected function extractBearerToken(): ?string {
+        return JwtService::extractBearerToken();
+    }
+
+    protected function requireCsrfForWebPost(): void {
+        $submitted = $_POST['_csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+        if (!CsrfService::verify(is_string($submitted) ? $submitted : null)) {
+            throw new ForbiddenException('Token CSRF invalido o ausente.');
+        }
+    }
+
+    public function requireApiAuth(): array {
+        $token = $this->extractBearerToken();
+        if ($token !== null) {
+            $claims = JwtService::verify($token);
+            if ($claims === null) {
+                throw new AuthException('Token JWT invalido, expirado o revocado.');
+            }
+            $this->jwtUser = [
+                'id'     => (int)$claims['sub'],
+                'nombre' => (string)$claims['nombre'],
+                'correo' => (string)$claims['correo'],
+                'rol'    => strtoupper((string)$claims['rol']),
+                'jti'    => (string)$claims['jti'],
+                'exp'    => (int)$claims['exp'],
+            ];
+            return $this->jwtUser;
+        }
+
+        if (isset($_SESSION['usuario'])) {
+            return $_SESSION['usuario'];
+        }
+
+        throw new AuthException('Autenticacion requerida (JWT Bearer o sesion activa).');
+    }
+
+    public function requireApiRole(array $allowedRoles): array {
+        $user = $this->requireApiAuth();
+        $userRole = strtoupper(trim((string)($user['rol'] ?? '')));
+        $normalized = array_map(static fn($r) => strtoupper(trim($r)), $allowedRoles);
+        if (!in_array($userRole, $normalized, true)) {
+            throw new ForbiddenException('Acceso denegado: privilegios insuficientes.');
+        }
+        return $user;
+    }
+
     public function hasRole($roles): bool {
-        if (!$this->isLoggedIn()) {
+        $user = $this->getUser();
+        if (!$user) {
             return false;
         }
-        $userRole = strtolower(trim($_SESSION['usuario']['rol'] ?? ''));
-        $roles = (array)$roles;
-        $rolesNormalized = array_map(function($r) { return strtolower(trim($r)); }, $roles);
-        
+        $userRole = strtoupper(trim((string)($user['rol'] ?? '')));
+        $rolesNormalized = array_map(static fn($r) => strtoupper(trim($r)), (array)$roles);
         return in_array($userRole, $rolesNormalized, true);
     }
 }

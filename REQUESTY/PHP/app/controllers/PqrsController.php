@@ -1,10 +1,7 @@
 <?php
-/**
- * Controlador de PQRS
- */
 class PqrsController extends Controller {
-
     public function index() {
+        $this->requireAuth();
         $pqrsModel = $this->model('Pqrs');
         $pqrs = $pqrsModel->getAll();
 

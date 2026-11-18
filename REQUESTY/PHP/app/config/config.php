@@ -1,35 +1,46 @@
 <?php
 /**
- * Configuración general de la aplicación Requesty MVC
+ * Configuracion general de la aplicacion Requesty MVC (PostgreSQL 17 + AppSec)
  */
 
-// Iniciar sesión si no está iniciada
-if (session_status() === PHP_SESSION_NONE) {
+define('APPROOT', dirname(__DIR__));
+define('ROOTPATH', dirname(APPROOT));
+
+require_once APPROOT . '/core/Env.php';
+Env::load(ROOTPATH . '/.env');
+Env::validateBootSecrets();
+
+$hasBearer = !empty($_SERVER['HTTP_AUTHORIZATION']) || !empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
+if (!$hasBearer && session_status() === PHP_SESSION_NONE && php_sapi_name() !== 'cli') {
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+    $secureCookie = filter_var(Env::get('SESSION_SECURE', $isHttps ? 'true' : 'false'), FILTER_VALIDATE_BOOLEAN);
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => $secureCookie,
+        'httponly' => true,
+        'samesite' => 'Strict',
+    ]);
     session_start();
 }
 
-// Rutas base
-define('APPROOT', dirname(dirname(__FILE__)));
-define('ROOTPATH', dirname(dirname(dirname(__FILE__))));
+define('DB_HOST', Env::requireNonEmpty('DB_HOST'));
+define('DB_PORT', Env::requireNonEmpty('DB_PORT'));
+define('DB_USER', Env::requireNonEmpty('DB_USER'));
+define('DB_PASS', Env::requireNonEmpty('DB_PASSWORD'));
+define('DB_NAME', Env::requireNonEmpty('DB_NAME'));
+define('DB_SCHEMA', Env::requireNonEmpty('DB_SCHEMA'));
+define('DB_SSL_MODE', Env::get('DB_SSL_MODE', 'prefer'));
+define('DB_CONNECTION_TIMEOUT', (int)Env::get('DB_CONNECTION_TIMEOUT', '5'));
 
-// Configuración de la base de datos (XAMPP predeterminado)
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3306');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'REQUESTY');
-define('DB_CHARSET', 'utf8mb4');
-
-// Nombre del sitio
 define('SITENAME', 'Requesty');
 
-// Detección automática de URL base para XAMPP y servidores web
 $isCli = (php_sapi_name() === 'cli' || empty($_SERVER['HTTP_HOST']));
 if ($isCli) {
-    $folderName = basename(ROOTPATH);
-    $baseUrl = 'http://localhost/' . rawurlencode($folderName);
+    $baseUrl = 'http://127.0.0.1';
 } else {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
+    $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)) ? 'https://' : 'http://';
     $host = $_SERVER['HTTP_HOST'];
     $scriptDir = trim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/.');
     $baseUrl = rtrim($protocol . $host . ($scriptDir !== '' ? '/' . $scriptDir : ''), '/');
@@ -37,12 +48,6 @@ if ($isCli) {
 
 define('BASE_URL', $baseUrl);
 
-/**
- * Generador de URLs amigables
- * @param string $route (ej: 'pedidos', 'cocina', 'login', 'caja')
- * @param array $params Parámetros adicionales
- * @return string
- */
 function url($route = '', array $params = []) {
     $route = trim(ltrim($route, '/'));
     if (empty($route) || $route === 'login') {
@@ -50,7 +55,7 @@ function url($route = '', array $params = []) {
     } else {
         $link = BASE_URL . '/index.php?page=' . urlencode($route);
     }
-    
+
     if (!empty($params)) {
         $query = http_build_query($params);
         $link .= (strpos($link, '?') !== false ? '&' : '?') . $query;
@@ -58,47 +63,26 @@ function url($route = '', array $params = []) {
     return $link;
 }
 
-/**
- * Generador de URLs para assets estáticos (CSS, JS, imágenes)
- * @param string $path
- * @return string
- */
 function asset($path = '') {
-    $path = ltrim($path, '/');
-    return BASE_URL . '/' . $path;
+    return BASE_URL . '/' . ltrim($path, '/');
 }
 
-/**
- * Roles del sistema
- */
 const ROLES = [
-    'ADMINISTRADOR' => 'Administrador',
-    'CAJERO'        => 'Cajero',
-    'MESERO'        => 'Mesero',
-    'COCINA'        => 'Cocina',
-    'CLIENTE'       => 'Cliente'
+    'ADMIN'  => 'Administrador',
+    'CAJERO' => 'Cajero',
+    'MESERO' => 'Mesero',
 ];
 
-/**
- * Permisos por rol predeterminados
- */
 const PERMISOS_POR_ROL = [
-    'administrador' => ['menu', 'mesas', 'pedidos', 'cocina', 'caja', 'pqrs', 'reportes'],
     'admin'         => ['menu', 'mesas', 'pedidos', 'cocina', 'caja', 'pqrs', 'reportes'],
+    'administrador' => ['menu', 'mesas', 'pedidos', 'cocina', 'caja', 'pqrs', 'reportes'],
     'cajero'        => ['menu', 'mesas', 'pedidos', 'caja'],
     'mesero'        => ['menu', 'mesas', 'pedidos'],
-    'cocina'        => ['menu', 'pedidos', 'cocina'],
-    'cliente'       => ['menu', 'pqrs']
 ];
 
-/**
- * Página de inicio predeterminada por rol
- */
 const PAGINA_INICIAL_POR_ROL = [
-    'administrador' => 'mesas',
     'admin'         => 'mesas',
+    'administrador' => 'mesas',
     'cajero'        => 'caja',
     'mesero'        => 'mesas',
-    'cocina'        => 'cocina',
-    'cliente'       => 'menu'
 ];

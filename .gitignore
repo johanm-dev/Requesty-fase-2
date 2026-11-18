@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+!.env.docker.example
+*.log
+*.bak
+REQUESTY/PHP/storage/ratelimit/*
+REQUESTY/PHP/storage/security/*
+REQUESTY/PHP/database/*_backup.json

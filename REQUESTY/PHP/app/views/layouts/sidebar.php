@@ -1,12 +1,12 @@
 <?php
 $currentPage = $currentPage ?? '';
 $user = $_SESSION['usuario'] ?? [
-    'nombre' => 'Juan Pérez',
-    'rol'    => 'Administrador'
+    'nombre' => 'Invitado',
+    'rol'    => ''
 ];
 
 // Generar iniciales para avatar
-$partesNombre = explode(' ', trim($user['nombre']));
+$partesNombre = explode(' ', trim((string)$user['nombre']));
 $iniciales = '';
 foreach (array_slice($partesNombre, 0, 2) as $p) {
     if (!empty($p)) $iniciales .= mb_strtoupper(mb_substr($p, 0, 1));
@@ -60,11 +60,11 @@ if (empty($iniciales)) $iniciales = 'RQ';
     </nav>
 
     <div class="sidebar-footer">
-        <div class="sidebar-profile" title="<?= htmlspecialchars($user['nombre']) ?> (<?= htmlspecialchars($user['rol']) ?>)">
-            <div class="profile-avatar"><?= htmlspecialchars($iniciales) ?></div>
+        <div class="sidebar-profile" title="<?= htmlspecialchars((string)$user['nombre'], ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars((string)$user['rol'], ENT_QUOTES, 'UTF-8') ?>)">
+            <div class="profile-avatar"><?= htmlspecialchars($iniciales, ENT_QUOTES, 'UTF-8') ?></div>
             <div class="profile-info">
-                <h4><?= htmlspecialchars($user['nombre']) ?></h4>
-                <p><?= htmlspecialchars($user['rol']) ?></p>
+                <h4><?= htmlspecialchars((string)$user['nombre'], ENT_QUOTES, 'UTF-8') ?></h4>
+                <p><?= htmlspecialchars((string)$user['rol'], ENT_QUOTES, 'UTF-8') ?></p>
             </div>
         </div>
         <a class="sidebar-item sidebar-item-logout" id="btnSidebarLogout" href="javascript:void(0)" title="Cerrar sesión" data-title="Cerrar sesión">

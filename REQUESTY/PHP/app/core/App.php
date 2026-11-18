@@ -1,19 +1,35 @@
 <?php
 /**
- * Inicializador principal de la aplicación
+ * Inicializador principal de la aplicacion con AppSec bootstrap.
  */
 class App {
-    public static function run() {
-        // Cargar configuración
-        require_once dirname(__DIR__) . '/config/config.php';
-        require_once dirname(__DIR__) . '/config/Database.php';
+    public static function run(): void {
+        $coreDir = __DIR__;
+        $appDir  = dirname($coreDir);
 
-        // Cargar clases base del núcleo
-        require_once dirname(__DIR__) . '/core/Model.php';
-        require_once dirname(__DIR__) . '/core/Controller.php';
-        require_once dirname(__DIR__) . '/core/Router.php';
+        require_once $coreDir . '/Env.php';
+        require_once $coreDir . '/ExceptionHandler.php';
+        require_once $coreDir . '/SecurityHeaders.php';
+        require_once $coreDir . '/CsrfService.php';
+        require_once $coreDir . '/JwtService.php';
+        require_once $coreDir . '/RateLimiter.php';
+        require_once $coreDir . '/XmlSecurity.php';
+        require_once $coreDir . '/DtoValidator.php';
 
-        // Iniciar enrutador
+        ExceptionHandler::register();
+
+        Env::load(dirname($appDir) . '/.env');
+        Env::validateBootSecrets();
+
+        SecurityHeaders::apply();
+
+        require_once $appDir . '/config/config.php';
+        require_once $appDir . '/config/Database.php';
+
+        require_once $coreDir . '/Model.php';
+        require_once $coreDir . '/Controller.php';
+        require_once $coreDir . '/Router.php';
+
         new Router();
     }
 }

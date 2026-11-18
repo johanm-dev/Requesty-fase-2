@@ -1,58 +1,59 @@
 <?php
 /**
- * Conexión a la Base de Datos con PDO
+ * Conexion segura a PostgreSQL 17 con rol de minimo privilegio (app_restaurante_rw)
+ * e inyeccion de llave criptografica por sesion.
  */
 class Database {
     private static ?PDO $instance = null;
-    private static bool $connectionAttempted = false;
-    private static ?string $connectionError = null;
 
-    /**
-     * Obtener instancia singleton de PDO
-     */
-    public static function getConnection(): ?PDO {
-        if (self::$instance === null && !self::$connectionAttempted) {
-            self::$connectionAttempted = true;
-            try {
-                $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-                $options = [
-                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES   => false,
-                    PDO::ATTR_TIMEOUT            => 2,
-                ];
-                self::$instance = new PDO($dsn, DB_USER, DB_PASS, $options);
-            } catch (PDOException $e) {
-                self::$connectionError = $e->getMessage();
-                // Si la BD no existe, intentamos conectarnos sin dbname para ver si el servidor MySQL está activo
-                try {
-                    $dsnBase = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";charset=" . DB_CHARSET;
-                    $tempPdo = new PDO($dsnBase, DB_USER, DB_PASS, [PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT, PDO::ATTR_TIMEOUT => 2]);
-                    // Si conecta, intentamos crear la base de datos REQUESTY
-                    $tempPdo->exec("CREATE DATABASE IF NOT EXISTS " . DB_NAME . " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-                    // Reintentar conexión con la BD
-                    self::$instance = new PDO($dsn, DB_USER, DB_PASS, $options);
-                    self::$connectionError = null;
-                } catch (Exception $ex) {
-                    self::$connectionError = $e->getMessage();
-                    self::$instance = null;
-                }
-            }
+    public static function getConnection(): PDO {
+        if (self::$instance !== null) {
+            return self::$instance;
         }
+
+        $dsn = sprintf(
+            'pgsql:host=%s;port=%s;dbname=%s;sslmode=%s',
+            DB_HOST,
+            DB_PORT,
+            DB_NAME,
+            DB_SSL_MODE
+        );
+
+        $options = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+            PDO::ATTR_TIMEOUT            => DB_CONNECTION_TIMEOUT,
+            PDO::ATTR_PERSISTENT         => true,
+        ];
+
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+
+        // Fija search_path y la llave AES-256/HMAC en una sola ida a PostgreSQL
+        $schema = preg_replace('/[^a-zA-Z0-9_]/', '', DB_SCHEMA);
+        $encKey = Env::requireNonEmpty('APP_ENCRYPTION_KEY', 32);
+        $stmt = $pdo->prepare(
+            "SELECT set_config('search_path', :sp, false), set_config('restaurante.encryption_key', :key, false)"
+        );
+        $stmt->execute([
+            ':sp'  => "{$schema}, public",
+            ':key' => $encKey,
+        ]);
+
+        self::$instance = $pdo;
         return self::$instance;
     }
 
-    /**
-     * Verificar si la conexión a la base de datos está activa
-     */
     public static function isConnected(): bool {
-        return self::getConnection() !== null;
+        try {
+            self::getConnection();
+            return true;
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
-    /**
-     * Obtener el último error de conexión si hubo
-     */
-    public static function getError(): ?string {
-        return self::$connectionError;
+    public static function reset(): void {
+        self::$instance = null;
     }
 }

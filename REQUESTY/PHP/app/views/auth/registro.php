@@ -17,10 +17,16 @@
       <h2>Registrar Cuenta Nueva</h2>
       <p class="seccion-intro">Completa los datos requeridos. Los campos marcados con * son obligatorios.</p>
 
-      <form id="formAprendiz" method="POST" action="<?= url('registro') ?>" novalidate>
+      <form id="formAprendiz" method="POST" action="<?= htmlspecialchars(url('registro'), ENT_QUOTES, 'UTF-8') ?>" novalidate>
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars(CsrfService::token(), ENT_QUOTES, 'UTF-8') ?>">
         <div class="campo">
           <label for="nombre">Nombre completo *</label>
           <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Perez Gonzales" required>
+        </div>
+
+        <div class="campo">
+          <label for="documento">Documento *</label>
+          <input type="text" id="documento" name="documento" placeholder="Ej: 1098765432" required>
         </div>
 
         <div class="campo">
@@ -43,14 +49,7 @@
           <input type="password" id="confirmar_contrasena" name="confirmar_contrasena" placeholder="Repite tu contraseña" required>
         </div>
 
-        <div class="campo">
-          <label for="rol">Rol *</label>
-          <select id="rol" name="rol" required>
-            <option value="" disabled selected>Selecciona un rol</option>
-            <option value="Cliente">Cliente</option>
-            <option value="Administrador">Administrador</option>
-          </select>
-        </div>
+        <input type="hidden" name="rol" value="Cliente">
 
         <div class="fila-botones-grandes">
           <button type="button" id="btnBorrarTodo" class="btn-secundario">Borrar</button>
@@ -58,7 +57,7 @@
         </div>
 
         <p id="formularioMensaje" class="formulario-mensaje" aria-live="polite">
-            <?= !empty($error) ? htmlspecialchars($error) : (!empty($success) ? htmlspecialchars($success) : '') ?>
+            <?= !empty($error) ? htmlspecialchars($error, ENT_QUOTES, 'UTF-8') : (!empty($success) ? htmlspecialchars($success, ENT_QUOTES, 'UTF-8') : '') ?>
         </p>
       </form>
       <p class="enlace-login">¿Ya tienes cuenta? <a href="<?= url('login') ?>">Inicia sesión</a></p>

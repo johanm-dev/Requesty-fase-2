@@ -19,7 +19,8 @@
                 <h2 id="titulo2">INICIO DE SESIÓN</h2>
                 <p id="subtitulo">Accede a tu cuenta para continuar</p>
 
-                <form id="formLogin" method="POST" action="<?= url('login') ?>">
+                <form id="formLogin" method="POST" action="<?= htmlspecialchars(url('login'), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars(CsrfService::token(), ENT_QUOTES, 'UTF-8') ?>">
                     <input type="text" name="usuario" placeholder="Correo electrónico" id="usuario" required>
                     <input type="password" name="contraseña" placeholder="Contraseña" id="contraseña" required>
 
@@ -33,7 +34,7 @@
                     <button id="boton_inicio_de_sesion" class="boton" type="submit">Iniciar sesión</button>
                     
                     <p id="loginMensaje" aria-live="polite">
-                        <?= !empty($error) ? htmlspecialchars($error) : '' ?>
+                        <?= !empty($error) ? htmlspecialchars($error, ENT_QUOTES, 'UTF-8') : '' ?>
                     </p>
                 </form>
 

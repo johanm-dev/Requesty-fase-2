@@ -1,9 +1,8 @@
-# Entorno y logs
-*.log
 .DS_Store
-Thumbs.db
-ehthumbs.db
-
-# Configuración de editores
-.vscode/
-.idea/
+.env
+.env.*
+!.env.example
+*.log
+storage/ratelimit/*
+storage/security/*
+database/*_backup.json
