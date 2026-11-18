@@ -20,5 +20,15 @@
     <?php if (!empty($extraHead)): ?>
         <?= $extraHead ?>
     <?php endif; ?>
+    <!-- Anti-flicker de colapso de barra lateral -->
+    <script>
+        (function() {
+            try {
+                if (localStorage.getItem('rq_sidebar_collapsed') === '1') {
+                    document.documentElement.classList.add('sidebar-is-collapsed');
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>

@@ -37,9 +37,6 @@ const archivoPorPermiso = {
     pqrs: "index.php?page=pqrs",
     reportes: "index.php?page=reportes"
 };
-    pqrs: esEntornoPhp ? "pqrs.php" : "Pqrs.html",
-    reportes: esEntornoPhp ? "reportes.php" : "reportes.html"
-};
 
 function claveRol(rol) {
     return String(rol || "").trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -211,8 +208,10 @@ function protegerPagina(pagina) {
         else elemento.remove();
     });
 
+    // Si no existe el botón de logout estilizado en el sidebar, proveer fallback
     const sidebarMenu = document.querySelector(".sidebar-menu");
-    if (sidebarMenu && !sidebarMenu.querySelector(".btn-cerrar-sesion-js")) {
+    const logoutBtnExistente = document.getElementById("btnSidebarLogout");
+    if (sidebarMenu && !logoutBtnExistente && !sidebarMenu.querySelector(".btn-cerrar-sesion-js")) {
         const cerrarSesion = document.createElement("a");
         cerrarSesion.className = "sidebar-item btn-cerrar-sesion-js";
         cerrarSesion.href = "#";
