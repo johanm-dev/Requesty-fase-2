@@ -852,7 +852,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnReiniciarProcesos = document.getElementById('btn-reiniciar-procesos');
 
     // Función para cambiar de vista activa
-    function mostrarVista(vistaAMostrar) {
+    function mostrarVista(vistaAMostrar, conTransicion = true) {
+        if (conTransicion && typeof window.mostrarTransicionModulo === 'function') {
+            window.mostrarTransicionModulo(520);
+        }
         vistaReportes.classList.add('oculto');
         vistaMenu.classList.add('oculto');
         vistaPqrs.classList.add('oculto');
@@ -900,7 +903,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (location.hash === '#cuentas' && btnVerCuentas && !btnVerCuentas.hidden) {
-        mostrarVista(vistaCuentas);
+        mostrarVista(vistaCuentas, false);
     }
 });
 

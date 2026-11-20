@@ -100,4 +100,44 @@ if (empty($iniciales)) $iniciales = 'RQ';
     </div>
 </div>
 
+<!-- Pantalla breve de transición al cambiar de módulo -->
+<div id="rqModuleLoader" class="rq-module-loader" aria-hidden="true">
+    <div class="rq-loader-luciernagas" aria-hidden="true">
+        <canvas id="rqLoaderLuciernagasCanvas"></canvas>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+    </div>
+    <div class="rq-module-loader-card">
+        <img src="<?= asset('img/mascota2.gif') ?>" alt="Cambiando de módulo..." class="rq-module-loader-gif">
+    </div>
+</div>
+<script>
+    (function () {
+        try {
+            if (sessionStorage.getItem('rq_module_transition') === '1') {
+                var loader = document.getElementById('rqModuleLoader');
+                if (loader) {
+                    loader.classList.add('active', 'instant');
+                }
+            }
+        } catch (e) {}
+    })();
+</script>
+
 <script src="<?= asset('js/sidebar.js') ?>"></script>

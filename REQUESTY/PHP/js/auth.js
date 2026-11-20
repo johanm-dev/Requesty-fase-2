@@ -305,3 +305,97 @@ if (botonInicio) botonInicio.addEventListener("click", (e) => {
         iniciarSesion();
     }
 });
+
+// Efecto de presión ("hundirse") y onda al hacer clic en los botones del login y registro
+document.querySelectorAll("#registro .boton, .seccion-formulario .boton, .btn-primario, .btn-secundario").forEach((boton) => {
+    boton.addEventListener("pointerdown", (e) => {
+        boton.classList.add("btn-hundido");
+
+        const rect = boton.getBoundingClientRect();
+        const tamano = Math.max(rect.width, rect.height);
+        const onda = document.createElement("span");
+        onda.className = "onda-click";
+        onda.style.width = `${tamano}px`;
+        onda.style.height = `${tamano}px`;
+        onda.style.left = `${e.clientX - rect.left - tamano / 2}px`;
+        onda.style.top = `${e.clientY - rect.top - tamano / 2}px`;
+        boton.appendChild(onda);
+        onda.addEventListener("animationend", () => onda.remove());
+    });
+
+    const soltarBoton = () => {
+        setTimeout(() => boton.classList.remove("btn-hundido"), 110);
+    };
+
+    boton.addEventListener("pointerup", soltarBoton);
+    boton.addEventListener("pointerleave", soltarBoton);
+    boton.addEventListener("pointercancel", soltarBoton);
+});
+
+// Animación de luciérnagas en el fondo de inicio de sesión
+(function iniciarLuciernagasLogin() {
+    const canvas = document.getElementById("luciernagasCanvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let ancho = (canvas.width = window.innerWidth);
+    let alto = (canvas.height = window.innerHeight);
+
+    window.addEventListener("resize", () => {
+        ancho = canvas.width = window.innerWidth;
+        alto = canvas.height = window.innerHeight;
+    });
+
+    const cantidad = 34;
+    const luciernagas = Array.from({ length: cantidad }, () => ({
+        x: Math.random() * ancho,
+        y: Math.random() * alto,
+        radio: 2.2 + Math.random() * 3.4,
+        angulo: Math.random() * Math.PI * 2,
+        velocidad: 0.35 + Math.random() * 0.65,
+        giro: (Math.random() - 0.5) * 0.025,
+        faseBrillo: Math.random() * Math.PI * 2,
+        velBrillo: 0.02 + Math.random() * 0.035
+    }));
+
+    function animar() {
+        ctx.clearRect(0, 0, ancho, alto);
+
+        for (const l of luciernagas) {
+            l.angulo += l.giro + (Math.random() - 0.5) * 0.015;
+            l.x += Math.cos(l.angulo) * l.velocidad;
+            l.y += Math.sin(l.angulo) * l.velocidad - 0.15;
+            l.faseBrillo += l.velBrillo;
+
+            if (l.x < -30) l.x = ancho + 30;
+            if (l.x > ancho + 30) l.x = -30;
+            if (l.y < -30) l.y = alto + 30;
+            if (l.y > alto + 30) l.y = -30;
+
+            const pulso = 0.25 + ((Math.sin(l.faseBrillo) + 1) / 2) * 0.75;
+            const haloRadio = l.radio * 5.2;
+
+            const gradiente = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, haloRadio);
+            gradiente.addColorStop(0, `rgba(255, 250, 215, ${0.95 * pulso})`);
+            gradiente.addColorStop(0.3, `rgba(245, 185, 66, ${0.75 * pulso})`);
+            gradiente.addColorStop(0.65, `rgba(201, 155, 69, ${0.32 * pulso})`);
+            gradiente.addColorStop(1, "rgba(201, 155, 69, 0)");
+
+            ctx.beginPath();
+            ctx.fillStyle = gradiente;
+            ctx.arc(l.x, l.y, haloRadio, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(255, 252, 230, ${Math.min(1, pulso + 0.15)})`;
+            ctx.arc(l.x, l.y, l.radio * 0.65, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        requestAnimationFrame(animar);
+    }
+
+    requestAnimationFrame(animar);
+})();

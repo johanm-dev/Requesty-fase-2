@@ -7,9 +7,31 @@
     <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
 </head>
 <body>
+    <div class="luciernagas-fondo" aria-hidden="true">
+        <canvas id="luciernagasCanvas"></canvas>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+    </div>
     <main>
         <div id="general">
             <section id="titulo">
+                <img id="mascota-login" src="<?= asset('img/mascota.gif') ?>" alt="Mascota de Requesty">
                 <h1>Requesty</h1>
                 <h2 id="eslogan">Tu restaurante, más eficiencia</h2>
                 <h3>Gestiona tu caja, controla tus pedidos <br>
@@ -33,9 +55,7 @@
 
                     <button id="boton_inicio_de_sesion" class="boton" type="submit">Iniciar sesión</button>
                     
-                    <p id="loginMensaje" aria-live="polite">
-                        <?= !empty($error) ? htmlspecialchars($error, ENT_QUOTES, 'UTF-8') : '' ?>
-                    </p>
+                    <p id="loginMensaje" aria-live="polite"><?= !empty($error) ? htmlspecialchars($error, ENT_QUOTES, 'UTF-8') : '' ?></p>
                 </form>
 
                 <p id="o"> o </p>

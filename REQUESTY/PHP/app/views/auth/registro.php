@@ -7,6 +7,27 @@
     <link rel="stylesheet" href="<?= asset('css/registro.css') ?>">
 </head>
 <body>
+  <div class="luciernagas-fondo" aria-hidden="true">
+    <canvas id="luciernagasCanvas"></canvas>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+  </div>
   <header>
      <h1 class="logo">Requesty</h1>
   </header>
@@ -52,8 +73,8 @@
         <input type="hidden" name="rol" value="Cliente">
 
         <div class="fila-botones-grandes">
-          <button type="button" id="btnBorrarTodo" class="btn-secundario">Borrar</button>
-          <button type="submit" class="btn-primario">Guardar y continuar</button>
+          <button type="button" id="btnBorrarTodo" class="boton btn-secundario">Borrar</button>
+          <button type="submit" class="boton btn-primario">Guardar y continuar</button>
         </div>
 
         <p id="formularioMensaje" class="formulario-mensaje" aria-live="polite">
