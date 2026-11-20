@@ -913,11 +913,24 @@ html.nav-expanded {
     width: 38px;
     height: 38px;
     border-radius: 10px;
-    background: linear-gradient(135deg, var(--palette-gold) 0%, var(--palette-gold) 100%);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 3px 10px rgba(201, 155, 69, 0.45);
+    overflow: hidden;
+}
+
+.brand-badge .brand-logo-img {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    border-radius: 8px;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.top-nav-brand:hover .brand-logo-img {
+    transform: scale(1.08);
 }
 
 .top-nav-brand .brand-icon {
@@ -1305,6 +1318,15 @@ html.nav-expanded .top-nav-profile-name {
     line-height: 1.2;
     text-decoration: none;
     white-space: nowrap;
+}
+
+.app-page-header-brand .header-brand-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 6px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .app-page-header-brand::before {

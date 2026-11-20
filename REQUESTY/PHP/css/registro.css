@@ -23,10 +23,24 @@ body{
 
 header{
     background-color: #FFFFFF;
-    padding: 20px 40px;
+    padding: 16px 40px;
     margin: 0;
     border-bottom: 2px solid var(--c5);
     box-shadow: 0 2px 8px rgba(21, 21, 21, 0.05);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.registro-logo-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
 .logo{

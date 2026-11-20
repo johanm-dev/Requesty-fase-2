@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? 'Registro - Requesty') ?></title>
+    <link rel="icon" type="image/png" href="<?= asset('img/logo.png') ?>">
     <link rel="stylesheet" href="<?= asset('css/registro.css') ?>">
 </head>
 <body>
   <header>
-     <h1 class="logo">Requesty</h1>
+     <div class="logo-wrapper">
+         <img src="<?= asset('img/logo.png') ?>" alt="Logo Oficial Requesty" class="registro-logo-img">
+         <h1 class="logo">Requesty</h1>
+     </div>
   </header>
 
   <main id="contenido">

@@ -15,7 +15,7 @@ if (empty($iniciales)) $iniciales = 'RQ';
 ?>
 <aside class="top-bar-nav" id="appTopNavbar" aria-label="Navegación principal">
     <a href="<?= url('pedidos') ?>" class="top-nav-brand" title="Requesty" aria-label="Requesty">
-        <span class="brand-badge"><i class="fa-solid fa-utensils brand-icon" aria-hidden="true"></i></span>
+        <span class="brand-badge"><img src="<?= asset('img/logo.png') ?>" alt="Logo Requesty" class="brand-logo-img"></span>
         <span class="brand-text">Requesty</span>
     </a>
 
@@ -80,7 +80,10 @@ if (empty($iniciales)) $iniciales = 'RQ';
 </aside>
 
 <header class="app-page-header">
-    <a href="<?= url('pedidos') ?>" class="app-page-header-brand">Requesty</a>
+    <a href="<?= url('pedidos') ?>" class="app-page-header-brand">
+        <img src="<?= asset('img/logo.png') ?>" alt="Logo Requesty" class="header-brand-logo">
+        <span>Requesty</span>
+    </a>
 </header>
 
 <!-- Modal de Confirmación de Cierre de Sesión -->

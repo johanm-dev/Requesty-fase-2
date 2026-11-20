@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? 'Requesty - Inicio de Sesión') ?></title>
+    <link rel="icon" type="image/png" href="<?= asset('img/logo.png') ?>">
     <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
 </head>
 <body>
     <main>
         <div id="general">
             <section id="titulo">
+                <div class="logo-container">
+                    <img src="<?= asset('img/logo.png') ?>" alt="Logo Oficial Requesty" class="login-logo-img">
+                </div>
                 <h1>Requesty</h1>
                 <h2 id="eslogan">Tu restaurante, más eficiencia</h2>
                 <h3>Gestiona tu caja, controla tus pedidos <br>

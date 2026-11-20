@@ -21,14 +21,31 @@ body{
 
 #titulo{
     font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
     animation: aparecerInicio 0.8s ease-out forwards;
     grid-area: titulo;
     padding: 5%;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+}
+
+.logo-container {
+    margin-bottom: 12px;
+}
+
+.login-logo-img {
+    width: clamp(90px, 14vw, 150px);
+    height: clamp(90px, 14vw, 150px);
+    object-fit: contain;
+    border-radius: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transition: transform 0.3s ease;
+}
+
+.login-logo-img:hover {
+    transform: scale(1.05) rotate(2deg);
 }
 
 #general h1{
