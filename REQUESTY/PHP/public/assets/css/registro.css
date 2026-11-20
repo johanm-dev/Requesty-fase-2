@@ -1,0 +1,226 @@
+*{
+    box-sizing: border-box;
+}
+
+:root{
+    /* Paleta dorada y neutra */
+    --fondo: #F8F9FA;
+    --c1: #FFFFFF;
+    --c2: #777777;
+    --c3: #333333;
+    --c4: #F8F9FA;
+    --c5: #EAEAEA;
+    --c6: #C99B45;
+    --c7: #E4B353;
+}
+
+body{
+    background-color: var(--fondo);
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    margin: 0;
+    color: var(--c3);
+}
+
+header{
+    background-color: #FFFFFF;
+    padding: 16px 40px;
+    margin: 0;
+    border-bottom: 2px solid var(--c5);
+    box-shadow: 0 2px 8px rgba(21, 21, 21, 0.05);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.registro-logo-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo{
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--c3);
+}
+
+main {
+    background-color: var(--fondo);
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding: 30px 15px;
+}
+
+/* ===================== */
+/* TARJETA DEL FORMULARIO */
+/* ===================== */
+.seccion-formulario{
+    background-color: var(--c1);
+    border: 2px solid var(--c3);
+    border-radius: 20px;
+    padding: 35px 40px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 12px 36px rgba(21, 21, 21, 0.12);
+}
+
+.seccion-formulario h2{
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--c3);
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.seccion-intro{
+    font-size: 13px;
+    color: var(--c2);
+    margin-bottom: 24px;
+    line-height: 1.4;
+}
+
+/* ===================== */
+/* CAMPOS DEL FORMULARIO */
+/* ===================== */
+.campo{
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.campo label{
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--c3);
+}
+
+.campo input,
+.campo select{
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--c5);
+    border-radius: 10px;
+    background-color: var(--c4);
+    font-size: 14px;
+    color: var(--c3);
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.campo input::placeholder{
+    color: var(--c2);
+    opacity: 0.65;
+}
+
+.campo input:focus,
+.campo select:focus{
+    outline: none;
+    border-color: var(--c6);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(201, 155, 69, 0.15);
+}
+
+/* ===================== */
+/* BOTONES GRANDES */
+/* ===================== */
+.fila-botones-grandes{
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.btn-primario,
+.btn-secundario{
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.btn-primario{
+    background-color: var(--c7);
+    border: 2px solid var(--c7);
+}
+
+.btn-primario:hover{
+    background-color: #C99B45;
+    border-color: #C99B45;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(228, 179, 83, 0.25);
+}
+
+.btn-secundario{
+    background-color: var(--c3);
+    border: 2px solid var(--c3);
+}
+
+.btn-secundario:hover{
+    background-color: var(--c6);
+    border-color: var(--c6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(201, 155, 69, 0.25);
+}
+
+/* ===================== */
+/* MENSAJE DEL FORMULARIO */
+/* ===================== */
+.formulario-mensaje{
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 14px;
+    min-height: 18px;
+}
+
+.formulario-mensaje.exito{
+    color: #2e7d32;
+}
+
+.formulario-mensaje.error{
+    color: var(--c7);
+}
+
+/* ===================== */
+/* RESPONSIVE */
+/* ===================== */
+@media (max-width: 480px){
+    .seccion-formulario{
+        padding: 25px 20px;
+    }
+
+    .fila-botones-grandes{
+        flex-direction: column;
+    }
+}
+
+/* Enlace para volver al login */
+.enlace-login{
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--c2);
+}
+.enlace-login a{
+    color: var(--c6);
+    font-weight: bold;
+    text-decoration: none;
+}
+.enlace-login a:hover{
+    color: var(--c7);
+    text-decoration: underline;
+}

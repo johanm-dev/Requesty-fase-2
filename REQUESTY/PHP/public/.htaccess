@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Conservar cabecera Authorization para la API REST con Token
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+# Si el archivo o carpeta existe físicamente, servirlo directamente (CSS, JS, imágenes)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Enrutar todo lo demás a index.php
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]

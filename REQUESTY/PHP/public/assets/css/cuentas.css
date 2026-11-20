@@ -1,0 +1,372 @@
+.cuentas-content {
+    overflow-y: auto;
+}
+
+.cuentas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.cuentas-header .page-title {
+    margin: 4px 0 0;
+}
+
+.eyebrow {
+    color: var(--color-accent-dark);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.btn-primary,
+.btn-secundario,
+.btn-accion {
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    color: #FFFFFF;
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(228, 179, 83, 0.25);
+}
+
+.btn-secundario {
+    color: var(--color-sidebar);
+    background: var(--color-highlight);
+    border: 1px solid var(--color-highlight);
+}
+
+.btn-secundario:hover {
+    background: var(--color-accent);
+    color: #FFFFFF;
+}
+
+.resumen-cuentas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--color-accent-dark);
+    border-bottom: 1px solid var(--color-accent-dark);
+    margin-bottom: 24px;
+}
+
+.resumen-cuentas > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 18px;
+    border-right: 1px solid var(--color-accent);
+}
+
+.resumen-cuentas > div:last-child {
+    border-right: 0;
+}
+
+.resumen-cuentas span {
+    color: var(--color-accent-dark);
+    font-size: var(--font-md);
+}
+
+.resumen-cuentas strong {
+    color: var(--color-sidebar);
+    font-size: var(--font-2xl);
+}
+
+.tabla-seccion {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+}
+
+.tabla-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--color-accent);
+}
+
+.tabla-header h2 {
+    color: var(--color-sidebar);
+    font-size: var(--font-xl);
+}
+
+.busqueda-cuentas {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-accent-dark);
+    font-size: var(--font-md);
+}
+
+.busqueda-cuentas input,
+.campos-cuenta input,
+.campos-cuenta select {
+    min-height: 40px;
+    border: 1.5px solid var(--color-highlight);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    background: #F8F9FA;
+    color: var(--color-sidebar);
+    font: inherit;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.busqueda-cuentas input:focus,
+.campos-cuenta input:focus,
+.campos-cuenta select:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(201, 155, 69, 0.15);
+    background: #FFFFFF;
+}
+
+.tabla-scroll {
+    overflow-x: auto;
+}
+
+.tabla-scroll table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tabla-scroll th,
+.tabla-scroll td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #e7ded8;
+    vertical-align: middle;
+}
+
+.tabla-scroll th {
+    color: var(--color-accent-dark);
+    font-size: var(--font-sm);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.tabla-scroll td {
+    color: var(--color-sidebar);
+    font-size: var(--font-md);
+}
+
+.estado-cuenta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-base);
+    font-weight: 700;
+}
+
+.estado-cuenta::before {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #13805c;
+    content: "";
+}
+
+.estado-cuenta.inactivo::before {
+    background: #a04444;
+}
+
+.acciones-cuenta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-accion {
+    padding: 6px 9px;
+    background: transparent;
+    color: var(--color-sidebar);
+    font-size: var(--font-sm);
+}
+
+.btn-accion:hover {
+    background: var(--color-highlight);
+}
+
+.btn-accion.peligro {
+    color: #8d3030;
+}
+
+.sin-cuentas {
+    padding: 24px;
+    text-align: center;
+    color: var(--color-accent-dark);
+}
+
+.modal-cuenta {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(620px, calc(100% - 28px));
+    max-height: min(90vh, 850px);
+    padding: 0;
+    border: 1px solid var(--color-accent-dark);
+    border-radius: var(--radius-md);
+    color: var(--color-sidebar);
+    background: var(--color-card-bg);
+}
+
+.modal-cuenta::backdrop {
+    background: rgb(30 25 22 / 55%);
+}
+
+.modal-cuenta form {
+    padding: 22px;
+    overflow-y: auto;
+}
+
+.modal-cuenta .modal-header,
+.modal-acciones {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.modal-cuenta .modal-header {
+    margin-bottom: 20px;
+}
+
+.modal-cuenta .modal-header h2 {
+    margin-top: 4px;
+    font-size: var(--font-2xl);
+}
+
+.btn-cerrar {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    background: transparent;
+    color: var(--color-sidebar);
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.campos-cuenta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.campos-cuenta label {
+    display: grid;
+    gap: 6px;
+    font-size: var(--font-md);
+    font-weight: 700;
+}
+
+.campos-cuenta input,
+.campos-cuenta select {
+    width: 100%;
+}
+
+.permisos-cuenta {
+    margin-top: 20px;
+    padding: 14px;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+}
+
+.permisos-cuenta legend {
+    padding: 0 6px;
+    font-weight: 700;
+}
+
+.permisos-cuenta > p {
+    margin-bottom: 12px;
+    color: var(--color-accent-dark);
+    font-size: var(--font-base);
+}
+
+.lista-permisos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+}
+
+.permiso-opcion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-md);
+}
+
+.permiso-opcion input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-accent-dark);
+}
+
+.mensaje-cuenta {
+    min-height: 20px;
+    margin-top: 10px;
+    color: #8d3030;
+    font-size: var(--font-md);
+}
+
+.modal-acciones {
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.cuentas-content > .btn-secundario {
+    margin-top: 14px;
+}
+
+@media (max-width: 700px) {
+    .cuentas-content {
+        padding: var(--space-lg);
+    }
+
+    .cuentas-header,
+    .tabla-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .resumen-cuentas {
+        grid-template-columns: 1fr;
+    }
+
+    .resumen-cuentas > div {
+        border-right: 0;
+        border-bottom: 1px solid var(--color-accent);
+    }
+
+    .resumen-cuentas > div:last-child {
+        border-bottom: 0;
+    }
+
+    .busqueda-cuentas input {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .campos-cuenta,
+    .lista-permisos {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-cuenta form {
+        padding: 16px;
+    }
+}

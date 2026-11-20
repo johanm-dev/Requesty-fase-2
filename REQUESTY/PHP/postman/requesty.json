@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "Requesty API - ADSO 4.º Trimestre",
+    "_postman_id": "requesty-adso-collection-001",
+    "description": "Colección completa de pruebas para la API REST de Requesty. Cumple con los métodos GET, POST, PUT, DELETE y autenticación por Token Bearer.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/Requesty%20-%20BETA%20v_0.2%20UPDATE/public/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Login (Obtener Token)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"admin@requesty.com\",\n  \"password\": \"Admin123*\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/login",
+          "host": ["{{base_url}}"],
+          "path": ["login"]
+        }
+      }
+    },
+    {
+      "name": "2. Listar Pedidos (GET)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/pedidos",
+          "host": ["{{base_url}}"],
+          "path": ["pedidos"]
+        }
+      }
+    },
+    {
+      "name": "3. Obtener un Pedido por ID (GET)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/pedidos/1",
+          "host": ["{{base_url}}"],
+          "path": ["pedidos", "1"]
+        }
+      }
+    },
+    {
+      "name": "4. Crear Pedido (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numero_mesa\": 4,\n  \"tipo\": \"Mesa\",\n  \"total\": 45000\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos",
+          "host": ["{{base_url}}"],
+          "path": ["pedidos"]
+        }
+      }
+    },
+    {
+      "name": "5. Actualizar Pedido (PUT)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"estado\": \"LISTO\",\n  \"total\": 48000\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/1",
+          "host": ["{{base_url}}"],
+          "path": ["pedidos", "1"]
+        }
+      }
+    },
+    {
+      "name": "6. Eliminar Pedido (DELETE)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/pedidos/1",
+          "host": ["{{base_url}}"],
+          "path": ["pedidos", "1"]
+        }
+      }
+    }
+  ]
+}
