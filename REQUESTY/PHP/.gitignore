@@ -1,8 +1,11 @@
+# Archivos de sistema y entorno
 .DS_Store
+Thumbs.db
+*.log
 .env
 .env.*
 !.env.example
-*.log
-storage/ratelimit/*
-storage/security/*
-database/*_backup.json
+/storage/
+/vendor/
+/.vscode/
+/.idea/

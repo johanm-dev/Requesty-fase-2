@@ -55,14 +55,32 @@ function leerSesion() {
 
 function leerUsuariosAuth() {
     try {
-        const guardados = localStorage.getItem("requestyUsuarios");
-        if (guardados) {
-            const usuarios = JSON.parse(guardados);
-            if (Array.isArray(usuarios) && usuarios.length > 0) return usuarios;
-        }
-
-        // Cuentas por defecto si localStorage está vacío
+        // Cuentas por defecto (incluye usuarios semilla PostgreSQL 17 y cuentas demo)
         const cuentasPorDefecto = [
+            {
+                nombre: "Carlos Gomez",
+                correo: "admin@restaurante.local",
+                contrasena: "AdminRest2026*",
+                rol: "Administrador",
+                activo: true,
+                permisos: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"]
+            },
+            {
+                nombre: "Laura Martinez",
+                correo: "cajero@restaurante.local",
+                contrasena: "CajeroRest2026*",
+                rol: "Cajero",
+                activo: true,
+                permisos: ["menu", "mesas", "pedidos", "caja"]
+            },
+            {
+                nombre: "Mateo Ruiz",
+                correo: "mesero@restaurante.local",
+                contrasena: "MeseroRest2026*",
+                rol: "Mesero",
+                activo: true,
+                permisos: ["menu", "mesas", "pedidos"]
+            },
             {
                 nombre: "Juan Pérez",
                 correo: "admin@requesty.com",
@@ -104,6 +122,20 @@ function leerUsuariosAuth() {
                 permisos: ["menu", "pqrs"]
             }
         ];
+
+        const guardados = localStorage.getItem("requestyUsuarios");
+        if (guardados) {
+            const usuarios = JSON.parse(guardados);
+            if (Array.isArray(usuarios) && usuarios.length > 0) {
+                const correosExistentes = new Set(usuarios.map(u => String(u.correo || "").toLowerCase()));
+                for (const base of cuentasPorDefecto) {
+                    if (!correosExistentes.has(base.correo.toLowerCase())) {
+                        usuarios.push(base);
+                    }
+                }
+                return usuarios;
+            }
+        }
         localStorage.setItem("requestyUsuarios", JSON.stringify(cuentasPorDefecto));
         return cuentasPorDefecto;
     } catch {
@@ -148,15 +180,54 @@ function iniciarSesion() {
     window.location.href = paginaInicialUsuario(usuario);
 }
 
-function protegerPagina(pagina) {
-    const sesion = leerSesion();
+async function protegerPagina(pagina) {
+    let sesion = leerSesion();
+    let cuentaServidor = null;
+    try {
+        const respuesta = await fetch("index.php?page=api/sesion", {
+            headers: { "Accept": "application/json" },
+            cache: "no-store"
+        });
+        if (!respuesta.ok) throw new Error(`Validación de sesión respondió ${respuesta.status}`);
+        const datos = await respuesta.json();
+        if (datos.autenticado && datos.usuario?.correo) {
+            sesion = {
+                nombre: datos.usuario.nombre,
+                correo: datos.usuario.correo,
+                rol: datos.usuario.rol
+            };
+            const rolServidor = claveRol(sesion.rol);
+            cuentaServidor = {
+                ...sesion,
+                activo: true,
+                permisos: permisosPorRol[rolServidor] || []
+            };
+            sessionStorage.setItem("requestySesion", JSON.stringify(sesion));
+            if (localStorage.getItem("requestySesion")) {
+                localStorage.setItem("requestySesion", JSON.stringify(sesion));
+            }
+        }
+    } catch (error) {
+        console.error("No se pudo validar la sesión con el servidor.", error);
+    }
+
     if (!sesion?.correo) {
         window.location.replace(loginUrl);
         return;
     }
 
-    const cuenta = leerUsuariosAuth().find((usuario) => usuario.correo.toLowerCase() === sesion.correo.toLowerCase());
-    if (!cuenta || cuenta.activo === false) {
+    let cuenta = cuentaServidor || leerUsuariosAuth().find((usuario) => usuario.correo.toLowerCase() === sesion.correo.toLowerCase());
+    if (!cuenta) {
+        const rolSesion = claveRol(sesion.rol);
+        cuenta = {
+            nombre: sesion.nombre,
+            correo: sesion.correo,
+            rol: sesion.rol,
+            activo: true,
+            permisos: permisosPorRol[rolSesion] || []
+        };
+    }
+    if (cuenta.activo === false) {
         sessionStorage.removeItem("requestySesion");
         localStorage.removeItem("requestySesion");
         window.location.replace(loginUrl);
@@ -196,7 +267,7 @@ function protegerPagina(pagina) {
         avatar.textContent = sesion.nombre.split(/\s+/).slice(0, 2).map((parte) => parte[0]).join("").toUpperCase();
     }
 
-    document.querySelectorAll(".sidebar-menu .sidebar-item").forEach((enlace) => {
+    document.querySelectorAll(".sidebar-menu .sidebar-item, .top-nav-menu .nav-btn").forEach((enlace) => {
         const href = enlace.getAttribute("href") || "";
         const destino = paginaPorEnlace[href] || (href.includes("page=") ? href.split("page=")[1] : null);
         if (href.includes("login") || href.includes("logout") || href.includes("index") || href === "#") return;

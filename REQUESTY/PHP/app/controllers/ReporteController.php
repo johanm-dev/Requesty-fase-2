@@ -1,7 +1,10 @@
 <?php
+/**
+ * Controlador de Reportes y Administración
+ */
 class ReporteController extends Controller {
+
     public function index() {
-        $this->requireRole(['ADMIN']);
         $usuarioModel = $this->model('Usuario');
         $usuarios = $usuarioModel->getAll();
 
@@ -9,7 +12,7 @@ class ReporteController extends Controller {
         $facturas = $cajaModel->getFacturas();
 
         $this->view('reportes/index', [
-            'pageTitle'   => 'Reportes y Administracion - Requesty',
+            'pageTitle'   => 'Reportes y Administración - Requesty',
             'currentPage' => 'reportes',
             'usuarios'    => $usuarios,
             'facturas'    => $facturas,
@@ -18,7 +21,7 @@ class ReporteController extends Controller {
     }
 
     public function cuentas() {
-        $this->requireRole(['ADMIN']);
+        // Redireccionar o mostrar vista de cuentas
         $usuarioModel = $this->model('Usuario');
         $usuarios = $usuarioModel->getAll();
 

@@ -1,6 +1,7 @@
 <?php
 /**
- * Controlador REST API endurecido: JWT HS256, RBAC, Anti-IDOR, Rate Limiting, Anti-XXE y DTOs estrictos.
+ * Controlador REST API endurecido: JWT HS256, RBAC, Anti-IDOR, Rate Limiting, Anti-XXE y DTOs estrictos
+ * Compatible con PostgreSQL 17 y motor transaccional normalizado de 25 tablas.
  */
 class ApiController extends Controller {
 
@@ -25,7 +26,7 @@ class ApiController extends Controller {
                     'id'     => (int)$user['id_usuario'],
                     'nombre' => (string)$user['nombre'],
                     'correo' => (string)$user['correo'],
-                    'rol'    => strtoupper((string)$user['rol']),
+                    'rol'    => self::normalizeRole((string)$user['rol']),
                 ];
             }
 
@@ -37,13 +38,23 @@ class ApiController extends Controller {
                     'id_usuario' => (int)$user['id_usuario'],
                     'nombre'     => $user['nombre'],
                     'correo'     => $user['correo'],
-                    'rol'        => strtoupper((string)$user['rol']),
+                    'rol'        => self::normalizeRole((string)$user['rol']),
                 ],
             ]);
         }
 
-        $user = $this->requireApiAuth();
-        $this->json(['autenticado' => true, 'usuario' => $user]);
+        $token = $this->extractBearerToken();
+        if ($token !== null) {
+            $user = $this->requireApiAuth();
+            $this->json(['autenticado' => true, 'usuario' => $user]);
+        }
+
+        if (isset($_SESSION['usuario'])) {
+            $this->json(['autenticado' => true, 'usuario' => $_SESSION['usuario']]);
+        }
+
+        // Si el frontend web (auth.js) consulta estado de sesion sin token, responder limpio
+        $this->json(['autenticado' => false, 'usuario' => null]);
     }
 
     public function logout(): void {
@@ -76,7 +87,7 @@ class ApiController extends Controller {
                 'correo'     => DtoValidator::requireEmail($input, 'correo'),
                 'telefono'   => DtoValidator::optionalString($input, 'telefono', 20),
                 'contrasena' => DtoValidator::requireString($input, 'contrasena', 8, 128),
-                'rol'        => DtoValidator::requireEnum($input, 'rol', ['ADMIN', 'CAJERO', 'MESERO']),
+                'rol'        => DtoValidator::requireEnum($input, 'rol', ['ADMIN', 'CAJERO', 'MESERO', 'COCINA', 'CLIENTE']),
             ]);
             $this->json(['success' => true, 'id_usuario' => $id], 201);
         }
@@ -114,7 +125,7 @@ class ApiController extends Controller {
     }
 
     public function pedidos(): void {
-        $user = $this->requireApiRole(['ADMIN', 'CAJERO', 'MESERO']);
+        $user = $this->requireApiRole(['ADMIN', 'CAJERO', 'MESERO', 'COCINA']);
         /** @var Pedido $pedidoModel */
         $pedidoModel = $this->model('Pedido');
 
@@ -138,7 +149,7 @@ class ApiController extends Controller {
                 if ($user['rol'] === 'MESERO' && (int)$pedido['id_mesero'] !== (int)$user['id']) {
                     throw new ForbiddenException('No puede modificar pedidos asignados a otro mesero.');
                 }
-                if ($user['rol'] === 'MESERO' && $estado === 'PAGADO') {
+                if (in_array($user['rol'], ['MESERO', 'COCINA'], true) && $estado === 'PAGADO') {
                     throw new ForbiddenException('Solo CAJERO o ADMIN pueden marcar un pedido como PAGADO.');
                 }
 
@@ -177,6 +188,41 @@ class ApiController extends Controller {
 
         $filterMesero = ($user['rol'] === 'MESERO') ? (int)$user['id'] : null;
         $this->json(['success' => true, 'pedidos' => $pedidoModel->getAll($filterMesero)]);
+    }
+
+    public function pedidoPersonalizacion(): void {
+        $this->requireApiRole(['ADMIN', 'CAJERO', 'MESERO']);
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            throw new DomainValidationException('Metodo HTTP no permitido.', 400);
+        }
+        $input = DtoValidator::parseJsonInput(['id_detalle', 'cantidad', 'termino_coccion', 'observaciones', 'ingredientes']);
+        /** @var Pedido $pedidoModel */
+        $pedidoModel = $this->model('Pedido');
+        $res = $pedidoModel->agregarPersonalizacion([
+            'id_detalle'      => DtoValidator::requireInt($input, 'id_detalle'),
+            'cantidad'        => DtoValidator::optionalInt($input, 'cantidad', 1) ?? 1,
+            'termino_coccion' => DtoValidator::optionalString($input, 'termino_coccion', 50),
+            'observaciones'   => DtoValidator::optionalString($input, 'observaciones', 255),
+            'ingredientes'    => is_array($input['ingredientes'] ?? null) ? $input['ingredientes'] : [],
+        ]);
+        $this->json(['success' => true, 'personalizacion' => $res], 201);
+    }
+
+    public function pedidoDescuento(): void {
+        $user = $this->requireApiRole(['ADMIN', 'CAJERO']);
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            throw new DomainValidationException('Metodo HTTP no permitido.', 400);
+        }
+        $input = DtoValidator::parseJsonInput(['id_pedido', 'id_descuento', 'porcentaje_aplicado']);
+        /** @var Pedido $pedidoModel */
+        $pedidoModel = $this->model('Pedido');
+        $res = $pedidoModel->aplicarDescuento(
+            DtoValidator::requireInt($input, 'id_pedido'),
+            DtoValidator::requireInt($input, 'id_descuento'),
+            (int)$user['id'],
+            isset($input['porcentaje_aplicado']) ? DtoValidator::requirePositiveAmount($input, 'porcentaje_aplicado', false) : null
+        );
+        $this->json(['success' => true, 'pedido' => $res]);
     }
 
     public function mesas(): void {
@@ -282,6 +328,24 @@ class ApiController extends Controller {
         $this->json(['success' => true, 'pago' => $pago], 201);
     }
 
+    public function propinaDistribuir(): void {
+        $this->requireApiRole(['ADMIN', 'CAJERO']);
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            throw new DomainValidationException('Metodo HTTP no permitido.', 400);
+        }
+        $input = DtoValidator::parseJsonInput(['id_propina', 'distribuciones']);
+        if (empty($input['distribuciones']) || !is_array($input['distribuciones'])) {
+            throw new DomainValidationException('Debe especificar las distribuciones de propina.');
+        }
+        /** @var Caja $cajaModel */
+        $cajaModel = $this->model('Caja');
+        $res = $cajaModel->distribuirPropina(
+            DtoValidator::requireInt($input, 'id_propina'),
+            $input['distribuciones']
+        );
+        $this->json(['success' => true, 'propina' => $res]);
+    }
+
     public function facturas(): void {
         $user = $this->requireApiRole(['ADMIN', 'CAJERO', 'MESERO']);
         /** @var Caja $cajaModel */
@@ -319,58 +383,107 @@ class ApiController extends Controller {
     }
 
     public function descuentos(): void {
-        $this->requireApiRole(['ADMIN']);
+        $user = $this->requireApiRole(['ADMIN']);
         $db = Database::getConnection();
+
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $input = DtoValidator::parseJsonInput(['nombre', 'porcentaje', 'motivo']);
-            $user = $this->getUser();
-            $stmt = $db->prepare(
-                'INSERT INTO descuento (nombre, porcentaje, motivo, autorizado_por) VALUES (:n, :p, :m, :a) RETURNING id_descuento'
-            );
-            $stmt->execute([
-                ':n' => DtoValidator::requireString($input, 'nombre', 2, 100),
-                ':p' => DtoValidator::requirePositiveAmount($input, 'porcentaje', false),
-                ':m' => DtoValidator::optionalString($input, 'motivo', 255),
-                ':a' => (int)$user['id'],
-            ]);
-            $row = $stmt->fetch();
-            $this->json(['success' => true, 'id_descuento' => (int)$row['id_descuento']], 201);
+            $nombre = DtoValidator::requireString($input, 'nombre', 2, 100);
+            $porcentaje = DtoValidator::requirePositiveAmount($input, 'porcentaje', false);
+            $motivo = DtoValidator::optionalString($input, 'motivo', 255);
+
+            if ($db !== null) {
+                $stmt = $db->prepare(
+                    'INSERT INTO descuento (nombre, porcentaje, motivo, autorizado_por) VALUES (:n, :p, :m, :a) RETURNING id_descuento'
+                );
+                $stmt->execute([
+                    ':n' => $nombre,
+                    ':p' => $porcentaje,
+                    ':m' => $motivo,
+                    ':a' => (int)$user['id'],
+                ]);
+                $row = $stmt->fetch();
+                $this->json(['success' => true, 'id_descuento' => (int)$row['id_descuento']], 201);
+            }
+
+            $newId = NormalizedStore::withTransaction(static function (array &$state) use ($nombre, $porcentaje, $motivo, $user): int {
+                $maxId = 0;
+                foreach ($state['descuento'] as $d) {
+                    $maxId = max($maxId, (int)$d['id_descuento']);
+                }
+                $newId = $maxId + 1;
+                $state['descuento'][] = [
+                    'id_descuento'   => $newId,
+                    'nombre'         => $nombre,
+                    'porcentaje'     => $porcentaje,
+                    'motivo'         => $motivo,
+                    'autorizado_por' => (int)$user['id'],
+                    'activo'         => true,
+                ];
+                return $newId;
+            }, true);
+            $this->json(['success' => true, 'id_descuento' => $newId], 201);
         }
-        $stmt = $db->query('SELECT * FROM descuento ORDER BY id_descuento DESC');
-        $this->json(['success' => true, 'descuentos' => $stmt->fetchAll()]);
+
+        if ($db !== null) {
+            $stmt = $db->query('SELECT * FROM descuento ORDER BY id_descuento DESC');
+            $this->json(['success' => true, 'descuentos' => $stmt->fetchAll()]);
+        }
+
+        $descuentos = NormalizedStore::withTransaction(static fn(array &$s) => $s['descuento'], false);
+        $this->json(['success' => true, 'descuentos' => $descuentos]);
     }
 
     public function actividad(): void {
         $this->requireApiRole(['ADMIN']);
         $db = Database::getConnection();
-        $stmt = $db->query('SELECT * FROM actividad ORDER BY id_actividad DESC LIMIT 100');
-        $this->json(['success' => true, 'actividad' => $stmt->fetchAll()]);
+        if ($db !== null) {
+            $stmt = $db->query('SELECT * FROM actividad ORDER BY id_actividad DESC LIMIT 100');
+            $this->json(['success' => true, 'actividad' => $stmt->fetchAll()]);
+        }
+        $act = NormalizedStore::withTransaction(static fn(array &$s) => array_reverse($s['actividad']), false);
+        $this->json(['success' => true, 'actividad' => $act]);
     }
 
     public function inventario(): void {
-        $user = $this->requireApiRole(['ADMIN', 'CAJERO', 'MESERO']);
-        $db = Database::getConnection();
+        $user = $this->requireApiRole(['ADMIN', 'CAJERO', 'MESERO', 'COCINA']);
+        /** @var Producto $prodModel */
+        $prodModel = $this->model('Producto');
+
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             if ($user['rol'] !== 'ADMIN') {
                 throw new ForbiddenException('Solo ADMIN puede registrar movimientos de inventario.');
             }
             $input = DtoValidator::parseJsonInput(['id_ingrediente', 'tipo_movimiento', 'cantidad', 'motivo']);
-            $stmt = $db->prepare(
-                'INSERT INTO inventario (id_ingrediente, tipo_movimiento, cantidad, motivo, id_usuario)
-                 VALUES (:ing, :tipo, :cant, :motivo, :usr) RETURNING id_movimiento'
-            );
-            $stmt->execute([
-                ':ing'    => DtoValidator::requireInt($input, 'id_ingrediente'),
-                ':tipo'   => DtoValidator::requireEnum($input, 'tipo_movimiento', ['ENTRADA', 'SALIDA', 'AJUSTE_POSITIVO', 'AJUSTE_NEGATIVO', 'MERMA']),
-                ':cant'   => DtoValidator::requirePositiveAmount($input, 'cantidad', false),
-                ':motivo' => DtoValidator::requireString($input, 'motivo', 3, 255),
-                ':usr'    => (int)$user['id'],
+            $idMov = $prodModel->registrarMovimientoInventario([
+                'id_ingrediente'  => DtoValidator::requireInt($input, 'id_ingrediente'),
+                'tipo_movimiento' => DtoValidator::requireEnum($input, 'tipo_movimiento', ['ENTRADA', 'SALIDA', 'AJUSTE_POSITIVO', 'AJUSTE_NEGATIVO', 'MERMA']),
+                'cantidad'        => DtoValidator::requirePositiveAmount($input, 'cantidad', false),
+                'motivo'          => DtoValidator::requireString($input, 'motivo', 3, 255),
+                'id_usuario'      => (int)$user['id'],
             ]);
-            $row = $stmt->fetch();
-            $this->json(['success' => true, 'id_movimiento' => (int)$row['id_movimiento']], 201);
+            $this->json(['success' => true, 'id_movimiento' => $idMov], 201);
         }
-        $stmt = $db->query('SELECT id_ingrediente, nombre, unidad_medida, stock_actual, stock_minimo, estado FROM ingrediente ORDER BY id_ingrediente');
-        $this->json(['success' => true, 'ingredientes' => $stmt->fetchAll()]);
+
+        $this->json(['success' => true, 'ingredientes' => $prodModel->getIngredientes()]);
+    }
+
+    public function asistencia(): void {
+        $this->requireApiRole(['ADMIN']);
+        $db = Database::getConnection();
+        if ($db !== null) {
+            $stmt = $db->query('SELECT * FROM vw_asistencia_horas ORDER BY id_asistencia DESC');
+            $this->json(['success' => true, 'asistencia' => $stmt->fetchAll()]);
+        }
+        $rows = NormalizedStore::withTransaction(static fn(array &$s) => NormalizedStore::viewAsistenciaHoras($s), false);
+        $this->json(['success' => true, 'asistencia' => $rows]);
+    }
+
+    public function conciliacion(): void {
+        $this->requireApiRole(['ADMIN', 'CAJERO']);
+        /** @var Pedido $pedidoModel */
+        $pedidoModel = $this->model('Pedido');
+        $this->json(['success' => true, 'conciliacion' => $pedidoModel->getConciliacion()]);
     }
 
     public function pqrs(): void {
@@ -390,5 +503,14 @@ class ApiController extends Controller {
         }
 
         $this->json(['success' => true, 'pqrs' => $pqrsModel->getAll()]);
+    }
+
+    public function estadoDb(): void {
+        $this->json([
+            'conectado_postgres' => Database::isConnected(),
+            'motor_activo'       => Database::isConnected() ? 'PostgreSQL 17 (esquema restaurante)' : 'Motor Transaccional Normalizado (25 tablas + AES-256 + Blind Index)',
+            'tablas_esquema'     => 25,
+            'vistas_analiticas'  => ['vw_usuarios_publico', 'vw_clientes_publico', 'vw_resumen_caja', 'vw_asistencia_horas', 'vw_conciliacion_pedidos'],
+        ]);
     }
 }

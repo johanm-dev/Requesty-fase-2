@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS Usuario (
 -- Usuarios semilla
 INSERT INTO Usuario (id_usuario, nombre, apellido, documento, correo, telefono, contrasena, estado, id_rol)
 VALUES
-    (1, 'Juan Pérez', 'González', '1000000001', 'admin@requesty.com', '3101234567', 'admin123', 'Activo', 1),
+    (1, 'Juan Pérez', 'González', '1000000001', '2', '3101234567', 'admin123', 'Activo', 1),
     (2, 'Carlos Cajero', 'Martínez', '1000000002', 'cajero@requesty.com', '3119876543', 'caja123', 'Activo', 2),
     (3, 'Mateo Mesero', 'Ramírez', '1000000003', 'mesero@requesty.com', '3124567890', 'mesero123', 'Activo', 3),
     (4, 'Claudia Cocina', 'López', '1000000004', 'cocina@requesty.com', '3131122334', 'cocina123', 'Activo', 4),

@@ -1,19 +1,22 @@
 <?php
 /**
- * Modelo Base MVC sobre PostgreSQL 17 (consultas 100% parametrizadas).
+ * Modelo Base MVC sobre PostgreSQL 17 (consultas 100% parametrizadas + motor normalizado de respaldo).
  */
 abstract class Model {
-    protected PDO $db;
+    protected ?PDO $db = null;
 
     public function __construct() {
         $this->db = Database::getConnection();
     }
 
     public function isDbConnected(): bool {
-        return true;
+        return $this->db !== null;
     }
 
     protected function query(string $sql, array $params = []): PDOStatement {
+        if ($this->db === null) {
+            throw new RuntimeException('Conexion PostgreSQL no activa.');
+        }
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt;
@@ -36,19 +39,19 @@ abstract class Model {
     }
 
     protected function beginTransaction(): void {
-        if (!$this->db->inTransaction()) {
+        if ($this->db !== null && !$this->db->inTransaction()) {
             $this->db->beginTransaction();
         }
     }
 
     protected function commit(): void {
-        if ($this->db->inTransaction()) {
+        if ($this->db !== null && $this->db->inTransaction()) {
             $this->db->commit();
         }
     }
 
     protected function rollBack(): void {
-        if ($this->db->inTransaction()) {
+        if ($this->db !== null && $this->db->inTransaction()) {
             $this->db->rollBack();
         }
     }

@@ -312,9 +312,6 @@ if (!modoClienteCaja) {
     document.addEventListener("visibilitychange", () => {
         if (!document.hidden) actualizarCajaSinPerderSeleccion();
     });
-    window.setInterval(() => {
-        if (!document.hidden) actualizarCajaSinPerderSeleccion();
-    }, 2000);
 }
 
 document.addEventListener("DOMContentLoaded", () => {

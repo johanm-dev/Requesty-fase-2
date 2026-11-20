@@ -1,6 +1,6 @@
 <?php
 /**
- * Controlador de Autenticacion Web (Login, Registro endurecido, Logout).
+ * Controlador de Autenticacion Web (Login, Registro endurecido con CSRF y AES-256 PII, Logout).
  */
 class AuthController extends Controller {
 
@@ -50,7 +50,7 @@ class AuthController extends Controller {
                         'id'     => (int)$authResult['id_usuario'],
                         'nombre' => (string)$authResult['nombre'],
                         'correo' => (string)$authResult['correo'],
-                        'rol'    => strtoupper((string)$authResult['rol']),
+                        'rol'    => self::normalizeRole((string)$authResult['rol']),
                     ];
 
                     $rolKey = strtolower(trim($_SESSION['usuario']['rol']));
@@ -100,11 +100,14 @@ class AuthController extends Controller {
             $contrasena = (string)($_POST['contrasena'] ?? '');
             $confirmar = (string)($_POST['confirmar_contrasena'] ?? '');
 
-            if ($nombre === '' || $correo === '' || $documento === '' || $contrasena === '') {
+            if ($nombre === '' || $correo === '' || $contrasena === '') {
                 $error = 'Por favor completa todos los campos obligatorios.';
             } elseif ($contrasena !== $confirmar) {
                 $error = 'Las contrasenas no coinciden.';
             } else {
+                if ($documento === '') {
+                    $documento = (string)time();
+                }
                 /** @var Cliente $clienteModel */
                 $clienteModel = $this->model('Cliente');
                 $id = $clienteModel->create([

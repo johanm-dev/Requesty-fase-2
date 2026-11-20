@@ -79,17 +79,17 @@ function createChart() {
             datasets: [{
                 label: 'Ventas ($)',
                 data: data,
-                borderColor: '#9D2227', // PANTONE 6294 C
-                backgroundColor: 'rgba(157, 34, 39, 0.08)',
+                borderColor: '#E4B353',
+                backgroundColor: 'rgba(228, 179, 83, 0.08)',
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 5,
-                pointBackgroundColor: '#C15C24', // PANTONE 6259 C
-                pointBorderColor: '#FAF4F5',
+                pointBackgroundColor: '#C99B45',
+                pointBorderColor: '#FFFFFF',
                 pointBorderWidth: 2,
                 pointHoverRadius: 7,
-                pointHoverBackgroundColor: '#7D1A1E',
+                pointHoverBackgroundColor: '#C99B45',
             }]
         },
         options: {
@@ -99,7 +99,7 @@ function createChart() {
                 legend: {
                     display: true,
                     labels: {
-                        color: '#3E2834', // PANTONE 6322 C
+                        color: '#333333',
                         font: { size: 12, weight: 'bold' },
                         padding: 15,
                         usePointStyle: true,
@@ -110,7 +110,7 @@ function createChart() {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        color: '#725F5B',
+                        color: '#777777',
                         callback: function(value) {
                             return '$' + (value / 1000).toFixed(0) + 'k';
                         }
@@ -122,7 +122,7 @@ function createChart() {
                 },
                 x: {
                     ticks: {
-                        color: '#725F5B'
+                        color: '#777777'
                     },
                     grid: {
                         display: false

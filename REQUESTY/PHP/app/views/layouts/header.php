@@ -24,8 +24,11 @@
     <script>
         (function() {
             try {
-                if (localStorage.getItem('rq_sidebar_collapsed') === '1') {
+                var navState = localStorage.getItem('rq_sidebar_collapsed');
+                if (navState === '1') {
                     document.documentElement.classList.add('sidebar-collapsed');
+                } else if (navState === '0') {
+                    document.documentElement.classList.add('nav-expanded');
                 }
             } catch (e) {}
         })();

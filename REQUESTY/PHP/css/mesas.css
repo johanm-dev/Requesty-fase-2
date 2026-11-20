@@ -261,7 +261,7 @@
     gap: var(--space-md);
     padding: var(--space-md);
     border-left: 3px solid var(--color-accent);
-    background: #FAF0F1;
+    background: #F8F9FA;
 }
 
 .campo-personalizacion,

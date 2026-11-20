@@ -3,15 +3,15 @@
 }
 
 :root{
-    /* Paleta Pantone Floral */
-    --fondo: #F7EEED;
+    /* Paleta dorada y neutra */
+    --fondo: #F8F9FA;
     --c1: #FFFFFF;
-    --c2: #5E504F; /* PANTONE 6441 C (Topo / Gris Cálido) */
-    --c3: #3E2834; /* PANTONE 6322 C (Ciruela Profundo) */
-    --c4: #FDF8F8;
-    --c5: #E5C7C9; /* PANTONE 6268 C (Rosa Palo / Blush) */
-    --c6: #C15C24; /* PANTONE 6259 C (Terracotta / Cobre) */
-    --c7: #9D2227; /* PANTONE 6294 C (Carmesí / Vino Tinto) */
+    --c2: #777777;
+    --c3: #333333;
+    --c4: #F8F9FA;
+    --c5: #EAEAEA;
+    --c6: #C99B45;
+    --c7: #E4B353;
 }
 
 body{
@@ -26,7 +26,7 @@ header{
     padding: 20px 40px;
     margin: 0;
     border-bottom: 2px solid var(--c5);
-    box-shadow: 0 2px 8px rgba(62, 40, 52, 0.05);
+    box-shadow: 0 2px 8px rgba(21, 21, 21, 0.05);
 }
 
 .logo{
@@ -56,7 +56,7 @@ main {
     padding: 35px 40px;
     width: 100%;
     max-width: 480px;
-    box-shadow: 0 12px 36px rgba(62, 40, 52, 0.12);
+    box-shadow: 0 12px 36px rgba(21, 21, 21, 0.12);
 }
 
 .seccion-formulario h2{
@@ -115,7 +115,7 @@ main {
     outline: none;
     border-color: var(--c6);
     background-color: #FFFFFF;
-    box-shadow: 0 0 0 3px rgba(193, 92, 36, 0.15);
+    box-shadow: 0 0 0 3px rgba(201, 155, 69, 0.15);
 }
 
 /* ===================== */
@@ -145,10 +145,10 @@ main {
 }
 
 .btn-primario:hover{
-    background-color: #7D1A1E;
-    border-color: #7D1A1E;
+    background-color: #C99B45;
+    border-color: #C99B45;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(157, 34, 39, 0.25);
+    box-shadow: 0 4px 12px rgba(228, 179, 83, 0.25);
 }
 
 .btn-secundario{
@@ -160,7 +160,7 @@ main {
     background-color: var(--c6);
     border-color: var(--c6);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(193, 92, 36, 0.25);
+    box-shadow: 0 4px 12px rgba(201, 155, 69, 0.25);
 }
 
 /* ===================== */

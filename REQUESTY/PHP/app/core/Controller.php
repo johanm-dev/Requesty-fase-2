@@ -1,6 +1,6 @@
 <?php
 /**
- * Controlador Base MVC con soporte JWT + RBAC + Anti-IDOR.
+ * Controlador Base MVC con soporte JWT + RBAC + Anti-IDOR + CSRF.
  */
 abstract class Controller {
     protected ?array $jwtUser = null;
@@ -75,6 +75,14 @@ abstract class Controller {
         }
     }
 
+    protected static function normalizeRole(string $role): string {
+        $r = strtoupper(trim($role));
+        if ($r === 'ADMINISTRADOR') {
+            return 'ADMIN';
+        }
+        return $r;
+    }
+
     public function requireApiAuth(): array {
         $token = $this->extractBearerToken();
         if ($token !== null) {
@@ -86,7 +94,7 @@ abstract class Controller {
                 'id'     => (int)$claims['sub'],
                 'nombre' => (string)$claims['nombre'],
                 'correo' => (string)$claims['correo'],
-                'rol'    => strtoupper((string)$claims['rol']),
+                'rol'    => self::normalizeRole((string)$claims['rol']),
                 'jti'    => (string)$claims['jti'],
                 'exp'    => (int)$claims['exp'],
             ];
@@ -94,7 +102,9 @@ abstract class Controller {
         }
 
         if (isset($_SESSION['usuario'])) {
-            return $_SESSION['usuario'];
+            $u = $_SESSION['usuario'];
+            $u['rol'] = self::normalizeRole((string)($u['rol'] ?? ''));
+            return $u;
         }
 
         throw new AuthException('Autenticacion requerida (JWT Bearer o sesion activa).');
@@ -102,8 +112,8 @@ abstract class Controller {
 
     public function requireApiRole(array $allowedRoles): array {
         $user = $this->requireApiAuth();
-        $userRole = strtoupper(trim((string)($user['rol'] ?? '')));
-        $normalized = array_map(static fn($r) => strtoupper(trim($r)), $allowedRoles);
+        $userRole = self::normalizeRole((string)($user['rol'] ?? ''));
+        $normalized = array_map(static fn($r) => self::normalizeRole((string)$r), $allowedRoles);
         if (!in_array($userRole, $normalized, true)) {
             throw new ForbiddenException('Acceso denegado: privilegios insuficientes.');
         }
@@ -115,8 +125,8 @@ abstract class Controller {
         if (!$user) {
             return false;
         }
-        $userRole = strtoupper(trim((string)($user['rol'] ?? '')));
-        $rolesNormalized = array_map(static fn($r) => strtoupper(trim($r)), (array)$roles);
+        $userRole = self::normalizeRole((string)($user['rol'] ?? ''));
+        $rolesNormalized = array_map(static fn($r) => self::normalizeRole((string)$r), (array)$roles);
         return in_array($userRole, $rolesNormalized, true);
     }
 }
