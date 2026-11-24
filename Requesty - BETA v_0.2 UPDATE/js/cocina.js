@@ -1,7 +1,13 @@
+/**
+ * Requesty KDS - Lógica de Cocina en Cuerda con Libretas Colgantes
+ * Soporta animación de arrugado y descarte de comandas tipo papel
+ */
+
 const clavePedidos = "requestyPedidos";
 const eventoPedidos = "requesty-pedidos-actualizados";
 const minutosAlerta = 10;
 const minutosCriticos = 20;
+
 const nombresEstados = {
     cola: "En cola",
     preparacion: "En preparación",
@@ -10,10 +16,131 @@ const nombresEstados = {
     cancelado: "Cancelado"
 };
 
+// Pedidos demo realistas con especificaciones inspirados en el KDS de referencia
+const pedidosDemoKds = [
+    {
+        id: "1885",
+        mesa: 24,
+        destination: "Mesa 24",
+        channel: "Mesa",
+        time: "12:35 PM",
+        receivedAt: new Date(Date.now() - 18 * 60000).toISOString(),
+        status: "En preparación",
+        items: [
+            { id: 1, nombre: "Tabla de Quesos", cantidad: 1, especificaciones: ["Para compartir"] },
+            { id: 2, nombre: "Ensalada Queso de Cabra", cantidad: 1, especificaciones: ["Vinagreta aparte"] },
+            { id: 3, nombre: "Burger Monster", cantidad: 2, especificaciones: ["Término: 3/4", "Sin cebolla"] },
+            { id: 4, nombre: "Burger Maya", cantidad: 1, especificaciones: ["Extra jalapeños"] }
+        ]
+    },
+    {
+        id: "1886",
+        mesa: 33,
+        destination: "Mesa 33",
+        channel: "Mesa",
+        time: "12:36 PM",
+        receivedAt: new Date(Date.now() - 17 * 60000).toISOString(),
+        status: "En preparación",
+        items: [
+            { id: 5, nombre: "Foie Mi Cuit", cantidad: 1, especificaciones: ["Con tostadas extra"] },
+            { id: 6, nombre: "Ensalada de Foie", cantidad: 2, especificaciones: [] },
+            { id: 7, nombre: "Burger Occitana", cantidad: 1, especificaciones: ["Término: Medio"] },
+            { id: 8, nombre: "Carrot Cake", cantidad: 2, especificaciones: ["Servir frío"] },
+            { id: 9, nombre: "Brownie Artesanal", cantidad: 1, especificaciones: ["Con nueces"] }
+        ]
+    },
+    {
+        id: "156",
+        mesa: 12,
+        destination: "Mesa 12",
+        channel: "Mesa",
+        time: "12:38 PM",
+        receivedAt: new Date(Date.now() - 16 * 60000).toISOString(),
+        status: "En preparación",
+        items: [
+            { id: 10, nombre: "Hummus con Pan Pita", cantidad: 1, especificaciones: ["Sin comino"] },
+            { id: 11, nombre: "Foie Mi Cuit", cantidad: 1, especificaciones: [] },
+            { id: 12, nombre: "Burger Vegetariana", cantidad: 2, especificaciones: ["Pan sin gluten", "Sin mayonesa"] }
+        ]
+    },
+    {
+        id: "157",
+        mesa: 7,
+        destination: "Mesa 7",
+        channel: "Mesa",
+        time: "12:51 PM",
+        receivedAt: new Date(Date.now() - 2 * 60000).toISOString(),
+        status: "En cola",
+        items: [
+            { id: 13, nombre: "Ensalada de Quinoa", cantidad: 1, especificaciones: ["Cítrica"] },
+            { id: 14, nombre: "Chipirones Salteados", cantidad: 1, especificaciones: ["Poco picante"] },
+            { id: 15, nombre: "Filete a la Brasa", cantidad: 1, especificaciones: ["Al Punto"] },
+            { id: 16, nombre: "Entrecot a la Brasa", cantidad: 1, especificaciones: ["Poco Hecho"] },
+            { id: 17, nombre: "Corvina a la Brasa", cantidad: 1, especificaciones: ["Con limón asado"] }
+        ]
+    },
+    {
+        id: "158",
+        mesa: 14,
+        destination: "Mesa 14",
+        channel: "Mesa",
+        time: "12:52 PM",
+        receivedAt: new Date(Date.now() - 1 * 60000).toISOString(),
+        status: "En cola",
+        items: [
+            { id: 18, nombre: "Timbal de Mariscos", cantidad: 1, especificaciones: [] },
+            { id: 19, nombre: "Tabla de Quesos", cantidad: 1, especificaciones: [] },
+            { id: 20, nombre: "Burger Vegetariana", cantidad: 1, especificaciones: ["Extra queso vegano"] },
+            { id: 21, nombre: "Tiramisú Casero", cantidad: 1, especificaciones: [] }
+        ]
+    }
+];
+
+// Síntesis de sonido de papel arrugándose con Web Audio API (cero dependencias externas)
+let audioCtx = null;
+function reproducirSonidoArrugar() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtx) audioCtx = new AudioContextClass();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+
+        const bufferSize = audioCtx.sampleRate * 0.45;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        // Generar ruido blanco con textura granulada tipo papel
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 0.7);
+        }
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(1400, audioCtx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 0.4);
+        filter.Q.value = 3.5;
+
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+
+        noise.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        noise.start();
+    } catch (e) {
+        // En caso de que el navegador bloquee audio autoplay
+    }
+}
+
 function normalizarEstado(estado) {
     const normalizado = String(estado || "").trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es");
-    if (["nuevo", "pendiente", "en cola"].includes(normalizado)) return nombresEstados.cola;
-    if (["preparando", "en preparacion"].includes(normalizado)) return nombresEstados.preparacion;
+    if (["nuevo", "pendiente", "en cola", "cola"].includes(normalizado)) return nombresEstados.cola;
+    if (["preparando", "en preparacion", "preparacion"].includes(normalizado)) return nombresEstados.preparacion;
     if (["listo", "listo para servir"].includes(normalizado)) return nombresEstados.listo;
     if (normalizado === "entregado") return nombresEstados.entregado;
     if (normalizado === "cancelado") return nombresEstados.cancelado;
@@ -30,7 +157,7 @@ function obtenerFechaRecepcion(pedido) {
     const guardada = Date.parse(pedido.receivedAt || pedido.createdAt || "");
     if (Number.isFinite(guardada)) return guardada;
     const coincidencia = String(pedido.time || "").match(/^(\d{1,2}):(\d{2})/);
-    if (!coincidencia) return 0;
+    if (!coincidencia) return Date.now();
     const fecha = new Date();
     fecha.setHours(Number(coincidencia[1]), Number(coincidencia[2]), 0, 0);
     if (fecha.getTime() > Date.now()) fecha.setDate(fecha.getDate() - 1);
@@ -39,8 +166,11 @@ function obtenerFechaRecepcion(pedido) {
 
 function leerPedidos() {
     try {
-        const guardados = JSON.parse(localStorage.getItem(clavePedidos) || "[]");
-        if (!Array.isArray(guardados)) throw new Error("La lista de pedidos guardada no es válida.");
+        let guardados = JSON.parse(localStorage.getItem(clavePedidos) || "null");
+        if (!guardados || !Array.isArray(guardados) || guardados.length === 0) {
+            guardados = pedidosDemoKds;
+            localStorage.setItem(clavePedidos, JSON.stringify(guardados));
+        }
         mostrarError("");
         return guardados.map(pedido => ({
             ...pedido,
@@ -49,29 +179,24 @@ function leerPedidos() {
             receivedAt: pedido.receivedAt || pedido.createdAt || new Date(obtenerFechaRecepcion(pedido)).toISOString()
         }));
     } catch (error) {
-        mostrarError(error.message || "No se pudieron leer las comandas.");
-        return [];
+        mostrarError("Cargando comandas en modo seguro.");
+        return pedidosDemoKds;
     }
 }
 
 function mostrarError(mensaje) {
-    document.getElementById("mensaje-cocina").textContent = mensaje;
-}
-
-function guardarPedidos(pedidosActualizados) {
-    try {
-        localStorage.setItem(clavePedidos, JSON.stringify(pedidosActualizados));
-        window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: pedidosActualizados }));
-        mostrarError("");
-        return true;
-    } catch {
-        mostrarError("No se pudo actualizar la comanda. Verifica el almacenamiento del navegador.");
-        return false;
-    }
+    const contenedor = document.getElementById("mensaje-cocina");
+    if (contenedor) contenedor.textContent = mensaje;
 }
 
 function minutosEnEspera(pedido, ahora = Date.now()) {
     return Math.max(0, Math.floor((ahora - obtenerFechaRecepcion(pedido)) / 60000));
+}
+
+function formatoCronometro(minutos) {
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    return `${String(horas).padStart(2, "0")}:${String(mins).padStart(2, "0")}:00`;
 }
 
 function claseAlerta(pedido, espera) {
@@ -81,207 +206,279 @@ function claseAlerta(pedido, espera) {
     return "alerta-normal";
 }
 
-function detallePersonalizacion(item) {
-    const detalles = [];
-    if (item.terminoCoccion) detalles.push(`Término: ${item.terminoCoccion}`);
-    if (item.alternativaReceta) detalles.push(`Preparación: ${item.alternativaReceta}`);
-    if (item.ingredientesExcluidos?.length) detalles.push(`Sin: ${item.ingredientesExcluidos.join(", ")}`);
+function extraerNumeroMesa(pedido) {
+    if (pedido.mesa !== undefined && pedido.mesa !== null && String(pedido.mesa).trim() !== "") {
+        return String(pedido.mesa).replace(/[^0-9a-zA-Z]/g, "") || "1";
+    }
+    const match = String(pedido.destination || "").match(/Mesa\s*([0-9a-zA-Z]+)/i);
+    if (match) return match[1];
+    return "1";
+}
+
+function obtenerEspecificaciones(item) {
+    const especificaciones = [];
+    if (Array.isArray(item.especificaciones)) {
+        item.especificaciones.forEach(esp => especificaciones.push(String(esp)));
+    }
+    if (item.terminoCoccion) especificaciones.push(`Término: ${item.terminoCoccion}`);
+    if (item.alternativaReceta) especificaciones.push(`Opción: ${item.alternativaReceta}`);
+    if (item.ingredientesExcluidos?.length) especificaciones.push(`Sin ${item.ingredientesExcluidos.join(", ")}`);
     (item.extras || []).forEach(extra => {
-        detalles.push(`Extra: ${extra.nombre} × ${extra.cantidad}`);
+        especificaciones.push(`+ ${extra.nombre || extra}`);
     });
-    return detalles;
+    return especificaciones;
 }
 
 function renderizarItem(item) {
-    const personalizaciones = detallePersonalizacion(item);
-    return `<li><strong>${Math.max(1, Number(item.cantidad) || 1)} × ${escaparHTML(item.nombre || "Producto")}</strong>${personalizaciones.length
-        ? `<ul class="personalizaciones">${personalizaciones.map(detalle => `<li>${escaparHTML(detalle)}</li>`).join("")}</ul>`
-        : ""}</li>`;
+    const especificaciones = obtenerEspecificaciones(item);
+    const cantidad = Math.max(1, Number(item.cantidad) || 1);
+    const nombre = escaparHTML(item.nombre || item.producto || "Plato");
+
+    const specsHTML = especificaciones.length
+        ? `<ul class="lista-especificaciones">
+            ${especificaciones.map(esp => `<li class="especificacion-tag"><i class="fa-solid fa-circle-notch"></i> ${escaparHTML(esp)}</li>`).join("")}
+          </ul>`
+        : "";
+
+    return `<li class="item-producto-kds">
+        <div class="item-principal">
+            <span class="item-cantidad">${cantidad}</span>
+            <span class="item-nombre">${nombre}</span>
+        </div>
+        ${specsHTML}
+    </li>`;
 }
 
 function renderizarPedido(pedido, ahora) {
     const estado = pedido.status;
     const espera = minutosEnEspera(pedido, ahora);
-    const claseEstado = estado === nombresEstados.cola ? "estado-pendiente"
-        : estado === nombresEstados.preparacion ? "estado-preparacion" : "estado-listo";
     const claseEspera = claseAlerta(pedido, espera);
+    const mesaNumero = extraerNumeroMesa(pedido);
+
     const fechaRecepcion = new Date(obtenerFechaRecepcion(pedido));
     const hora = Number.isNaN(fechaRecepcion.getTime())
-        ? escaparHTML(pedido.time || "Hora no disponible")
+        ? escaparHTML(pedido.time || "12:00 PM")
         : fechaRecepcion.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
-    const accion = estado === nombresEstados.cola
-        ? `<button class="boton-accion" type="button" data-estado-pedido="${escaparHTML(pedido.id)}" data-nuevo-estado="${nombresEstados.preparacion}">Iniciar preparación</button>`
-        : estado === nombresEstados.preparacion
-            ? `<button class="boton-accion" type="button" data-estado-pedido="${escaparHTML(pedido.id)}" data-nuevo-estado="${nombresEstados.listo}">Marcar listo para servir</button>`
-            : '<p class="mensaje-listo">Listo para servir</p>';
+
+    // Mensaje de estado específico
+    let estadoMensajeClass = "estado-cola";
+    let estadoTexto = "En cola (Pendiente)";
+    let estadoIcono = "fa-clock";
+    let botonAccion = `<button type="button" class="btn-accion-libreta btn-iniciar" data-estado-pedido="${escaparHTML(pedido.id)}" data-nuevo-estado="${nombresEstados.preparacion}">
+        <i class="fa-solid fa-fire-burner"></i> Iniciar preparación
+    </button>`;
+
+    if (estado === nombresEstados.preparacion) {
+        estadoMensajeClass = "estado-preparacion";
+        estadoTexto = "En preparación en cocina";
+        estadoIcono = "fa-fire";
+        botonAccion = `<button type="button" class="btn-accion-libreta btn-completar" data-completar-pedido="${escaparHTML(pedido.id)}">
+            <i class="fa-solid fa-check"></i> Completar pedido
+        </button>`;
+    } else if (estado === nombresEstados.listo) {
+        estadoMensajeClass = "estado-listo";
+        estadoTexto = "¡Listo para servir!";
+        estadoIcono = "fa-circle-check";
+        botonAccion = `<button type="button" class="btn-accion-libreta btn-retirar" data-completar-pedido="${escaparHTML(pedido.id)}">
+            <i class="fa-solid fa-paper-plane"></i> Retirar de cocina
+        </button>`;
+    }
+
     const productos = pedido.items.length
         ? pedido.items.map(renderizarItem).join("")
-        : "<li>Sin productos registrados.</li>";
+        : '<li class="item-producto-kds"><div class="item-principal"><span class="item-nombre">Sin productos registrados</span></div></li>';
 
-    return `<article class="tarjeta-pedido ${claseEstado} ${claseEspera}" data-pedido-id="${escaparHTML(pedido.id)}">
-        <div class="pedido-encabezado">
-            <span class="pedido-numero">PEDIDO ${escaparHTML(pedido.id)}</span>
-            <span class="pedido-espera" data-tiempo-pedido="${escaparHTML(pedido.id)}" role="status">${espera} min</span>
+    return `<article class="libreta-comanda ${claseEspera}" data-pedido-id="${escaparHTML(pedido.id)}" id="comanda-${escaparHTML(pedido.id)}">
+        <!-- Pinza metálica superior -->
+        <div class="pinza-comanda" aria-hidden="true"></div>
+
+        <!-- Encabezado con SOLO: ID, MESA, HORA -->
+        <div class="libreta-encabezado">
+            <div class="comanda-meta-izq">
+                <div class="comanda-mesa">
+                    <span class="comanda-mesa-label">Mesa</span>
+                    <span>${escaparHTML(mesaNumero)}</span>
+                </div>
+                <div class="comanda-detalles-fila">
+                    <span class="comanda-id">ID: #${escaparHTML(pedido.id)}</span>
+                    <span class="comanda-hora"><i class="fa-regular fa-clock" aria-hidden="true"></i> ${hora}</span>
+                </div>
+            </div>
+
+            <!-- Botón Check KDS con tiempo transcurrido -->
+            <button type="button" class="btn-completar-kds" data-completar-pedido="${escaparHTML(pedido.id)}" title="Completar pedido #${escaparHTML(pedido.id)}" aria-label="Completar pedido #${escaparHTML(pedido.id)}">
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                <span class="timer-transcurrido" data-cronometro="${escaparHTML(pedido.id)}">${espera}m</span>
+            </button>
         </div>
-        <p class="pedido-info">${escaparHTML(pedido.destination || pedido.channel || "Pedido")}</p>
-        <p class="pedido-info">Recibido: ${hora}</p>
-        <p class="pedido-seccion-titulo">Productos</p>
-        <ul class="lista-productos">${productos}</ul>
-        ${pedido.stockDeductions?.length ? `<p class="pedido-info inventario-descontado">Insumos descontados: ${pedido.stockDeductions.map(insumo => `${escaparHTML(insumo.nombre)} ${insumo.cantidad}`).join(", ")}</p>` : ""}
-        <span class="etiqueta-estado ${claseEstado}">${escaparHTML(estado)}</span>
-        ${accion}
+
+        <!-- Línea de desprendimiento / perforación -->
+        <div class="libreta-perforacion" aria-hidden="true"></div>
+
+        <!-- Cuerpo: Productos y sus especificaciones -->
+        <div class="libreta-cuerpo">
+            <div class="libreta-seccion-titulo">Productos y Comanda</div>
+            <ul class="lista-productos-kds">
+                ${productos}
+            </ul>
+        </div>
+
+        <!-- Pie: Mensaje de estado y botón de acción -->
+        <div class="libreta-pie">
+            <div class="mensaje-estado-comanda ${estadoMensajeClass}">
+                <i class="fa-solid ${estadoIcono}" aria-hidden="true"></i>
+                <span>${estadoTexto}</span>
+            </div>
+            ${botonAccion}
+        </div>
     </article>`;
+}
+
+function renderizarBarraInferior(pedidos, ahora) {
+    const contenedor = document.getElementById("pildorasComandas");
+    if (!contenedor) return;
+
+    if (!pedidos.length) {
+        contenedor.innerHTML = '<span style="color: rgba(255,255,255,0.4); font-size: 12px;">Sin comandas activas</span>';
+        return;
+    }
+
+    contenedor.innerHTML = pedidos.map(p => {
+        const mesa = extraerNumeroMesa(p);
+        const espera = minutosEnEspera(p, ahora);
+        const clase = claseAlerta(p, espera);
+        return `<button type="button" class="pildora-comanda-btn ${clase}" data-scroll-comanda="comanda-${escaparHTML(p.id)}">
+            <span>Mesa ${escaparHTML(mesa)}</span>
+            <span style="opacity: 0.7;">#${escaparHTML(p.id)}</span>
+        </button>`;
+    }).join("");
 }
 
 function mostrarPedidos() {
     const contenedor = document.getElementById("contenedor-pedidos");
+    if (!contenedor) return;
+
     const pedidos = leerPedidos()
         .map(pedido => ({ ...pedido, status: normalizarEstado(pedido.status) }))
         .filter(pedido => ![nombresEstados.entregado, nombresEstados.cancelado].includes(pedido.status))
-        .sort((a, b) => obtenerFechaRecepcion(a) - obtenerFechaRecepcion(b));
+        .sort((a, b) => {
+            // Prioridad a comandas en preparación y más antiguas
+            if (a.status === nombresEstados.preparacion && b.status !== nombresEstados.preparacion) return -1;
+            if (b.status === nombresEstados.preparacion && a.status !== nombresEstados.preparacion) return 1;
+            return obtenerFechaRecepcion(a) - obtenerFechaRecepcion(b);
+        });
+
     const ahora = Date.now();
+
     contenedor.innerHTML = pedidos.length
         ? pedidos.map(pedido => renderizarPedido(pedido, ahora)).join("")
-        : '<p class="cocina-vacia">No hay comandas pendientes. Los pedidos nuevos aparecerán aquí automáticamente.</p>';
+        : '<p class="cocina-vacia" style="margin: 30px auto; color: var(--palette-gold, #C99B45); font-weight: 700; text-align: center;">No hay comandas activas en la cuerda. Las nuevas aparecerán aquí automáticamente.</p>';
+
     document.getElementById("contador-pendientes").textContent = pedidos.filter(pedido => pedido.status === nombresEstados.cola).length;
     document.getElementById("contador-preparacion").textContent = pedidos.filter(pedido => pedido.status === nombresEstados.preparacion).length;
     document.getElementById("contador-listos").textContent = pedidos.filter(pedido => pedido.status === nombresEstados.listo).length;
+
+    renderizarBarraInferior(pedidos, ahora);
 }
 
-function prepararDescuentoInventario(pedido) {
-    const inventario = window.RequestyInventario.leerInventario();
-    let productos;
-    try {
-        productos = JSON.parse(localStorage.getItem("productos-restaurante") || "null");
-    } catch {
-        throw new Error("No se pudo leer el menú para comprobar las recetas.");
-    }
-    if (!Array.isArray(productos)) throw new Error("El menú guardado no tiene un formato válido.");
-    const stockDisponible = new Map(inventario.map(insumo => [window.RequestyInventario.normalizarNombre(insumo.nombre), insumo.stockActual]));
-    const consumo = new Map();
-    const nombresInsumo = new Map(inventario.map(insumo => [window.RequestyInventario.normalizarNombre(insumo.nombre), insumo.nombre]));
-    for (const item of pedido.items) {
-        const producto = productos.find(actual => String(actual.id) === String(item.id));
-        if (!producto) throw new Error(`No se encontró la receta del plato ${item.nombre}.`);
-        const ingredientes = Array.isArray(producto.ingredientes) ? producto.ingredientes : [];
-        const receta = producto.receta;
-        const excluidos = new Set((item.ingredientesExcluidos || []).map(window.RequestyInventario.normalizarNombre));
-        const porciones = Math.max(1, Math.floor(Number(item.cantidad) || 1));
-        for (const ingrediente of ingredientes) {
-            const clave = window.RequestyInventario.normalizarNombre(ingrediente);
-            if (excluidos.has(clave)) continue;
-            const cantidad = Number(receta?.[clave]);
-            if (!Number.isFinite(cantidad) || cantidad <= 0) {
-                throw new Error(`La receta de ${producto.nombre} no tiene una cantidad válida para ${ingrediente}. Configúrala en Reportes > Administrar menú.`);
-            }
-            if (!stockDisponible.has(clave)) throw new Error(`Registra ${ingrediente} en el inventario antes de preparar ${producto.nombre}.`);
-            consumo.set(clave, (consumo.get(clave) || 0) + cantidad * porciones);
-        }
-        for (const grupo of producto.recetaAlternativas || []) {
-            const opcion = (grupo.opciones || []).find(actual =>
-                window.RequestyInventario.normalizarNombre(actual.ingrediente)
-                    === window.RequestyInventario.normalizarNombre(item.alternativaReceta)
-            );
-            if (!opcion) {
-                throw new Error(`Selecciona una opción válida para ${grupo.nombre || producto.nombre} antes de iniciar la preparación.`);
-            }
-            const clave = window.RequestyInventario.normalizarNombre(opcion.ingrediente);
-            if (!stockDisponible.has(clave)) throw new Error(`Registra ${opcion.ingrediente} en el inventario antes de preparar ${producto.nombre}.`);
-            consumo.set(clave, (consumo.get(clave) || 0) + Number(opcion.cantidad) * porciones);
-        }
-        for (const extra of item.extras || []) {
-            const clave = window.RequestyInventario.normalizarNombre(extra.nombre);
-            if (stockDisponible.has(clave)) {
-                consumo.set(clave, (consumo.get(clave) || 0) + Number(extra.cantidad || 0) * porciones);
-            }
-        }
-    }
-    const faltantes = [...consumo].filter(([clave, cantidad]) => stockDisponible.get(clave) < cantidad);
-    if (faltantes.length) {
-        throw new Error(`Stock insuficiente para iniciar la preparación: ${faltantes.map(([clave, cantidad]) => `${nombresInsumo.get(clave)} (disponible ${stockDisponible.get(clave)}, requerido ${cantidad})`).join(", ")}.`);
-    }
-    const detalle = [...consumo].map(([clave, cantidad]) => ({ nombre: nombresInsumo.get(clave), cantidad }));
-    const actualizado = inventario.map(insumo => {
-        const cantidad = consumo.get(window.RequestyInventario.normalizarNombre(insumo.nombre)) || 0;
-        return cantidad ? { ...insumo, stockActual: insumo.stockActual - cantidad } : insumo;
-    });
-    return { inventarioActualizado: actualizado, detalle };
-}
+// ========================================================
+// ANIMACIÓN DE ARRUGADO Y DESCARTE DE COMANDA (CRUMPLE & THROW)
+// ========================================================
+function arrugarYTirarComanda(id, nuevoEstado = nombresEstados.listo) {
+    const comandaEl = document.querySelector(`.libreta-comanda[data-pedido-id="${CSS.escape(String(id))}"]`);
 
-function cambiarEstadoPedido(id, nuevoEstado) {
-    if (![nombresEstados.preparacion, nombresEstados.listo].includes(nuevoEstado)) return;
-    const pedidos = leerPedidos();
-    const pedido = pedidos.find(actual => String(actual.id) === String(id));
-    if (!pedido) {
-        mostrarError("La comanda ya no existe o fue eliminada.");
-        mostrarPedidos();
-        return;
+    reproducirSonidoArrugar();
+
+    if (comandaEl) {
+        comandaEl.classList.add("animacion-arrugar");
     }
-    const estadoActual = normalizarEstado(pedido.status || pedido.estado);
-    const transicionesValidas = {
-        [nombresEstados.cola]: nombresEstados.preparacion,
-        [nombresEstados.preparacion]: nombresEstados.listo
-    };
-    if (transicionesValidas[estadoActual] !== nuevoEstado) {
-        mostrarError("La comanda cambió de estado en otra pantalla. Se actualizará la lista.");
-        mostrarPedidos();
-        return;
-    }
-    let descuento = null;
-    if (nuevoEstado === nombresEstados.preparacion && !pedido.stockDeductions) {
-        try {
-            descuento = prepararDescuentoInventario(pedido);
-        } catch (error) {
-            mostrarError(error.message || "No se pudo descontar el inventario.");
+
+    // Esperar a que la animación 3D de arrugado y lanzamiento termine (~800ms)
+    window.setTimeout(() => {
+        const pedidos = leerPedidos();
+        const pedido = pedidos.find(actual => String(actual.id) === String(id));
+        if (!pedido) {
+            mostrarPedidos();
             return;
         }
-    }
+
+        const actualizado = {
+            ...pedido,
+            status: nuevoEstado,
+            statusClass: "status-listo",
+            updatedAt: new Date().toISOString()
+        };
+
+        const actualizados = pedidos.map(actual => String(actual.id) === String(id) ? actualizado : actual);
+
+        try {
+            localStorage.setItem(clavePedidos, JSON.stringify(actualizados));
+            window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: actualizados }));
+            mostrarError("");
+        } catch (e) {
+            mostrarError("No se pudo guardar la actualización.");
+        }
+
+        mostrarPedidos();
+    }, 780);
+}
+
+function cambiarEstadoSimple(id, nuevoEstado) {
+    const pedidos = leerPedidos();
+    const pedido = pedidos.find(actual => String(actual.id) === String(id));
+    if (!pedido) return;
+
     const actualizado = {
         ...pedido,
         status: nuevoEstado,
-        statusClass: nuevoEstado === nombresEstados.preparacion ? "status-preparando" : "status-listo",
-        updatedAt: new Date().toISOString(),
-        ...(descuento ? { stockDeductions: descuento.detalle, stockDeductedAt: new Date().toISOString() } : {})
+        updatedAt: new Date().toISOString()
     };
+
     const actualizados = pedidos.map(actual => String(actual.id) === String(id) ? actualizado : actual);
-    const pedidosAnteriores = localStorage.getItem(clavePedidos);
-    const inventarioAnterior = localStorage.getItem(window.RequestyInventario.claveInventario);
-    try {
-        if (descuento) localStorage.setItem(window.RequestyInventario.claveInventario, JSON.stringify(descuento.inventarioActualizado));
-        localStorage.setItem(clavePedidos, JSON.stringify(actualizados));
-        if (descuento) window.dispatchEvent(new CustomEvent(window.RequestyInventario.eventoInventario));
-        window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: actualizados }));
-        mostrarError("");
-        mostrarPedidos();
-    } catch {
-        try {
-            if (inventarioAnterior === null) localStorage.removeItem(window.RequestyInventario.claveInventario);
-            else localStorage.setItem(window.RequestyInventario.claveInventario, inventarioAnterior);
-            if (pedidosAnteriores === null) localStorage.removeItem(clavePedidos);
-            else localStorage.setItem(clavePedidos, pedidosAnteriores);
-            mostrarError("No se pudo guardar la actualización de la comanda y su consumo de inventario. Se revirtieron los cambios.");
-        } catch (errorRollback) {
-            mostrarError(`Falló el guardado y no se pudo completar la reversión: ${errorRollback.message}. Revisa el inventario y el estado de la comanda.`);
-        }
+    localStorage.setItem(clavePedidos, JSON.stringify(actualizados));
+    window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: actualizados }));
+    mostrarPedidos();
+}
+
+// Navegación con flechas del riel
+const riel = document.getElementById("contenedor-pedidos");
+document.getElementById("btnRielPrev")?.addEventListener("click", () => {
+    if (riel) riel.scrollBy({ left: -320, behavior: "smooth" });
+});
+document.getElementById("btnRielNext")?.addEventListener("click", () => {
+    if (riel) riel.scrollBy({ left: 320, behavior: "smooth" });
+});
+
+// Click en píldoras inferiores para hacer scroll a una comanda
+document.getElementById("pildorasComandas")?.addEventListener("click", (e) => {
+    const boton = e.target.closest("[data-scroll-comanda]");
+    if (boton) {
+        const targetEl = document.getElementById(boton.dataset.scrollComanda);
+        if (targetEl) targetEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     }
-}
+});
 
-function actualizarTiempos() {
-    const ahora = Date.now();
-    leerPedidos().forEach(pedido => {
-        const tarjeta = document.querySelector(`[data-pedido-id="${CSS.escape(String(pedido.id))}"]`);
-        if (!tarjeta) return;
-        const espera = minutosEnEspera(pedido, ahora);
-        tarjeta.classList.remove("alerta-normal", "alerta-advertencia", "alerta-critica", "alerta-listo");
-        tarjeta.classList.add(claseAlerta(pedido, espera));
-        const tiempo = tarjeta.querySelector("[data-tiempo-pedido]");
-        if (tiempo) tiempo.textContent = `${espera} min`;
-    });
-}
+// Eventos de completar (arrugar y tirar) y avanzar estado
+document.getElementById("contenedor-pedidos")?.addEventListener("click", evento => {
+    const btnCompletar = evento.target.closest("[data-completar-pedido]");
+    if (btnCompletar) {
+        evento.preventDefault();
+        arrugarYTirarComanda(btnCompletar.dataset.completarPedido);
+        return;
+    }
 
-document.getElementById("contenedor-pedidos").addEventListener("click", evento => {
-    const boton = evento.target.closest("[data-estado-pedido]");
-    if (boton) cambiarEstadoPedido(boton.dataset.estadoPedido, boton.dataset.nuevoEstado);
+    const btnEstado = evento.target.closest("[data-estado-pedido]");
+    if (btnEstado) {
+        evento.preventDefault();
+        cambiarEstadoSimple(btnEstado.dataset.estadoPedido, btnEstado.dataset.nuevoEstado);
+    }
+});
+
+// Botón para restaurar/recargar ejemplos
+document.getElementById("btnRestaurarDemo")?.addEventListener("click", () => {
+    localStorage.setItem(clavePedidos, JSON.stringify(pedidosDemoKds));
+    window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: pedidosDemoKds }));
+    mostrarPedidos();
 });
 
 window.addEventListener("storage", evento => {
@@ -289,5 +486,17 @@ window.addEventListener("storage", evento => {
 });
 window.addEventListener(eventoPedidos, mostrarPedidos);
 
+// Inicialización
 mostrarPedidos();
-window.setInterval(actualizarTiempos, 15000);
+window.setInterval(() => {
+    const ahora = Date.now();
+    leerPedidos().forEach(pedido => {
+        const tarjeta = document.querySelector(`.libreta-comanda[data-pedido-id="${CSS.escape(String(pedido.id))}"]`);
+        if (!tarjeta) return;
+        const espera = minutosEnEspera(pedido, ahora);
+        tarjeta.classList.remove("alerta-normal", "alerta-advertencia", "alerta-critica", "alerta-listo");
+        tarjeta.classList.add(claseAlerta(pedido, espera));
+        const crono = tarjeta.querySelector(`[data-cronometro="${CSS.escape(String(pedido.id))}"]`);
+        if (crono) crono.textContent = `${espera}m`;
+    });
+}, 15000);

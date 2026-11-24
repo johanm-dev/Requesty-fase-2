@@ -10,21 +10,25 @@ require_once APPROOT . '/views/layouts/header.php';
     <div class="main-content">
         <?php require_once APPROOT . '/views/layouts/topbar.php'; ?>
 
-        <div class="content">
-            <div class="page-header">
-                <h1 class="page-title">Cocina</h1>
+        <div class="content cocina-content">
+            <div class="page-header cocina-page-header">
+                <div>
+                    <p class="catalogo-eyebrow">SISTEMA KDS · PANTALLA DE COCINA</p>
+                    <h1 class="page-title">Comandas en Cocina</h1>
+                </div>
+                <div class="cocina-header-actions">
+                    <button type="button" class="btn-cocina-secundario" id="btnRestaurarDemo" title="Cargar comandas de ejemplo">
+                        <i class="fa-solid fa-receipt"></i> Cargar ejemplos
+                    </button>
+                </div>
             </div>
 
             <p id="mensaje-cocina" class="mensaje-cocina" role="alert" aria-live="assertive"></p>
-            <p class="leyenda-alertas" aria-label="Alertas de tiempo">
-                <span class="leyenda-normal">Menos de 10 min</span>
-                <span class="leyenda-advertencia">10 min o más</span>
-                <span class="leyenda-critica">20 min o más</span>
-            </p>
-            <section class="resumen">
+
+            <section class="resumen cocina-resumen">
                 <div class="tarjeta-resumen pendiente">
                     <span class="numero-resumen" id="contador-pendientes">0</span>
-                    <span class="texto-resumen">Pendientes</span>
+                    <span class="texto-resumen">En cola</span>
                 </div>
                 <div class="tarjeta-resumen preparacion">
                     <span class="numero-resumen" id="contador-preparacion">0</span>
@@ -32,11 +36,31 @@ require_once APPROOT . '/views/layouts/header.php';
                 </div>
                 <div class="tarjeta-resumen listo">
                     <span class="numero-resumen" id="contador-listos">0</span>
-                    <span class="texto-resumen">Listos</span>
+                    <span class="texto-resumen">Listos hoy</span>
                 </div>
             </section>
 
-            <div id="contenedor-pedidos" class="contenedor-pedidos" aria-live="polite"></div>
+            <!-- Cuerda / Riel de comandas colgantes tipo libretas -->
+            <div class="kds-riel-wrapper">
+                <div class="cuerda-cocina">
+                    <div class="cuerda-soporte cuerda-soporte-izq"></div>
+                    <div class="cuerda-cable"></div>
+                    <div class="cuerda-soporte cuerda-soporte-der"></div>
+                </div>
+
+                <div id="contenedor-pedidos" class="contenedor-libretas" aria-live="polite"></div>
+            </div>
+
+            <!-- Barra inferior con botones rápidos de comandas -->
+            <div class="barra-inferior-comandas" id="barraInferiorComandas">
+                <button type="button" class="btn-nav-riel" id="btnRielPrev" aria-label="Desplazar a la izquierda">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div class="pildoras-comandas" id="pildorasComandas"></div>
+                <button type="button" class="btn-nav-riel" id="btnRielNext" aria-label="Desplazar a la derecha">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
