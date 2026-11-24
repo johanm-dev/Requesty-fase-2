@@ -42,7 +42,11 @@ if ($isCli) {
 } else {
     $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)) ? 'https://' : 'http://';
     $host = $_SERVER['HTTP_HOST'];
-    $scriptDir = trim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/.');
+    $scriptName = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    $scriptDir = '';
+    if (php_sapi_name() !== 'cli-server' && str_ends_with($scriptName, '/index.php')) {
+        $scriptDir = trim(dirname($scriptName), '/.');
+    }
     $baseUrl = rtrim($protocol . $host . ($scriptDir !== '' ? '/' . $scriptDir : ''), '/');
 }
 
@@ -68,9 +72,11 @@ function asset($path = '') {
 }
 
 const ROLES = [
-    'ADMIN'  => 'Administrador',
-    'CAJERO' => 'Cajero',
-    'MESERO' => 'Mesero',
+    'ADMIN'   => 'Administrador',
+    'CAJERO'  => 'Cajero',
+    'MESERO'  => 'Mesero',
+    'COCINA'  => 'Cocina',
+    'CLIENTE' => 'Cliente',
 ];
 
 const PERMISOS_POR_ROL = [
@@ -78,6 +84,8 @@ const PERMISOS_POR_ROL = [
     'administrador' => ['menu', 'mesas', 'pedidos', 'cocina', 'caja', 'pqrs', 'reportes'],
     'cajero'        => ['menu', 'mesas', 'pedidos', 'caja'],
     'mesero'        => ['menu', 'mesas', 'pedidos'],
+    'cocina'        => ['menu', 'pedidos', 'cocina'],
+    'cliente'       => ['menu', 'pqrs', 'caja'],
 ];
 
 const PAGINA_INICIAL_POR_ROL = [
@@ -85,4 +93,6 @@ const PAGINA_INICIAL_POR_ROL = [
     'administrador' => 'mesas',
     'cajero'        => 'caja',
     'mesero'        => 'mesas',
+    'cocina'        => 'cocina',
+    'cliente'       => 'menu',
 ];

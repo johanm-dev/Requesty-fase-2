@@ -52,6 +52,7 @@ class AuthController extends Controller {
                         'correo' => (string)$authResult['correo'],
                         'rol'    => strtoupper((string)$authResult['rol']),
                     ];
+                    $this->registrarActividad((int)$authResult['id_usuario'], 'Inicio de sesion web', 'AUTH');
 
                     $rolKey = strtolower(trim($_SESSION['usuario']['rol']));
                     $redirectUrl = PAGINA_INICIAL_POR_ROL[$rolKey] ?? 'mesas';
@@ -102,19 +103,23 @@ class AuthController extends Controller {
 
             if ($nombre === '' || $correo === '' || $documento === '' || $contrasena === '') {
                 $error = 'Por favor completa todos los campos obligatorios.';
+            } elseif (mb_strlen($contrasena, 'UTF-8') < 6) {
+                $error = 'La contrasena debe tener al menos 6 caracteres.';
             } elseif ($contrasena !== $confirmar) {
                 $error = 'Las contrasenas no coinciden.';
             } else {
-                /** @var Cliente $clienteModel */
-                $clienteModel = $this->model('Cliente');
-                $id = $clienteModel->create([
+                /** @var Usuario $usuarioModel */
+                $usuarioModel = $this->model('Usuario');
+                $reg = $usuarioModel->registrarClienteConUsuario([
                     'tipo_documento' => 'CC',
                     'documento'      => $documento,
                     'nombre'         => $nombre,
                     'telefono'       => $telefono,
                     'correo'         => $correo,
+                    'contrasena'     => $contrasena,
                 ]);
-                if ($id > 0) {
+                if (!empty($reg['id_usuario'])) {
+                    $this->registrarActividad((int)$reg['id_usuario'], 'Registro publico de cliente', 'AUTH');
                     if ($isAjax) {
                         $this->json([
                             'success'     => true,

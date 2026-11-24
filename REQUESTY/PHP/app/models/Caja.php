@@ -1,6 +1,6 @@
 <?php
 /**
- * Modelo de Caja, Pagos y Facturacion DIAN (PostgreSQL 17).
+ * Modelo de Caja, Pagos, Propinas, Distribucion y Facturacion DIAN (PostgreSQL 17).
  */
 class Caja extends Model {
     public function getResumen(): array {
@@ -46,6 +46,29 @@ class Caja extends Model {
         return $this->getById($idCaja) ?? ['id_caja' => $idCaja, 'estado' => 'CERRADA'];
     }
 
+    public function getPagos(?int $idCaja = null, ?int $idPedido = null): array {
+        $sql = "SELECT pg.id_pago, pg.id_pedido, pg.id_caja, pg.metodo_pago, pg.valor,
+                       pg.fecha, pg.estado, pg.referencia,
+                       pr.id_propina, pr.valor AS propina_valor, pr.distribuida
+                FROM pago pg
+                LEFT JOIN propina pr ON pr.id_pago = pg.id_pago";
+        $conds = [];
+        $params = [];
+        if ($idCaja !== null) {
+            $conds[] = 'pg.id_caja = :id_caja';
+            $params[':id_caja'] = $idCaja;
+        }
+        if ($idPedido !== null) {
+            $conds[] = 'pg.id_pedido = :id_pedido';
+            $params[':id_pedido'] = $idPedido;
+        }
+        if (!empty($conds)) {
+            $sql .= ' WHERE ' . implode(' AND ', $conds);
+        }
+        $sql .= ' ORDER BY pg.id_pago DESC LIMIT 200';
+        return $this->fetchAll($sql, $params);
+    }
+
     public function registrarPago(array $data): array {
         $hasTip = !empty($data['propina']) && (float)$data['propina'] > 0;
         if ($hasTip) {
@@ -67,10 +90,33 @@ class Caja extends Model {
             );
 
             if ($hasTip) {
-                $this->execute(
-                    'INSERT INTO propina (id_pago, valor) VALUES (:id_pago, :valor)',
-                    [':id_pago' => (int)$row['id_pago'], ':valor' => (float)$data['propina']]
+                $tipVal = round((float)$data['propina'], 2);
+                $pct = ((float)$data['valor'] > 0) ? min(100.00, round(($tipVal / (float)$data['valor']) * 100, 2)) : 0;
+                $propRow = $this->fetchOne(
+                    'INSERT INTO propina (id_pago, porcentaje, valor) VALUES (:id_pago, :pct, :valor) RETURNING id_propina',
+                    [
+                        ':id_pago' => (int)$row['id_pago'],
+                        ':pct'     => $pct,
+                        ':valor'   => $tipVal,
+                    ]
                 );
+                $idPropina = (int)$propRow['id_propina'];
+                $row['id_propina'] = $idPropina;
+                $row['propina'] = $tipVal;
+
+                if (!empty($data['distribuir_mesero'])) {
+                    $pedRow = $this->fetchOne('SELECT id_mesero FROM pedido WHERE id_pedido = :p', [':p' => (int)$data['id_pedido']]);
+                    if ($pedRow && !empty($pedRow['id_mesero'])) {
+                        $this->execute(
+                            'INSERT INTO propina_distribucion (id_propina, id_usuario, monto) VALUES (:pr, :u, :m)',
+                            [
+                                ':pr' => $idPropina,
+                                ':u'  => (int)$pedRow['id_mesero'],
+                                ':m'  => $tipVal,
+                            ]
+                        );
+                    }
+                }
                 $this->commit();
             }
 
@@ -83,24 +129,75 @@ class Caja extends Model {
         }
     }
 
-    public function getFacturas(?int $idMesero = null): array {
-        $sql = "SELECT f.*, p.id_mesero, p.id_cliente, p.estado AS pedido_estado
+    public function reembolsarPago(int $idPago): array {
+        $this->execute("UPDATE pago SET estado = 'REEMBOLSADO' WHERE id_pago = :id", [':id' => $idPago]);
+        return $this->fetchOne('SELECT * FROM pago WHERE id_pago = :id', [':id' => $idPago]) ?? ['id_pago' => $idPago, 'estado' => 'REEMBOLSADO'];
+    }
+
+    public function distribuirPropina(int $idPropina, array $asignaciones): array {
+        $this->beginTransaction();
+        try {
+            $stmt = $this->db->prepare(
+                'INSERT INTO propina_distribucion (id_propina, id_usuario, monto) VALUES (:pr, :u, :m)
+                 ON CONFLICT (id_propina, id_usuario) DO UPDATE SET monto = EXCLUDED.monto'
+            );
+            foreach ($asignaciones as $asig) {
+                $idUsr = (int)($asig['id_usuario'] ?? 0);
+                $monto = round((float)($asig['monto'] ?? 0), 2);
+                if ($idUsr <= 0 || $monto <= 0) {
+                    throw new DomainValidationException('Cada distribucion de propina requiere id_usuario y monto positivo.');
+                }
+                $stmt->execute([':pr' => $idPropina, ':u' => $idUsr, ':m' => $monto]);
+            }
+            $this->commit();
+            return $this->fetchOne('SELECT * FROM propina WHERE id_propina = :id', [':id' => $idPropina]) ?? ['id_propina' => $idPropina];
+        } catch (Throwable $e) {
+            $this->rollBack();
+            throw $e;
+        }
+    }
+
+    public function getFacturas(?int $idMesero = null, ?int $idCliente = null): array {
+        $sql = "SELECT f.*, p.id_mesero, p.id_cliente, p.estado AS pedido_estado,
+                       c.nombre AS cliente_nombre, c.correo AS cliente_correo,
+                       m.numero_mesa, u.nombre AS mesero_nombre, u.correo AS mesero_correo,
+                       (SELECT STRING_AGG(pg.metodo_pago::TEXT, ', ' ORDER BY pg.id_pago)
+                          FROM pago pg WHERE pg.id_pedido = f.id_pedido AND pg.estado = 'COMPLETADO') AS metodo_pago,
+                       COALESCE((SELECT SUM(pr.valor)
+                                   FROM pago pg JOIN propina pr ON pr.id_pago = pg.id_pago
+                                  WHERE pg.id_pedido = f.id_pedido AND pg.estado = 'COMPLETADO'), 0)::NUMERIC(12,2) AS propina_total
                 FROM factura f
-                JOIN pedido p ON f.id_pedido = p.id_pedido";
+                JOIN pedido p ON f.id_pedido = p.id_pedido
+                LEFT JOIN vw_clientes_publico c ON c.id_cliente = p.id_cliente
+                LEFT JOIN mesa m ON m.id_mesa = p.id_mesa
+                LEFT JOIN vw_usuarios_publico u ON u.id_usuario = p.id_mesero";
+        $conds = [];
         $params = [];
         if ($idMesero !== null) {
-            $sql .= " WHERE p.id_mesero = :id_mesero";
+            $conds[] = 'p.id_mesero = :id_mesero';
             $params[':id_mesero'] = $idMesero;
         }
-        $sql .= " ORDER BY f.id_factura DESC";
+        if ($idCliente !== null) {
+            $conds[] = 'p.id_cliente = :id_cliente';
+            $params[':id_cliente'] = $idCliente;
+        }
+        if (!empty($conds)) {
+            $sql .= ' WHERE ' . implode(' AND ', $conds);
+        }
+        $sql .= ' ORDER BY f.id_factura DESC';
         return $this->fetchAll($sql, $params);
     }
 
     public function getFacturaById(int $idFactura): ?array {
         return $this->fetchOne(
-            "SELECT f.*, p.id_mesero, p.id_cliente
+            "SELECT f.*, p.id_mesero, p.id_cliente,
+                    c.nombre AS cliente_nombre, c.correo AS cliente_correo,
+                    m.numero_mesa, u.nombre AS mesero_nombre
              FROM factura f
              JOIN pedido p ON f.id_pedido = p.id_pedido
+             LEFT JOIN vw_clientes_publico c ON c.id_cliente = p.id_cliente
+             LEFT JOIN mesa m ON m.id_mesa = p.id_mesa
+             LEFT JOIN vw_usuarios_publico u ON u.id_usuario = p.id_mesero
              WHERE f.id_factura = :id
              LIMIT 1",
             [':id' => $idFactura]
@@ -120,6 +217,12 @@ class Caja extends Model {
                 throw new DomainValidationException('Pedido no encontrado para facturacion.');
             }
 
+            $numero = $data['numero_factura'] ?? '';
+            if ($numero === '') {
+                $seq = $this->fetchOne("SELECT COALESCE(MAX(id_factura), 0) + 1 AS nxt FROM factura");
+                $numero = sprintf('FE-%06d', (int)($seq['nxt'] ?? 1));
+            }
+
             $row = $this->fetchOne(
                 "INSERT INTO factura (
                     id_pedido, numero_factura, xml, subtotal, descuento_total, impuesto_total, estado_dian
@@ -129,7 +232,7 @@ class Caja extends Model {
                  RETURNING id_factura",
                 [
                     ':id_pedido' => (int)$data['id_pedido'],
-                    ':numero'    => $data['numero_factura'],
+                    ':numero'    => $numero,
                     ':xml'       => $safeXml,
                     ':sub'       => $pedido['subtotal'],
                     ':desc'      => $pedido['descuento_total'],
@@ -151,6 +254,25 @@ class Caja extends Model {
             $this->rollBack();
             throw $e;
         }
+    }
+
+    public function actualizarFacturaEstado(int $idFactura, string $estadoDian, ?string $cufe = null, ?string $xml = null): array {
+        $safeXml = $xml !== null ? XmlSecurity::validateSafeXml($xml) : null;
+        $est = strtoupper(trim($estadoDian));
+        $this->execute(
+            'UPDATE factura
+                SET estado_dian = :est,
+                    cufe = COALESCE(:cufe, cufe),
+                    xml = COALESCE(:xml, xml)
+              WHERE id_factura = :id',
+            [
+                ':est'  => $est,
+                ':cufe' => $cufe,
+                ':xml'  => $safeXml,
+                ':id'   => $idFactura,
+            ]
+        );
+        return $this->getFacturaById($idFactura) ?? ['id_factura' => $idFactura, 'estado_dian' => $est];
     }
 
     public function anularFactura(int $idFactura): array {

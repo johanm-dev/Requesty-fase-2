@@ -48,7 +48,7 @@ require_once APPROOT . '/views/layouts/header.php';
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modalTitle">Mesa 1</h2>
-            <button class="modal-close" onclick="cerrarModal()">&times;</button>
+            <button class="modal-close" id="btnCerrarModalTop" type="button">&times;</button>
         </div>
 
         <div id="tabInfo">
@@ -78,7 +78,7 @@ require_once APPROOT . '/views/layouts/header.php';
                     <input type="number" id="inputClientes" min="1" value="1" style="width:100%; padding:8px 10px; border:1.5px solid var(--color-accent); border-radius:6px; font-size:14px;">
                     <label for="inputNombreCliente" class="info-label">Nombre del cliente (opcional):</label>
                     <input type="text" id="inputNombreCliente" maxlength="100" autocomplete="name">
-                    <label for="inputCorreoCliente" class="info-label">Correo del cliente (opcional):</label>
+                    <label for="inputCorreoCliente" class="info-label">Correo del cliente:</label>
                     <input type="email" id="inputCorreoCliente" maxlength="254" autocomplete="email" required>
                     <span id="errorClientes" style="color:var(--color-danger); font-size:12px; display:none;"></span>
                 </div>
@@ -88,18 +88,17 @@ require_once APPROOT . '/views/layouts/header.php';
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn-primary" id="btnAccion" onclick="accionMesa()">Asignar Mesa</button>
-                <button class="btn-secondary" onclick="cerrarModal()">Cerrar</button>
+                <button class="btn-primary" id="btnAccion" type="button">Asignar Mesa</button>
+                <button class="btn-secondary" id="btnCerrarModalSec" type="button">Cerrar</button>
             </div>
         </div>
 
     </div>
 </div>
 
-<div class="modal-overlay" id="modalOverlay" onclick="cerrarModal()"></div>
+<div class="modal-overlay" id="modalOverlay"></div>
 
 <script src="<?= asset('js/auth.js') ?>"></script>
-<script>protegerPagina("mesas");</script>
 <script src="<?= asset('js/mesas.js') ?>"></script>
 </body>
 </html>

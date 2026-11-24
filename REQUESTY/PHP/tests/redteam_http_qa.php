@@ -290,13 +290,16 @@ $ctxForm = stream_context_create([
     ],
 ]);
 @file_get_contents("{$baseUrl}/login", false, $ctxForm);
+$csrfHeaders = function_exists('http_get_last_response_headers')
+    ? (http_get_last_response_headers() ?: [])
+    : ($http_response_header ?? []);
 $csrfStatus = 0;
-if (!empty($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $cm)) {
+if (!empty($csrfHeaders[0]) && preg_match('/\s(\d{3})\s/', $csrfHeaders[0], $cm)) {
     $csrfStatus = (int)$cm[1];
 }
 assertTrue($csrfStatus === 403, "POST web /login sin token CSRF debio dar 403, dio {$csrfStatus}");
 
-foreach (['/.env.example', '/app/config/Database.php', '/tests/redteam_http_qa.php', '/database/requesty_database.sql'] as $blockedPath) {
+foreach (['/.env.example', '/app/config/Database.php', '/tests/redteam_http_qa.php', '/database/schema.sql'] as $blockedPath) {
     $rBlk = httpRequest('GET', "{$baseUrl}{$blockedPath}");
     assertTrue($rBlk['status'] === 403, "Ruta sensible {$blockedPath} debio dar 403, dio {$rBlk['status']}");
 }

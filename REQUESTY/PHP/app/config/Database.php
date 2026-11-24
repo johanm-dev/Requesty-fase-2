@@ -27,18 +27,30 @@ class Database {
             PDO::ATTR_PERSISTENT         => true,
         ];
 
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-
-        // Fija search_path y la llave AES-256/HMAC en una sola ida a PostgreSQL
         $schema = preg_replace('/[^a-zA-Z0-9_]/', '', DB_SCHEMA);
         $encKey = Env::requireNonEmpty('APP_ENCRYPTION_KEY', 32);
-        $stmt = $pdo->prepare(
-            "SELECT set_config('search_path', :sp, false), set_config('restaurante.encryption_key', :key, false)"
-        );
-        $stmt->execute([
-            ':sp'  => "{$schema}, public",
-            ':key' => $encKey,
-        ]);
+        try {
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            // Fija search_path y la llave AES-256/HMAC en una sola ida a PostgreSQL
+            $stmt = $pdo->prepare(
+                "SELECT set_config('search_path', :sp, false), set_config('restaurante.encryption_key', :key, false)"
+            );
+            $stmt->execute([
+                ':sp'  => "{$schema}, public",
+                ':key' => $encKey,
+            ]);
+        } catch (PDOException $e) {
+            // Reintentar sin cache persistente si el backend cerro un handle reciclado
+            $options[PDO::ATTR_PERSISTENT] = false;
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            $stmt = $pdo->prepare(
+                "SELECT set_config('search_path', :sp, false), set_config('restaurante.encryption_key', :key, false)"
+            );
+            $stmt->execute([
+                ':sp'  => "{$schema}, public",
+                ':key' => $encKey,
+            ]);
+        }
 
         self::$instance = $pdo;
         return self::$instance;

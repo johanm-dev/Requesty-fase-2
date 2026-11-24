@@ -42,7 +42,6 @@ require_once APPROOT . '/views/layouts/header.php';
 </div>
 
 <script src="<?= asset('js/auth.js') ?>"></script>
-<script>protegerPagina("cocina");</script>
 <script src="<?= asset('js/inventario.js') ?>"></script>
 <script src="<?= asset('js/cocina.js') ?>"></script>
 </body>

@@ -15,6 +15,14 @@ if (preg_match('#^/(app|tests|storage|database)(/|$)|/\.(env|htaccess|gitignore)
     exit;
 }
 
+if (php_sapi_name() === 'cli-server' && preg_match('#^/(css|js|img)/#i', $reqPath) === 1) {
+    $staticFile = realpath(__DIR__ . $reqPath);
+    $baseDir = realpath(__DIR__);
+    if ($staticFile !== false && $baseDir !== false && str_starts_with($staticFile, $baseDir . DIRECTORY_SEPARATOR) && is_file($staticFile)) {
+        return false;
+    }
+}
+
 require_once __DIR__ . '/app/core/App.php';
 
 App::run();

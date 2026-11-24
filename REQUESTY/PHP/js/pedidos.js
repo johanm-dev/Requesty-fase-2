@@ -1,817 +1,502 @@
-const pedidosIniciales = [];
+// Gestión de Pedidos conectada 100% a PostgreSQL (api/pedidos, api/mesas, api/productos, api/notificaciones)
+(function () {
+    const ordersTbody = document.getElementById("ordersTbody");
+    const searchInput = document.getElementById("searchInput");
+    const filterBtns = document.querySelectorAll(".tab-btn");
+    const btnNewOrder = document.getElementById("btnNewOrder");
+    const orderModal = document.getElementById("orderModal");
+    const btnCloseModal = document.getElementById("btnCloseModal");
+    const btnCancelModal = document.getElementById("btnCancelModal");
+    const orderForm = document.getElementById("orderForm");
+    const modalTitle = document.getElementById("modalTitle");
+    const editOrderId = document.getElementById("editOrderId");
+    const orderIdInput = document.getElementById("orderIdInput");
+    const destinationInput = document.getElementById("destinationInput");
+    const tableInput = document.getElementById("tableInput");
+    const tableGroup = document.getElementById("tableGroup");
+    const addressGroup = document.getElementById("addressGroup");
+    const channelSelect = document.getElementById("channelSelect");
+    const statusSelect = document.getElementById("statusSelect");
+    const productSelect = document.getElementById("productSelect");
+    const orderCartItems = document.getElementById("orderCartItems");
+    const customerEmailInput = document.getElementById("customerEmailInput");
+    const customerNameInput = document.getElementById("customerNameInput");
+    if (!ordersTbody) return;
 
-let ordersData = cargarPedidos();
-let activeFilter = "all";
-let searchQuery = "";
-let draftItems = [];
-let carritoOrigenKey = "";
-let mensajeInventarioPedido = "";
-const idsPedidoReservados = new Set();
+    let ordersData = [];
+    let mesasCache = [];
+    let productosCache = [];
+    let draftItems = [];
+    let activeFilter = "all";
+    let searchQuery = "";
 
-const ordersTbody = document.getElementById("ordersTbody");
-const searchInput = document.getElementById("searchInput");
-const filterBtns = document.querySelectorAll(".tab-btn");
-const btnNewOrder = document.getElementById("btnNewOrder");
-const orderModal = document.getElementById("orderModal");
-const btnCloseModal = document.getElementById("btnCloseModal");
-const btnCancelModal = document.getElementById("btnCancelModal");
-const orderForm = document.getElementById("orderForm");
-const modalTitle = document.getElementById("modalTitle");
-const editOrderId = document.getElementById("editOrderId");
-const orderIdInput = document.getElementById("orderIdInput");
-const destinationInput = document.getElementById("destinationInput");
-const tableInput = document.getElementById("tableInput");
-const tableGroup = document.getElementById("tableGroup");
-const addressGroup = document.getElementById("addressGroup");
-const channelSelect = document.getElementById("channelSelect");
-const statusSelect = document.getElementById("statusSelect");
-const productSelect = document.getElementById("productSelect");
-const orderCartItems = document.getElementById("orderCartItems");
-const customerEmailInput = document.getElementById("customerEmailInput");
-const customerNameInput = document.getElementById("customerNameInput");
-const eventoPedidos = "requesty-pedidos-actualizados";
-
-function normalizarEstadoPedido(estado) {
-  const normalizado = String(estado || "").trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es");
-  if (["nuevo", "pendiente", "en cola"].includes(normalizado)) return "En cola";
-  if (["preparando", "en preparacion"].includes(normalizado)) return "En preparación";
-  if (["listo", "listo para servir"].includes(normalizado)) return "Listo para servir";
-  if (normalizado === "entregado") return "Entregado";
-  if (normalizado === "cancelado") return "Cancelado";
-  return "En cola";
-}
-
-function obtenerAlternativaDisponible(producto, inventario) {
-  const grupo = producto?.recetaAlternativas?.[0];
-  if (!grupo) return "";
-  return grupo.opciones.find(opcion => window.RequestyInventario.productoDisponible(producto, inventario, opcion.ingrediente))?.ingrediente
-    || grupo.opciones[0]?.ingrediente
-    || "";
-}
-
-function normalizarRolPedido(rol) {
-  return String(rol || "").trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es");
-}
-
-function cargarMesasPedido(mesaPreseleccionada = "") {
-  const esMesero = normalizarRolPedido(leerSesion()?.rol) === "mesero";
-  let mesas;
-  try {
-    mesas = JSON.parse(localStorage.getItem("requestyMesas") || "null");
-    if (mesas === null && !esMesero) {
-      mesas = Array.from({ length: 15 }, (_, indice) => ({
-        id: indice + 1,
-        numero: indice + 1,
-        estado: "libre"
-      }));
+    function esc(v) {
+        return window.RequestyAPI.escaparHTML(v);
     }
-    if (mesas === null) mesas = [];
-    if (!Array.isArray(mesas)) throw new Error("La lista de mesas no tiene un formato válido.");
-  } catch (error) {
-    document.getElementById("orderCartMessage").textContent = error.message || "No se pudieron consultar las mesas.";
-    mesas = [];
-  }
-  const disponibles = mesas.filter(mesa => !esMesero || mesa.estado === "ocupada");
-  tableInput.innerHTML = `<option value="">${esMesero ? "Selecciona una mesa ocupada" : "Selecciona una mesa"}</option>`
-    + disponibles.map(mesa => {
-      const cliente = mesa.clienteNombre ? ` · ${mesa.clienteNombre}` : "";
-      const estado = mesa.estado === "ocupada" ? "Ocupada" : "Libre";
-      return `<option value="${Number(mesa.numero)}" data-cliente-nombre="${escaparHTML(mesa.clienteNombre || "")}" data-cliente-correo="${escaparHTML(mesa.clienteCorreo || "")}">Mesa ${Number(mesa.numero)} · ${estado}${escaparHTML(cliente)}</option>`;
-    }).join("");
-  if (mesaPreseleccionada && disponibles.some(mesa => String(mesa.numero) === String(mesaPreseleccionada))) {
-    tableInput.value = String(mesaPreseleccionada);
-  } else {
-    tableInput.value = "";
-  }
-  tableInput.disabled = esMesero && disponibles.length === 0;
-  if (esMesero && !disponibles.length) {
-    document.getElementById("orderCartMessage").textContent = "No hay mesas ocupadas disponibles. Asigna una mesa antes de crear un pedido como mesero.";
-  }
-}
 
-function relacionarPedidosConMesas() {
-  let mesas;
-  try {
-    mesas = JSON.parse(localStorage.getItem("requestyMesas") || "null");
-    if (!Array.isArray(mesas)) return;
-    const pedidosActivos = ordersData.filter(pedido => pedido.tableNumber
-      && !["Entregado", "Cancelado"].includes(normalizarEstadoPedido(pedido.status)));
-    mesas = mesas.map(mesa => ({
-      ...mesa,
-      pedidos: pedidosActivos.filter(pedido => Number(pedido.tableNumber) === Number(mesa.numero)).length
-    }));
-    localStorage.setItem("requestyMesas", JSON.stringify(mesas));
-    window.dispatchEvent(new CustomEvent("requesty-mesas-actualizadas", { detail: mesas }));
-  } catch {
-    document.getElementById("pedido-notificacion").textContent = "El pedido se guardó, pero no se pudo actualizar el contador de pedidos de la mesa.";
-  }
-}
-
-function cargarPedidos() {
-  try {
-    const guardados = JSON.parse(localStorage.getItem("requestyPedidos") || "null");
-    return Array.isArray(guardados) ? guardados.map(pedido => ({
-      ...pedido,
-      status: normalizarEstadoPedido(pedido.status || pedido.estado)
-    })) : pedidosIniciales.map(pedido => ({
-      ...pedido,
-      status: normalizarEstadoPedido(pedido.status)
-    }));
-  } catch {
-    return pedidosIniciales;
-  }
-}
-
-function guardarPedidos() {
-  try {
-    localStorage.setItem("requestyPedidos", JSON.stringify(ordersData));
-    return true;
-  } catch {
-    document.getElementById("orderCartMessage").textContent = "No se pudo guardar el pedido en este navegador.";
-    return false;
-  }
-}
-
-function leerProductosPedido(incluirNoDisponibles = false) {
-  const catalogoGuardado = localStorage.getItem("productos-restaurante");
-  if (catalogoGuardado !== null) {
-    let productos;
-    try {
-      productos = JSON.parse(catalogoGuardado);
-    } catch {
-      document.getElementById("orderCartMessage").textContent = "No se pudo leer el catálogo de productos.";
-      return [];
+    function formatCurrency(amount) {
+        return "$" + Number(amount || 0).toLocaleString("es-CO");
     }
-    if (!Array.isArray(productos)) {
-      document.getElementById("orderCartMessage").textContent = "El catálogo de productos tiene un formato inválido.";
-      return [];
-    }
-    try {
-      return productos.filter(producto => producto.activo !== false && producto.precio !== null
-        && producto.precio !== "" && Number.isFinite(Number(producto.precio))
-        && (incluirNoDisponibles || window.RequestyInventario.productoDisponible(producto)));
-    } catch (error) {
-      document.getElementById("orderCartMessage").textContent = error.message || "No se pudo comprobar el inventario.";
-      return [];
-    }
-  }
 
-  try {
-    const productosIniciales = [
-    { id: 1, nombre: "Caldo de costilla", precio: 8000, ingredientes: ["Costilla", "Papa", "Cilantro", "Agua Filtrada", "Sal"], receta: { costilla: 200, papa: 250, cilantro: 5, "agua filtrada": 0.5, sal: 3 } },
-    { id: 2, nombre: "Jugo de mora", precio: 6000, ingredientes: ["Moras", "Azúcar"], receta: { moras: 80, azucar: 20 }, recetaAlternativas: [{ nombre: "Base líquida", opciones: [{ ingrediente: "Agua Filtrada", cantidad: 0.25 }, { ingrediente: "Leche", cantidad: 0.25 }] }] },
-    { id: 3, nombre: "Huevos pericos", precio: 7000, ingredientes: ["Huevos", "Tomate", "Cebolla", "Sal"] },
-    { id: 4, nombre: "Bandeja paisa", precio: 30000, ingredientes: ["Arroz", "Plátano", "Tocineta", "Carne molida", "Arepa", "Aguacate", "Chorizo", "Huevos", "Fríjoles"] }
-    ];
-    return productosIniciales.filter(producto => incluirNoDisponibles || window.RequestyInventario.productoDisponible(producto));
-  } catch (error) {
-    document.getElementById("orderCartMessage").textContent = error.message || "No se pudo comprobar el inventario.";
-    return [];
-  }
-}
+    function detectarCanal(order) {
+        if (order.numero_mesa || order.id_mesa) return "Mesa";
+        const obs = String(order.observaciones || "").toLowerCase();
+        if (obs.includes("domicilio")) return "Domicilio";
+        return "Para Llevar";
+    }
 
-function leerCarritoMesero() {
-  const correo = leerSesion()?.correo?.toLowerCase();
-  if (!correo) return { key: "", items: [] };
-  const key = `requestyCarrito:${encodeURIComponent(correo)}`;
-  try {
-    const guardados = JSON.parse(localStorage.getItem(key) || "[]");
-    if (!Array.isArray(guardados)) return { key, items: [] };
-    const productos = leerProductosPedido(true);
-    const items = guardados.flatMap(carritoItem => {
-      const producto = productos.find(actual => String(actual.id) === String(carritoItem.id));
-      if (!producto) return [];
-      return [{
-        id: producto.id,
-        nombre: producto.nombre,
-        precio: Number(producto.precio),
-        cantidad: Math.max(1, Math.min(99, Math.floor(Number(carritoItem.cantidad) || 1))),
-        ingredientes: Array.isArray(producto.ingredientes) ? producto.ingredientes : String(producto.ingredientes || "").split(",").map(item => item.trim()).filter(Boolean),
-        alternativaReceta: obtenerAlternativaDisponible(producto, window.RequestyInventario.leerInventario()),
-        terminoCoccion: String(carritoItem.terminoCoccion || ""),
-        ingredientesExcluidos: Array.isArray(carritoItem.ingredientesExcluidos) ? carritoItem.ingredientesExcluidos : [],
-        extras: Array.isArray(carritoItem.extras) ? carritoItem.extras : [],
-        optionsOpen: false
-      }];
+    function etiquetaEstado(st) {
+        const map = {
+            PENDIENTE: "En cola",
+            EN_PREPARACION: "En preparación",
+            LISTO: "Listo para servir",
+            ENTREGADO: "Entregado",
+            PAGADO: "Pagado",
+            CANCELADO: "Cancelado"
+        };
+        return map[String(st || "").toUpperCase()] || st;
+    }
+
+    function claseEstado(st) {
+        const map = {
+            PENDIENTE: "status-nuevo",
+            EN_PREPARACION: "status-preparando",
+            LISTO: "status-listo",
+            ENTREGADO: "status-entregado",
+            PAGADO: "status-entregado",
+            CANCELADO: "status-cancelado"
+        };
+        return map[String(st || "").toUpperCase()] || "status-nuevo";
+    }
+
+    function iconCanal(canal) {
+        if (canal === "Mesa") return "fa-utensils";
+        if (canal === "Domicilio") return "fa-motorcycle";
+        return "fa-bag-shopping";
+    }
+
+    function formatOrderItems(items = []) {
+        return items.map((i) => `${i.producto_nombre || i.nombre} × ${i.cantidad}`).join(", ") || "—";
+    }
+
+    function renderOrders() {
+        const filtered = ordersData.filter((order) => {
+            const canal = detectarCanal(order);
+            const destino = order.numero_mesa ? `Mesa ${order.numero_mesa}` : (order.observaciones || "Mostrador");
+            const searchable = `#${order.id_pedido} ${destino} ${order.cliente_nombre || ""} ${formatOrderItems(order.items)}`.toLocaleLowerCase("es");
+            return (activeFilter === "all" || canal === activeFilter) && searchable.includes(searchQuery.toLocaleLowerCase("es"));
+        });
+
+        if (!filtered.length) {
+            ordersTbody.innerHTML = '<tr><td colspan="8" class="orders-empty">No se encontraron pedidos.</td></tr>';
+            return;
+        }
+
+        const sesion = window.RequestyAPI.leerSesion();
+        const rol = String(sesion?.rol || "").toUpperCase();
+        const puedeEntregar = ["MESERO", "ADMIN"].includes(rol);
+
+        ordersTbody.innerHTML = filtered.map((order) => {
+            const canal = detectarCanal(order);
+            const st = String(order.estado || "PENDIENTE").toUpperCase();
+            const destino = order.numero_mesa
+                ? `Mesa ${order.numero_mesa}${order.cliente_nombre ? ` · ${order.cliente_nombre}` : ""}`
+                : (order.observaciones || "Para Llevar");
+            const hora = new Date(order.fecha_hora).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+            const btnEntregar = (puedeEntregar && st === "LISTO")
+                ? `<button class="action-btn deliver" type="button" data-order-deliver="${Number(order.id_pedido)}" title="Entregar pedido">Entregar</button>`
+                : "";
+            const editable = st === "PENDIENTE";
+            const cancelable = !["PAGADO", "CANCELADO"].includes(st);
+            return `<tr>
+                <td class="id-col">#${Number(order.id_pedido)}</td>
+                <td>${esc(destino)}</td>
+                <td><span class="badge-channel"><i class="fa-solid ${iconCanal(canal)}"></i> ${esc(canal)}</span></td>
+                <td>${esc(hora)}</td>
+                <td class="order-items-summary">${esc(formatOrderItems(order.items))}</td>
+                <td class="price-col">${formatCurrency(order.total)}</td>
+                <td><span class="badge-status ${claseEstado(st)}">${esc(etiquetaEstado(st))}</span></td>
+                <td class="text-right">
+                    ${btnEntregar}
+                    ${editable ? `<button class="action-btn edit" type="button" data-order-edit="${Number(order.id_pedido)}" title="Editar pedido"><i class="fa-regular fa-pen-to-square"></i></button>` : ""}
+                    ${cancelable ? `<button class="action-btn delete" type="button" data-order-delete="${Number(order.id_pedido)}" title="Cancelar pedido"><i class="fa-regular fa-trash-can"></i></button>` : ""}
+                </td>
+            </tr>`;
+        }).join("");
+    }
+
+    async function cargarTodo() {
+        try {
+            const [resPed, resMesas, resProd] = await Promise.all([
+                window.RequestyAPI.get("api/pedidos"),
+                window.RequestyAPI.get("api/mesas"),
+                window.RequestyAPI.get("api/productos")
+            ]);
+            ordersData = Array.isArray(resPed?.pedidos) ? resPed.pedidos : [];
+            mesasCache = Array.isArray(resMesas?.mesas) ? resMesas.mesas : [];
+            productosCache = Array.isArray(resProd?.productos) ? resProd.productos : [];
+            renderOrders();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const agregarId = urlParams.get("agregar");
+            if (agregarId) {
+                abrirNuevoPedido(Number(agregarId));
+                window.history.replaceState(null, "", "index.php?page=pedidos");
+            }
+        } catch (err) {
+            document.getElementById("pedido-notificacion").textContent = err.message || "Error al consultar pedidos.";
+        }
+    }
+
+    function cargarMesasSelect(idMesaPre = "") {
+        const rol = String(window.RequestyAPI.leerSesion()?.rol || "").toUpperCase();
+        const esMesero = rol === "MESERO";
+        const lista = mesasCache.filter((m) => !esMesero || m.estado === "OCUPADA");
+        tableInput.innerHTML = `<option value="">${esMesero ? "Selecciona mesa ocupada" : "Selecciona una mesa"}</option>` +
+            lista.map((m) => `<option value="${Number(m.id_mesa)}" data-cliente-nombre="${esc(m.cliente_nombre || "")}" data-cliente-correo="${esc(m.cliente_correo || "")}">Mesa ${Number(m.numero_mesa)} · ${esc(m.estado)}${m.cliente_nombre ? ` · ${esc(m.cliente_nombre)}` : ""}</option>`).join("");
+        if (idMesaPre) tableInput.value = String(idMesaPre);
+    }
+
+    function cargarProductosSelect() {
+        productSelect.innerHTML = '<option value="">Selecciona un producto...</option>' +
+            productosCache.map((p) => {
+                const ok = Boolean(p.disponible_stock);
+                return `<option value="${Number(p.id_producto)}" ${ok ? "" : "disabled"}>${esc(p.nombre)} · ${formatCurrency(p.precio)}${ok ? "" : " (Sin stock)"}</option>`;
+            }).join("");
+        document.getElementById("btnAddProduct").disabled = !productSelect.value;
+    }
+
+    function totalItem(item) {
+        const extras = (item.extras || []).reduce((s, e) => s + Number(e.costo_extra || 0) * Number(e.cantidad || 1), 0);
+        return (Number(item.precio || 0) + extras) * Number(item.cantidad || 1);
+    }
+
+    function renderDraftItems() {
+        const emptyEl = document.getElementById("emptyOrderCart");
+        emptyEl.hidden = draftItems.length > 0;
+        if (!draftItems.length) {
+            orderCartItems.innerHTML = "";
+            document.getElementById("orderTotal").textContent = formatCurrency(0);
+            return;
+        }
+        orderCartItems.innerHTML = draftItems.map((item, idx) => {
+            const receta = Array.isArray(item.receta) ? item.receta : [];
+            const checksHtml = receta.length ? `
+                <div style="margin-top:6px;">
+                    <small>Excluir ingredientes:</small>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+                        ${receta.map((r) => `<label style="font-size:12px;"><input type="checkbox" data-item-exclude="${idx}" value="${esc(r.nombre)}" ${(item.ingredientes_excluidos || []).includes(r.nombre) ? "checked" : ""}> Sin ${esc(r.nombre)}</label>`).join("")}
+                    </div>
+                </div>` : "";
+            return `<div class="order-cart-item" style="border:1px solid #e5e7eb; padding:10px; border-radius:8px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <strong>${esc(item.nombre)} (${formatCurrency(item.precio)})</strong>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <input type="number" min="1" max="99" value="${Number(item.cantidad)}" data-item-qty="${idx}" style="width:64px;">
+                        <button type="button" class="btn-secondary" data-item-opts="${idx}">Opciones</button>
+                        <button type="button" class="btn-secondary" data-item-del="${idx}">Quitar</button>
+                    </div>
+                </div>
+                ${item.optionsOpen ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #d1d5db;">
+                    <label style="display:block; font-size:12px;">Término / Preparación
+                        <input type="text" data-item-termino="${idx}" value="${esc(item.termino_coccion || "")}" placeholder="Ej. Término medio / En leche" style="width:100%; margin-top:4px;">
+                    </label>
+                    <label style="display:block; font-size:12px; margin-top:6px;">Notas cocina
+                        <input type="text" data-item-obs="${idx}" value="${esc(item.observaciones || "")}" placeholder="Sin sal, bien cocido..." style="width:100%; margin-top:4px;">
+                    </label>
+                    ${checksHtml}
+                </div>` : ""}
+            </div>`;
+        }).join("");
+        const total = draftItems.reduce((sum, i) => sum + totalItem(i), 0);
+        document.getElementById("orderTotal").textContent = formatCurrency(total);
+    }
+
+    function actualizarDestino() {
+        const canal = channelSelect.value;
+        tableGroup.hidden = canal !== "Mesa";
+        addressGroup.hidden = canal !== "Domicilio";
+        tableInput.required = canal === "Mesa";
+    }
+
+    function abrirNuevoPedido(preselectProdId = null) {
+        orderForm.reset();
+        editOrderId.value = "";
+        modalTitle.textContent = "Nuevo Pedido";
+        orderIdInput.value = "Automático (BD)";
+        statusSelect.value = "PENDIENTE";
+        statusSelect.disabled = true;
+        channelSelect.value = "Mesa";
+        actualizarDestino();
+        cargarMesasSelect();
+        cargarProductosSelect();
+        draftItems = [];
+
+        if (preselectProdId) {
+            const prod = productosCache.find((p) => Number(p.id_producto) === Number(preselectProdId) && p.disponible_stock);
+            if (prod) {
+                draftItems.push({
+                    id_producto: Number(prod.id_producto),
+                    nombre: prod.nombre,
+                    precio: Number(prod.precio),
+                    cantidad: 1,
+                    receta: prod.receta || [],
+                    termino_coccion: "",
+                    observaciones: "",
+                    ingredientes_excluidos: [],
+                    extras: [],
+                    optionsOpen: false
+                });
+            }
+        }
+        renderDraftItems();
+        document.getElementById("orderCartMessage").textContent = "";
+        orderModal.classList.add("active");
+    }
+
+    function editarPedido(idPedido) {
+        const order = ordersData.find((o) => Number(o.id_pedido) === Number(idPedido));
+        if (!order) return;
+        orderForm.reset();
+        editOrderId.value = String(order.id_pedido);
+        modalTitle.textContent = `Editar Pedido #${order.id_pedido}`;
+        orderIdInput.value = `#${order.id_pedido}`;
+        statusSelect.value = order.estado;
+        statusSelect.disabled = false;
+        const canal = detectarCanal(order);
+        channelSelect.value = canal;
+        actualizarDestino();
+        cargarMesasSelect(order.id_mesa || "");
+        cargarProductosSelect();
+        customerNameInput.value = order.cliente_nombre || "";
+        customerEmailInput.value = order.cliente_correo || "";
+        destinationInput.value = order.observaciones || "";
+
+        draftItems = (order.items || []).map((it) => {
+            const prod = productosCache.find((p) => Number(p.id_producto) === Number(it.id_producto));
+            return {
+                id_producto: Number(it.id_producto),
+                nombre: it.producto_nombre,
+                precio: Number(it.precio_unitario),
+                cantidad: Number(it.cantidad),
+                receta: prod?.receta || [],
+                termino_coccion: it.termino_coccion || "",
+                observaciones: it.observaciones || "",
+                ingredientes_excluidos: it.ingredientes_excluidos || [],
+                extras: it.extras || [],
+                optionsOpen: false
+            };
+        });
+        renderDraftItems();
+        orderModal.classList.add("active");
+    }
+
+    function cerrarModalPedido() {
+        orderModal.classList.remove("active");
+    }
+
+    async function guardarPedido(evento) {
+        evento.preventDefault();
+        const msgEl = document.getElementById("orderCartMessage");
+        msgEl.textContent = "";
+
+        if (!draftItems.length) {
+            msgEl.textContent = "Agrega al menos un producto al pedido.";
+            return;
+        }
+
+        const canal = channelSelect.value;
+        const idMesa = canal === "Mesa" && tableInput.value ? Number(tableInput.value) : null;
+        if (canal === "Mesa" && !idMesa) {
+            msgEl.textContent = "Selecciona una mesa para el pedido.";
+            return;
+        }
+        const obs = canal === "Domicilio"
+            ? `Domicilio: ${destinationInput.value.trim()}`
+            : (canal === "Para Llevar" ? "Para Llevar" : (destinationInput.value.trim() || null));
+
+        const itemsPayload = draftItems.map((it) => ({
+            id_producto: Number(it.id_producto),
+            cantidad: Number(it.cantidad),
+            termino_coccion: it.termino_coccion || null,
+            observaciones: it.observaciones || null,
+            ingredientes_excluidos: it.ingredientes_excluidos || [],
+            extras: it.extras || []
+        }));
+
+        try {
+            if (editOrderId.value) {
+                const idPed = Number(editOrderId.value);
+                await window.RequestyAPI.put("api/pedidos", {
+                    id_pedido: idPed,
+                    id_mesa: idMesa,
+                    observaciones: obs,
+                    items: itemsPayload
+                });
+                const orig = ordersData.find((o) => Number(o.id_pedido) === idPed);
+                if (orig && statusSelect.value !== orig.estado && statusSelect.value !== "PENDIENTE") {
+                    await window.RequestyAPI.post("api/pedidos", { id_pedido: idPed, estado: statusSelect.value });
+                }
+            } else {
+                await window.RequestyAPI.post("api/pedidos", {
+                    id_mesa: idMesa,
+                    cliente_nombre: customerNameInput.value.trim() || null,
+                    cliente_correo: customerEmailInput.value.trim().toLowerCase() || null,
+                    observaciones: obs,
+                    items: itemsPayload
+                });
+            }
+            cerrarModalPedido();
+            await cargarTodo();
+        } catch (err) {
+            msgEl.textContent = err.message || "No se pudo guardar el pedido.";
+        }
+    }
+
+    async function entregarPedido(idPedido) {
+        try {
+            await window.RequestyAPI.post("api/pedidos", { id_pedido: Number(idPedido), estado: "ENTREGADO" });
+            document.getElementById("pedido-notificacion").textContent = `Pedido #${idPedido} entregado al cliente.`;
+            await cargarTodo();
+        } catch (err) {
+            document.getElementById("pedido-notificacion").textContent = err.message || "No se pudo entregar el pedido.";
+        }
+    }
+
+    async function cancelarPedido(idPedido) {
+        if (!window.confirm(`¿Cancelar lógicamente el pedido #${idPedido}?`)) return;
+        try {
+            await window.RequestyAPI.del("api/pedidos", null, { id: idPedido });
+            document.getElementById("pedido-notificacion").textContent = `Pedido #${idPedido} cancelado.`;
+            await cargarTodo();
+        } catch (err) {
+            document.getElementById("pedido-notificacion").textContent = err.message || "No se pudo cancelar el pedido.";
+        }
+    }
+
+    async function verNotificaciones() {
+        const notifEl = document.getElementById("pedido-notificacion");
+        try {
+            const res = await window.RequestyAPI.get("api/notificaciones", { no_leidas: 1 });
+            const lista = res?.notificaciones || [];
+            if (!lista.length) {
+                notifEl.textContent = "Sin notificaciones nuevas pendientes.";
+                return;
+            }
+            notifEl.textContent = lista.map((n) => `• ${n.mensaje}`).slice(0, 3).join(" | ");
+            await window.RequestyAPI.put("api/notificaciones", { todas: true });
+        } catch {
+            notifEl.textContent = "Los cambios de estado de tus pedidos aparecerán aquí.";
+        }
+    }
+
+    btnNewOrder?.addEventListener("click", () => abrirNuevoPedido());
+    btnCloseModal?.addEventListener("click", cerrarModalPedido);
+    btnCancelModal?.addEventListener("click", cerrarModalPedido);
+    orderForm?.addEventListener("submit", guardarPedido);
+    channelSelect?.addEventListener("change", actualizarDestino);
+
+    tableInput?.addEventListener("change", () => {
+        const opt = tableInput.selectedOptions[0];
+        if (!opt?.value) return;
+        customerNameInput.value = opt.dataset.clienteNombre || "";
+        customerEmailInput.value = opt.dataset.clienteCorreo || "";
     });
-    return { key, items };
-  } catch {
-    return { key, items: [] };
-  }
-}
 
-function escaparHTML(valor) {
-  return String(valor ?? "").replace(/[&<>"']/g, caracter => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  })[caracter]);
-}
-
-function formatCurrency(amount) {
-  return "$" + Number(amount).toLocaleString("es-CO");
-}
-
-function getChannelIcon(channel) {
-  if (channel === "Mesa") return "fa-utensils";
-  if (channel === "Domicilio") return "fa-motorcycle";
-  return "fa-bag-shopping";
-}
-
-function getStatusClass(status) {
-  return ({
-    "En cola": "status-nuevo",
-    "En preparación": "status-preparando",
-    "Listo para servir": "status-listo",
-    Entregado: "status-entregado",
-    Cancelado: "status-cancelado"
-  })[normalizarEstadoPedido(status)] || "status-nuevo";
-}
-
-function esMeseroSesion() {
-  return normalizarRolPedido(leerSesion()?.rol) === "mesero";
-}
-
-function formatOrderItems(items = []) {
-  return items.map(item => `${item.nombre}${item.alternativaReceta ? ` (${item.alternativaReceta})` : ""} × ${item.cantidad}`).join(", ") || "—";
-}
-
-function renderOrders() {
-  const filteredOrders = ordersData.filter(order => {
-    const searchable = `${order.id} ${order.destination} ${formatOrderItems(order.items)}`.toLocaleLowerCase("es");
-    return (activeFilter === "all" || order.channel === activeFilter) && searchable.includes(searchQuery.toLocaleLowerCase("es"));
-  });
-  if (!filteredOrders.length) {
-    ordersTbody.innerHTML = '<tr><td colspan="8" class="orders-empty">No se encontraron pedidos.</td></tr>';
-    return;
-  }
-
-  ordersTbody.innerHTML = filteredOrders.map(order => `
-    <tr>
-      <td class="id-col">${escaparHTML(order.id)}</td>
-      <td>${escaparHTML(order.destination)}</td>
-      <td><span class="badge-channel"><i class="fa-solid ${escaparHTML(order.channelIcon || getChannelIcon(order.channel))}"></i> ${escaparHTML(order.channel)}</span></td>
-      <td>${escaparHTML(order.time)}</td>
-      <td class="order-items-summary">${escaparHTML(formatOrderItems(order.items))}</td>
-      <td class="price-col">${formatCurrency(order.rawTotal)}</td>
-      <td><span class="badge-status ${escaparHTML(order.statusClass || getStatusClass(order.status))}">${escaparHTML(order.status)}</span></td>
-      <td class="text-right">${esMeseroSesion() && normalizarEstadoPedido(order.status) === "Listo para servir" ? `<button class="action-btn deliver" type="button" data-order-deliver="${escaparHTML(order.id)}" title="Entregar pedido al cliente" aria-label="Entregar pedido ${escaparHTML(order.id)}">Entregar</button>` : ""}<button class="action-btn edit" type="button" data-order-edit="${escaparHTML(order.id)}" title="Editar pedido" aria-label="Editar pedido ${escaparHTML(order.id)}"><i class="fa-regular fa-pen-to-square"></i></button><button class="action-btn delete" type="button" data-order-delete="${escaparHTML(order.id)}" title="Eliminar pedido" aria-label="Eliminar pedido ${escaparHTML(order.id)}"><i class="fa-regular fa-trash-can"></i></button></td>
-    </tr>`).join("");
-}
-
-function generarIdPedido() {
-  const ahora = new Date();
-  const fechaHora = [
-    ahora.getFullYear(),
-    String(ahora.getMonth() + 1).padStart(2, "0"),
-    String(ahora.getDate()).padStart(2, "0")
-  ].join("") + `-${String(ahora.getHours()).padStart(2, "0")}${String(ahora.getMinutes()).padStart(2, "0")}${String(ahora.getSeconds()).padStart(2, "0")}`;
-  const facturasGuardadas = localStorage.getItem("requestyFacturas");
-  let facturas = [];
-  if (facturasGuardadas !== null) {
-    facturas = JSON.parse(facturasGuardadas);
-    if (!Array.isArray(facturas)) throw new Error("El historial de facturas no tiene un formato válido.");
-  }
-  const idsUsados = new Set([
-    ...ordersData.map(pedido => String(pedido.id)),
-    ...facturas.map(factura => String(factura.pedidoId)),
-    ...idsPedidoReservados
-  ]);
-  let consecutivo = 1;
-  let id = `#${fechaHora}-${String(consecutivo).padStart(2, "0")}`;
-  while (idsUsados.has(id)) {
-    consecutivo += 1;
-    id = `#${fechaHora}-${String(consecutivo).padStart(2, "0")}`;
-  }
-  idsPedidoReservados.add(id);
-  return id;
-}
-
-function cargarProductosSelect() {
-  const productos = leerProductosPedido(true);
-  const mensajePedido = document.getElementById("orderCartMessage");
-  if (mensajePedido.textContent === mensajeInventarioPedido) mensajePedido.textContent = "";
-  mensajeInventarioPedido = "";
-  let inventario = [];
-  let errorInventario = "";
-  try {
-    inventario = window.RequestyInventario.leerInventario();
-  } catch (error) {
-    errorInventario = error.message || "No se pudo comprobar el inventario.";
-  }
-  const productosDisponibles = productos.filter(producto => !errorInventario
-    && window.RequestyInventario.productoDisponible(producto, inventario)).length;
-  productSelect.innerHTML = `<option value="" selected disabled>Selecciona un producto</option>`
-    + productos.map(producto => {
-      const disponible = !errorInventario && window.RequestyInventario.productoDisponible(producto, inventario);
-      const ingredientesAgotados = disponible ? [] : window.RequestyInventario.obtenerIngredientesAgotados(producto, inventario);
-      const estado = disponible
-        ? ""
-        : errorInventario
-          ? ` · ${errorInventario}`
-          : ingredientesAgotados.length
-            ? ` · SIN STOCK: ${ingredientesAgotados.join(", ")}`
-            : " · NO DISPONIBLE";
-      return `<option value="${escaparHTML(producto.id)}" class="${disponible ? "" : "producto-agotado"}" ${disponible ? "" : "disabled"}>${escaparHTML(producto.nombre)} · ${formatCurrency(producto.precio)}${escaparHTML(estado)}</option>`;
-    }).join("");
-  productSelect.value = "";
-  document.getElementById("btnAddProduct").disabled = true;
-  if (errorInventario) {
-    mensajePedido.textContent = errorInventario;
-    mensajeInventarioPedido = errorInventario;
-  } else if (productos.length && !productosDisponibles) {
-    mensajeInventarioPedido = "No hay productos disponibles para agregar. Los platos sin stock se muestran en rojo y tachados.";
-    mensajePedido.textContent = mensajeInventarioPedido;
-  } else if (productos.length && productosDisponibles < productos.length) {
-    mensajeInventarioPedido = "Los productos sin stock se muestran en rojo y tachados y no se pueden agregar.";
-    mensajePedido.textContent = mensajeInventarioPedido;
-  } else if (!productos.length && !document.getElementById("orderCartMessage").textContent) {
-    mensajeInventarioPedido = "No hay productos activos con precio e ingredientes en el menú.";
-    mensajePedido.textContent = mensajeInventarioPedido;
-  }
-}
-
-function totalItem(item) {
-  const extras = (item.extras || []).reduce((total, extra) => total + Number(extra.cantidad || 0) * Number(extra.precio || 0), 0);
-  return (Number(item.precio) + extras) * Number(item.cantidad);
-}
-
-function renderDraftItems() {
-  let inventario = [];
-  let productosCatalogo = [];
-  let errorInventario = "";
-  try {
-    inventario = window.RequestyInventario.leerInventario();
-    productosCatalogo = leerProductosPedido(true);
-  } catch (error) {
-    errorInventario = error.message || "No se pudo comprobar el inventario.";
-    document.getElementById("orderCartMessage").textContent = errorInventario;
-  }
-  document.getElementById("emptyOrderCart").hidden = draftItems.length > 0;
-  orderCartItems.innerHTML = draftItems.map(item => {
-    const producto = productosCatalogo.find(actual => String(actual.id) === String(item.id));
-    const disponible = !errorInventario && producto && window.RequestyInventario.productoDisponible(producto, inventario, item.alternativaReceta);
-    const ingredientesAgotados = producto
-    ? window.RequestyInventario.obtenerIngredientesAgotados(producto, inventario, item.alternativaReceta)
-      : [];
-    const mensajeNoDisponible = errorInventario || !producto
-      ? errorInventario || "Este producto ya no está disponible en el menú."
-      : ingredientesAgotados.length
-        ? `No disponible · Falta stock de: ${ingredientesAgotados.join(", ")}`
-        : "No disponible";
-    return `
-    <article class="order-item ${disponible ? "" : "no-stock"}" data-order-item="${escaparHTML(item.id)}">
-      <header class="order-item-header"><div><h4 class="${disponible ? "" : "no-stock-text"}">${escaparHTML(item.nombre)}</h4><p>${formatCurrency(item.precio)} c/u</p>${disponible ? "" : `<p class="order-item-stock-message">${escaparHTML(mensajeNoDisponible)}</p>`}</div><button type="button" class="action-btn delete" data-item-remove="${escaparHTML(item.id)}" aria-label="Quitar ${escaparHTML(item.nombre)} del pedido"><i class="fa-regular fa-trash-can"></i></button></header>
-      <div class="order-item-controls"><label>Cantidad<input type="number" min="1" max="99" value="${item.cantidad}" data-item-quantity="${escaparHTML(item.id)}" ${disponible ? "" : "disabled"}></label><strong>${formatCurrency(totalItem(item))}</strong></div>
-      ${(producto?.recetaAlternativas || []).map(grupo => `<label class="recipe-option-label">${escaparHTML(grupo.nombre)}<select data-item-recipe-option="${escaparHTML(item.id)}" ${disponible ? "" : "disabled"}>${(grupo.opciones || []).map(opcion => {
-        const disponibleOpcion = window.RequestyInventario.productoDisponible(producto, inventario, opcion.ingrediente);
-        return `<option value="${escaparHTML(opcion.ingrediente)}" ${String(item.alternativaReceta || "") === String(opcion.ingrediente) ? "selected" : ""} ${disponibleOpcion ? "" : "disabled"}>${escaparHTML(opcion.ingrediente)}${disponibleOpcion ? "" : " · sin stock suficiente"}</option>`;
-      }).join("")}</select></label>`).join("")}
-      <button type="button" class="customize-order-item" data-item-options="${escaparHTML(item.id)}" ${disponible ? "" : "disabled"}>${item.optionsOpen ? "Cerrar personalización" : "Personalizar"}</button>
-      ${item.optionsOpen && disponible ? `<div class="order-item-options">
-        <label>Término de cocción<select data-item-cooking="${escaparHTML(item.id)}"><option value="">No aplica</option>${["Poco cocido", "Término medio", "Tres cuartos", "Bien cocido"].map(term => `<option value="${term}" ${item.terminoCoccion === term ? "selected" : ""}>${term}</option>`).join("")}</select></label>
-        <fieldset><legend>Excluir ingredientes</legend>${(item.ingredientes || []).length ? item.ingredientes.map(ingredient => `<label><input type="checkbox" value="${escaparHTML(ingredient)}" data-item-exclude="${escaparHTML(item.id)}" ${item.ingredientesExcluidos.includes(ingredient) ? "checked" : ""}>${escaparHTML(ingredient)}</label>`).join("") : "<p>Sin ingredientes configurados.</p>"}</fieldset>
-        <div class="order-extras"><h5>Porciones extra</h5><div class="order-extra-form"><label>Extra<input type="text" maxlength="60" data-extra-name="${escaparHTML(item.id)}" placeholder="Ej. Huevo extra"></label><label>Cantidad<input type="number" min="1" max="20" value="1" data-extra-quantity="${escaparHTML(item.id)}"></label><label>Precio unitario<input type="number" min="0" step="100" value="0" data-extra-price="${escaparHTML(item.id)}"></label><button type="button" data-extra-add="${escaparHTML(item.id)}">Agregar extra</button></div>
-          ${(item.extras || []).length ? `<ul>${item.extras.map((extra, index) => `<li><span>${escaparHTML(extra.nombre)} × ${extra.cantidad} · ${formatCurrency(extra.precio)} c/u</span><button type="button" data-extra-remove="${escaparHTML(item.id)}" data-extra-index="${index}">Quitar</button></li>`).join("")}</ul>` : ""}
-        </div>
-      </div>` : ""}
-    </article>`;
-  }).join("");
-  document.getElementById("orderTotal").textContent = formatCurrency(draftItems.reduce((total, item) => total + totalItem(item), 0));
-}
-
-function actualizarDestino() {
-  const esMesa = channelSelect.value === "Mesa";
-  const esDomicilio = channelSelect.value === "Domicilio";
-  tableGroup.hidden = !esMesa;
-  tableInput.required = esMesa;
-  addressGroup.hidden = !esDomicilio;
-  destinationInput.required = esDomicilio;
-  tableInput.required = esMesa;
-  if (esMesa) cargarMesasPedido(tableInput.value);
-}
-
-function iniciarPedido() {
-  let nuevoId;
-  try {
-    nuevoId = generarIdPedido();
-  } catch (error) {
-    document.getElementById("pedido-notificacion").textContent = error.message || "No se pudo generar un ID único para el pedido.";
-    return;
-  }
-  orderForm.reset();
-  editOrderId.value = "";
-  orderIdInput.value = nuevoId;
-  modalTitle.textContent = "Nuevo pedido";
-  const carritoMesero = leerCarritoMesero();
-  carritoOrigenKey = carritoMesero.key;
-  draftItems = carritoMesero.items;
-  document.getElementById("orderCartMessage").textContent = draftItems.length
-    ? `Se importaron ${draftItems.length} producto(s) del carrito.`
-    : "";
-  statusSelect.value = "En cola";
-  customerEmailInput.value = "";
-  customerNameInput.value = "";
-  channelSelect.value = "Mesa";
-  cargarMesasPedido();
-  actualizarDestino();
-  cargarProductosSelect();
-  renderDraftItems();
-  orderModal.classList.add("active");
-}
-
-function cerrarModalPedido() {
-  orderModal.classList.remove("active");
-  orderForm.reset();
-  editOrderId.value = "";
-  draftItems = [];
-  carritoOrigenKey = "";
-}
-
-function editarPedido(id) {
-  const pedido = ordersData.find(order => order.id === id);
-  if (!pedido) return;
-  orderForm.reset();
-  editOrderId.value = pedido.id;
-  carritoOrigenKey = "";
-  orderIdInput.value = pedido.id;
-  statusSelect.value = normalizarEstadoPedido(pedido.status);
-  customerEmailInput.value = pedido.customerEmail || "";
-  customerNameInput.value = pedido.customerName || "";
-  channelSelect.value = pedido.channel;
-  const numeroMesa = pedido.tableNumber || Number(String(pedido.destination).match(/\d+/)?.[0] || "");
-  cargarMesasPedido(numeroMesa);
-  destinationInput.value = pedido.channel === "Domicilio" ? pedido.destination : "";
-  draftItems = Array.isArray(pedido.items) ? pedido.items.map(item => ({
-    ...item,
-    ingredientes: Array.isArray(item.ingredientes) ? item.ingredientes : [],
-    ingredientesExcluidos: Array.isArray(item.ingredientesExcluidos) ? item.ingredientesExcluidos : [],
-    extras: Array.isArray(item.extras) ? item.extras : [],
-    alternativaReceta: item.alternativaReceta || obtenerAlternativaDisponible(leerProductosPedido(true).find(producto => String(producto.id) === String(item.id)), window.RequestyInventario.leerInventario()),
-    terminoCoccion: item.terminoCoccion || "",
-    optionsOpen: false
-  })) : [];
-  modalTitle.textContent = `Editar pedido ${pedido.id}`;
-  document.getElementById("orderCartMessage").textContent = "";
-  actualizarDestino();
-  cargarProductosSelect();
-  renderDraftItems();
-  orderModal.classList.add("active");
-}
-
-function guardarExtraDeLinea(id) {
-  const article = orderCartItems.querySelector(`[data-order-item="${CSS.escape(String(id))}"]`);
-  const nombre = article.querySelector(`[data-extra-name="${CSS.escape(String(id))}"]`).value.trim();
-  const cantidad = Math.floor(Number(article.querySelector(`[data-extra-quantity="${CSS.escape(String(id))}"]`).value));
-  const precio = Number(article.querySelector(`[data-extra-price="${CSS.escape(String(id))}"]`).value);
-  if (!nombre || !Number.isInteger(cantidad) || cantidad < 1 || cantidad > 20 || !Number.isFinite(precio) || precio < 0) {
-    document.getElementById("orderCartMessage").textContent = "Completa el extra, la cantidad y un precio unitario válido.";
-    return;
-  }
-  const item = draftItems.find(line => String(line.id) === String(id));
-  item.extras.push({ nombre, cantidad, precio });
-  document.getElementById("orderCartMessage").textContent = "";
-  renderDraftItems();
-}
-
-function renderOrders() {
-  const filteredOrders = ordersData.filter(order => {
-    const searchable = `${order.id} ${order.destination} ${formatOrderItems(order.items)}`.toLocaleLowerCase("es");
-    return (activeFilter === "all" || order.channel === activeFilter) && searchable.includes(searchQuery.toLocaleLowerCase("es"));
-  });
-  if (!filteredOrders.length) {
-    ordersTbody.innerHTML = '<tr><td colspan="8" class="orders-empty">No se encontraron pedidos.</td></tr>';
-    return;
-  }
-
-  ordersTbody.innerHTML = filteredOrders.map(order => `
-    <tr>
-      <td class="id-col">${escaparHTML(order.id)}</td>
-      <td>${escaparHTML(order.destination)}</td>
-      <td><span class="badge-channel"><i class="fa-solid ${escaparHTML(order.channelIcon || getChannelIcon(order.channel))}"></i> ${escaparHTML(order.channel)}</span></td>
-      <td>${escaparHTML(order.time)}</td>
-      <td class="order-items-summary">${escaparHTML(formatOrderItems(order.items))}</td>
-      <td class="price-col">${formatCurrency(order.rawTotal)}</td>
-      <td><span class="badge-status ${escaparHTML(order.statusClass || getStatusClass(order.status))}">${escaparHTML(order.status)}</span></td>
-      <td class="text-right">${esMeseroSesion() && normalizarEstadoPedido(order.status) === "Listo para servir" ? `<button class="action-btn deliver" type="button" data-order-deliver="${escaparHTML(order.id)}" title="Entregar pedido al cliente" aria-label="Entregar pedido ${escaparHTML(order.id)}">Entregar</button>` : ""}<button class="action-btn edit" type="button" data-order-edit="${escaparHTML(order.id)}" aria-label="Editar pedido ${escaparHTML(order.id)}"><i class="fa-regular fa-pen-to-square"></i></button><button class="action-btn delete" type="button" data-order-delete="${escaparHTML(order.id)}" aria-label="Eliminar pedido ${escaparHTML(order.id)}"><i class="fa-regular fa-trash-can"></i></button></td>
-    </tr>`).join("");
-}
-
-function formatOrderItems(items = []) {
-  return items.map(item => `${item.nombre}${item.alternativaReceta ? ` (${item.alternativaReceta})` : ""} × ${item.cantidad}`).join(", ") || "—";
-}
-
-function guardarPedido(evento) {
-  evento.preventDefault();
-  const original = editOrderId.value ? ordersData.find(order => order.id === editOrderId.value) : null;
-  if (!draftItems.length) {
-    document.getElementById("orderCartMessage").textContent = "Agrega al menos un producto antes de guardar.";
-    return;
-  }
-  let inventario;
-  try {
-    inventario = window.RequestyInventario.leerInventario();
-  } catch (error) {
-    document.getElementById("orderCartMessage").textContent = error.message || "No se pudo comprobar el inventario.";
-    return;
-  }
-  const productosActuales = leerProductosPedido(true);
-  const productoAgotado = draftItems.find(item => {
-    const producto = productosActuales.find(actual => String(actual.id) === String(item.id));
-    return !producto || !window.RequestyInventario.productoDisponible(producto, inventario, item.alternativaReceta);
-  });
-  if (productoAgotado) {
-    const producto = productosActuales.find(actual => String(actual.id) === String(productoAgotado.id));
-    if (!producto) {
-      document.getElementById("orderCartMessage").textContent = `${productoAgotado.nombre} ya no está en el catálogo y no se puede pedir.`;
-      return;
-    }
-    const faltantesDelPedido = window.RequestyInventario.validarDisponibilidadPedido(draftItems, productosActuales, inventario);
-    if (faltantesDelPedido.length) {
-      document.getElementById("orderCartMessage").textContent = `No se puede guardar el pedido: stock insuficiente de ${faltantesDelPedido.map(faltante =>
-        `${faltante.ingrediente} (disponible ${faltante.disponible}, requerido ${faltante.requerido})`
-      ).join(", ")}.`;
-      return;
-    }
-    const ingredientesAgotados = window.RequestyInventario.obtenerIngredientesAgotados(producto, inventario, productoAgotado.alternativaReceta);
-    document.getElementById("orderCartMessage").textContent = `${productoAgotado.nombre} no se puede pedir: ${ingredientesAgotados.length ? `sin stock de ${ingredientesAgotados.join(", ")}.` : "no está disponible."}`;
-    return;
-  }
-  let mesaPedido = null;
-  if (channelSelect.value === "Mesa") {
-    let mesas;
-    try {
-      mesas = JSON.parse(localStorage.getItem("requestyMesas") || "[]");
-    } catch {
-      document.getElementById("orderCartMessage").textContent = "No se pudo leer la lista de mesas. Revisa la gestión de mesas antes de guardar.";
-      return;
-    }
-    mesaPedido = Array.isArray(mesas) ? mesas.find(mesa => Number(mesa.numero) === Number(tableInput.value)) : null;
-    if (!mesaPedido) {
-      document.getElementById("orderCartMessage").textContent = "Selecciona una mesa existente.";
-      return;
-    }
-    if (normalizarRolPedido(leerSesion()?.rol) === "mesero" && mesaPedido.estado !== "ocupada") {
-      cargarMesasPedido();
-      document.getElementById("orderCartMessage").textContent = "Como mesero, solo puedes crear pedidos para mesas ocupadas.";
-      return;
-    }
-  }
-  if (channelSelect.value === "Domicilio" && !destinationInput.value.trim()) {
-    document.getElementById("orderCartMessage").textContent = "Escribe la dirección de entrega.";
-    return;
-  }
-
-  const rawTotal = draftItems.reduce((total, item) => total + totalItem(item), 0);
-  const ahora = new Date();
-  const numeroMesa = channelSelect.value === "Mesa" ? Number(tableInput.value) : null;
-  const destinoMesa = mesaPedido && (customerNameInput.value.trim() || customerEmailInput.value.trim())
-    ? `Mesa ${numeroMesa} · ${customerNameInput.value.trim() || mesaPedido.clienteNombre || "Cliente"}`
-    : `Mesa ${numeroMesa}`;
-  const destination = channelSelect.value === "Mesa" ? destinoMesa
-    : channelSelect.value === "Domicilio" ? destinationInput.value.trim() : "Para Llevar";
-  const pedido = {
-    id: orderIdInput.value,
-    destination,
-    channel: channelSelect.value,
-    channelIcon: getChannelIcon(channelSelect.value),
-    time: original?.time || ahora.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    receivedAt: original?.receivedAt || original?.createdAt || ahora.toISOString(),
-    createdAt: original?.createdAt || original?.receivedAt || ahora.toISOString(),
-    updatedAt: ahora.toISOString(),
-    rawTotal,
-    total: formatCurrency(rawTotal),
-    status: normalizarEstadoPedido(statusSelect.value),
-    statusClass: getStatusClass(statusSelect.value),
-    customerEmail: customerEmailInput.value.trim().toLocaleLowerCase("es") || original?.customerEmail || "",
-    customerName: customerNameInput.value.trim() || mesaPedido?.clienteNombre || original?.customerName || "",
-    tableId: mesaPedido?.id ?? original?.tableId ?? null,
-    tableNumber: numeroMesa,
-    createdByEmail: original?.createdByEmail || leerSesion()?.correo || "",
-    meseroEmail: original?.meseroEmail || (normalizarRolPedido(leerSesion()?.rol) === "mesero" ? leerSesion()?.correo || "" : ""),
-    items: draftItems.map(item => ({ ...item, optionsOpen: undefined }))
-  };
-  if (original) ordersData = ordersData.map(order => order.id === original.id ? pedido : order);
-  else ordersData.unshift(pedido);
-  if (!guardarPedidos()) return;
-  relacionarPedidosConMesas();
-  window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: ordersData }));
-  if (carritoOrigenKey) {
-    localStorage.removeItem(carritoOrigenKey);
-    carritoOrigenKey = "";
-  }
-  cerrarModalPedido();
-  renderOrders();
-}
-
-window.deleteOrder = function(id) {
-  if (!confirm(`¿Eliminar el pedido ${id}?`)) return;
-  ordersData = ordersData.filter(order => order.id !== id);
-  guardarPedidos();
-  relacionarPedidosConMesas();
-  renderOrders();
-};
-
-function entregarPedido(id) {
-  if (!esMeseroSesion()) {
-    document.getElementById("pedido-notificacion").textContent = "Solo el mesero responsable puede entregar el pedido.";
-    return;
-  }
-  const pedido = ordersData.find(actual => String(actual.id) === String(id));
-  if (!pedido || normalizarEstadoPedido(pedido.status) !== "Listo para servir") {
-    document.getElementById("pedido-notificacion").textContent = "El pedido debe estar listo para servir antes de entregarlo.";
-    return;
-  }
-  const correoResponsable = String(pedido.meseroEmail || "").toLocaleLowerCase("es");
-  if (correoResponsable && correoResponsable !== String(leerSesion()?.correo || "").toLocaleLowerCase("es")) {
-    document.getElementById("pedido-notificacion").textContent = "Este pedido está asignado a otro mesero.";
-    return;
-  }
-  ordersData = ordersData.map(actual => String(actual.id) === String(id)
-    ? { ...actual, status: "Entregado", statusClass: getStatusClass("Entregado"), deliveredAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    : actual);
-  if (!guardarPedidos()) return;
-  relacionarPedidosConMesas();
-  window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: ordersData }));
-  document.getElementById("pedido-notificacion").textContent = `Pedido ${id} entregado al cliente.`;
-  renderOrders();
-}
-
-orderCartItems.addEventListener("click", evento => {
-  const removeButton = evento.target.closest("[data-item-remove]");
-  if (removeButton) {
-    draftItems = draftItems.filter(item => String(item.id) !== removeButton.dataset.itemRemove);
-    renderDraftItems();
-    return;
-  }
-  const optionsButton = evento.target.closest("[data-item-options]");
-  if (optionsButton) {
-    const item = draftItems.find(line => String(line.id) === optionsButton.dataset.itemOptions);
-    item.optionsOpen = !item.optionsOpen;
-    renderDraftItems();
-    return;
-  }
-  const addExtraButton = evento.target.closest("[data-extra-add]");
-  if (addExtraButton) {
-    guardarExtraDeLinea(addExtraButton.dataset.extraAdd);
-    return;
-  }
-  const removeExtraButton = evento.target.closest("[data-extra-remove]");
-  if (removeExtraButton) {
-    const item = draftItems.find(line => String(line.id) === removeExtraButton.dataset.extraRemove);
-    item.extras.splice(Number(removeExtraButton.dataset.extraIndex), 1);
-    renderDraftItems();
-  }
-});
-
-orderCartItems.addEventListener("change", evento => {
-  const id = evento.target.dataset.itemQuantity || evento.target.dataset.itemCooking || evento.target.dataset.itemExclude || evento.target.dataset.itemRecipeOption;
-  if (!id) return;
-  const item = draftItems.find(line => String(line.id) === String(id));
-  if (!item) return;
-  if (evento.target.matches("[data-item-quantity]")) item.cantidad = Math.max(1, Math.min(99, Math.floor(Number(evento.target.value) || 1)));
-  if (evento.target.matches("[data-item-cooking]")) item.terminoCoccion = evento.target.value;
-  if (evento.target.matches("[data-item-recipe-option]")) item.alternativaReceta = evento.target.value;
-  if (evento.target.matches("[data-item-exclude]")) {
-    const excluidos = new Set(item.ingredientesExcluidos);
-    if (evento.target.checked) excluidos.add(evento.target.value);
-    else excluidos.delete(evento.target.value);
-    item.ingredientesExcluidos = [...excluidos];
-  }
-  renderDraftItems();
-});
-
-btnNewOrder.addEventListener("click", iniciarPedido);
-btnCloseModal.addEventListener("click", cerrarModalPedido);
-btnCancelModal.addEventListener("click", cerrarModalPedido);
-orderForm.addEventListener("submit", guardarPedido);
-channelSelect.addEventListener("change", actualizarDestino);
-tableInput.addEventListener("change", () => {
-  const opcion = tableInput.selectedOptions[0];
-  if (!opcion?.value) return;
-  customerNameInput.value = opcion.dataset.clienteNombre || "";
-  customerEmailInput.value = opcion.dataset.clienteCorreo || "";
-});
-document.getElementById("btnAddProduct").addEventListener("click", () => {
-  if (!productSelect.value) return;
-  const producto = leerProductosPedido().find(item => String(item.id) === productSelect.value);
-  if (!producto) {
-    document.getElementById("orderCartMessage").textContent = "El producto ya no está disponible para agregar.";
-    cargarProductosSelect();
-    return;
-  }
-  const existente = draftItems.find(item => String(item.id) === String(producto.id));
-  if (existente) existente.cantidad = Math.min(99, existente.cantidad + 1);
-  else draftItems.push({
-    id: producto.id,
-    nombre: producto.nombre,
-    precio: Number(producto.precio),
-    cantidad: 1,
-    ingredientes: Array.isArray(producto.ingredientes) ? producto.ingredientes : String(producto.ingredientes || "").split(",").map(item => item.trim()).filter(Boolean),
-    alternativaReceta: obtenerAlternativaDisponible(producto, window.RequestyInventario.leerInventario()),
-    terminoCoccion: "",
-    ingredientesExcluidos: [],
-    extras: [],
-    optionsOpen: false
-  });
-  productSelect.value = "";
-  document.getElementById("btnAddProduct").disabled = true;
-  renderDraftItems();
-});
-productSelect.addEventListener("change", () => {
-  const opcionSeleccionada = productSelect.selectedOptions[0];
-  document.getElementById("btnAddProduct").disabled = !productSelect.value || opcionSeleccionada.disabled;
-});
-document.getElementById("orderCartItems").addEventListener("input", evento => {
-  if (evento.target.matches("[data-item-quantity]")) {
-    const item = draftItems.find(line => String(line.id) === evento.target.dataset.itemQuantity);
-    if (item) {
-      item.cantidad = Math.max(1, Math.min(99, Math.floor(Number(evento.target.value) || 1)));
-      document.getElementById("orderTotal").textContent = formatCurrency(draftItems.reduce((total, line) => total + totalItem(line), 0));
-    }
-  }
-});
-
-filterBtns.forEach(btn => btn.addEventListener("click", () => {
-  filterBtns.forEach(tab => tab.classList.remove("active"));
-  btn.classList.add("active");
-  activeFilter = btn.dataset.filter;
-  renderOrders();
-}));
-searchInput.addEventListener("input", () => {
-  searchQuery = searchInput.value;
-  renderOrders();
-});
-ordersTbody.addEventListener("click", evento => {
-  const deliverButton = evento.target.closest("[data-order-deliver]");
-  if (deliverButton) {
-    entregarPedido(deliverButton.dataset.orderDeliver);
-    return;
-  }
-  const editButton = evento.target.closest("[data-order-edit]");
-  if (editButton) editarPedido(editButton.dataset.orderEdit);
-  const deleteButton = evento.target.closest("[data-order-delete]");
-  if (deleteButton) window.deleteOrder(deleteButton.dataset.orderDelete);
-});
-document.getElementById("btnNotifications").addEventListener("click", () => {
-  const notificacion = document.getElementById("pedido-notificacion");
-  if (!notificacion.textContent) notificacion.textContent = "Los cambios de estado de tus pedidos aparecerán aquí.";
-});
-document.getElementById("serverStatus").addEventListener("click", () => {
-  const text = document.getElementById("serverStatusText");
-  const dot = document.querySelector(".status-dot");
-  const pausado = text.textContent === "Servidor Activo";
-  text.textContent = pausado ? "Servidor Pausado" : "Servidor Activo";
-  dot.style.backgroundColor = pausado ? "#d93838" : "#4caf50";
-});
-
-window.addEventListener(window.RequestyInventario.eventoInventario, () => {
-  if (orderModal.classList.contains("active")) {
-    cargarProductosSelect();
-    renderDraftItems();
-  }
-});
-window.addEventListener("storage", evento => {
-  if (evento.key === "requestyPedidos") actualizarPedidosDesdeOtraInterfaz(evento.newValue);
-  if (evento.key === "requestyMesas" && orderModal.classList.contains("active") && channelSelect.value === "Mesa") {
-    cargarMesasPedido(tableInput.value);
-  }
-  if (evento.key === window.RequestyInventario.claveInventario && orderModal.classList.contains("active")) {
-    cargarProductosSelect();
-    renderDraftItems();
-  }
-});
-window.addEventListener("requesty-mesas-actualizadas", () => {
-  if (orderModal.classList.contains("active") && channelSelect.value === "Mesa") cargarMesasPedido(tableInput.value);
-});
-
-function actualizarPedidosDesdeOtraInterfaz(datos) {
-  try {
-    const pedidosNuevos = JSON.parse(datos || "[]");
-    if (!Array.isArray(pedidosNuevos)) throw new Error("La lista de pedidos sincronizada no es válida.");
-    const anteriores = new Map(ordersData.map(pedido => [String(pedido.id), normalizarEstadoPedido(pedido.status)]));
-    const sesion = leerSesion();
-    const correoSesion = String(sesion?.correo || "").toLocaleLowerCase("es");
-    const rolSesion = normalizarRolPedido(sesion?.rol);
-    const cambios = pedidosNuevos.filter(pedido => {
-      const estadoNuevo = normalizarEstadoPedido(pedido.status || pedido.estado);
-      const responsable = rolSesion === "mesero" ? pedido.meseroEmail || pedido.createdByEmail : pedido.createdByEmail;
-      return String(responsable || "").toLocaleLowerCase("es") === correoSesion
-        && anteriores.has(String(pedido.id))
-        && anteriores.get(String(pedido.id)) !== estadoNuevo;
+    productSelect?.addEventListener("change", () => {
+        document.getElementById("btnAddProduct").disabled = !productSelect.value;
     });
-    ordersData = pedidosNuevos.map(pedido => ({ ...pedido, status: normalizarEstadoPedido(pedido.status || pedido.estado) }));
-    renderOrders();
-    if (cambios.length) {
-      const pedido = cambios[cambios.length - 1];
-      const mensaje = `El pedido ${pedido.id} cambió a ${normalizarEstadoPedido(pedido.status || pedido.estado)}.`;
-      const notificacion = document.getElementById("pedido-notificacion");
-      notificacion.textContent = mensaje;
-      window.setTimeout(() => {
-        if (notificacion.textContent === mensaje) notificacion.textContent = "";
-      }, 8000);
-    }
-  } catch (error) {
-    document.getElementById("pedido-notificacion").textContent = error.message || "No se pudieron sincronizar los pedidos.";
-  }
-}
 
-renderOrders();
+    document.getElementById("btnAddProduct")?.addEventListener("click", () => {
+        const idProd = Number(productSelect.value);
+        const prod = productosCache.find((p) => Number(p.id_producto) === idProd);
+        if (!prod) return;
+        const existente = draftItems.find((i) => Number(i.id_producto) === idProd);
+        if (existente) {
+            existente.cantidad = Math.min(99, existente.cantidad + 1);
+        } else {
+            draftItems.push({
+                id_producto: idProd,
+                nombre: prod.nombre,
+                precio: Number(prod.precio),
+                cantidad: 1,
+                receta: prod.receta || [],
+                termino_coccion: "",
+                observaciones: "",
+                ingredientes_excluidos: [],
+                extras: [],
+                optionsOpen: false
+            });
+        }
+        productSelect.value = "";
+        document.getElementById("btnAddProduct").disabled = true;
+        renderDraftItems();
+    });
+
+    orderCartItems.addEventListener("click", (e) => {
+        const del = e.target.closest("[data-item-del]");
+        if (del) {
+            draftItems.splice(Number(del.dataset.itemDel), 1);
+            renderDraftItems();
+            return;
+        }
+        const opts = e.target.closest("[data-item-opts]");
+        if (opts) {
+            const idx = Number(opts.dataset.itemOpts);
+            draftItems[idx].optionsOpen = !draftItems[idx].optionsOpen;
+            renderDraftItems();
+        }
+    });
+
+    orderCartItems.addEventListener("input", (e) => {
+        const t = e.target;
+        if (t.matches("[data-item-qty]")) {
+            const idx = Number(t.dataset.itemQty);
+            draftItems[idx].cantidad = Math.max(1, Math.min(99, Number(t.value) || 1));
+            document.getElementById("orderTotal").textContent = formatCurrency(draftItems.reduce((s, i) => s + totalItem(i), 0));
+        }
+        if (t.matches("[data-item-termino]")) draftItems[Number(t.dataset.itemTermino)].termino_coccion = t.value;
+        if (t.matches("[data-item-obs]")) draftItems[Number(t.dataset.itemObs)].observaciones = t.value;
+    });
+
+    orderCartItems.addEventListener("change", (e) => {
+        const t = e.target;
+        if (t.matches("[data-item-exclude]")) {
+            const item = draftItems[Number(t.dataset.itemExclude)];
+            const set = new Set(item.ingredientes_excluidos || []);
+            if (t.checked) set.add(t.value);
+            else set.delete(t.value);
+            item.ingredientes_excluidos = [...set];
+        }
+    });
+
+    filterBtns.forEach((btn) => btn.addEventListener("click", () => {
+        filterBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeFilter = btn.dataset.filter || "all";
+        renderOrders();
+    }));
+
+    searchInput?.addEventListener("input", () => {
+        searchQuery = searchInput.value;
+        renderOrders();
+    });
+
+    ordersTbody.addEventListener("click", (e) => {
+        const deliverBtn = e.target.closest("[data-order-deliver]");
+        if (deliverBtn) return entregarPedido(deliverBtn.dataset.orderDeliver);
+        const editBtn = e.target.closest("[data-order-edit]");
+        if (editBtn) return editarPedido(editBtn.dataset.orderEdit);
+        const delBtn = e.target.closest("[data-order-delete]");
+        if (delBtn) return cancelarPedido(delBtn.dataset.orderDelete);
+    });
+
+    document.getElementById("btnNotifications")?.addEventListener("click", verNotificaciones);
+
+    if (window.RequestyAPI.leerSesion()) {
+        cargarTodo();
+    } else {
+        window.addEventListener("requesty-sesion-lista", cargarTodo, { once: true });
+    }
+    window.setInterval(cargarTodo, 10000);
+})();

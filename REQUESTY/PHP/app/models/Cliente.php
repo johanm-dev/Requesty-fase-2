@@ -25,6 +25,36 @@ class Cliente extends Model {
         return $this->fetchOne($sql, [':doc' => $documento]);
     }
 
+    public function findByEmail(string $correo): ?array {
+        $sql = "SELECT id_cliente, tipo_documento, documento_hash, nombre, telefono, correo, fecha_registro, activo
+                FROM vw_clientes_publico
+                WHERE lower(correo) = lower(trim(:correo))
+                LIMIT 1";
+        return $this->fetchOne($sql, [':correo' => $correo]);
+    }
+
+    public function findOrCreateByEmail(string $nombre, string $correo, ?string $telefono = null): array {
+        $correoNorm = strtolower(trim($correo));
+        $existente = $this->findByEmail($correoNorm);
+        if ($existente) {
+            if ($nombre !== '' && $nombre !== $existente['nombre']) {
+                $this->execute(
+                    'UPDATE cliente SET nombre = :n WHERE id_cliente = :id',
+                    [':n' => $nombre, ':id' => (int)$existente['id_cliente']]
+                );
+                $existente['nombre'] = $nombre;
+            }
+            return $existente;
+        }
+        $id = $this->create([
+            'tipo_documento' => 'CC',
+            'nombre'         => $nombre !== '' ? $nombre : explode('@', $correoNorm)[0],
+            'telefono'       => $telefono,
+            'correo'         => $correoNorm,
+        ]);
+        return $this->findById($id) ?? ['id_cliente' => $id, 'nombre' => $nombre, 'correo' => $correoNorm];
+    }
+
     public function create(array $data): int {
         $hasDoc = !empty($data['documento']);
         if ($hasDoc) {

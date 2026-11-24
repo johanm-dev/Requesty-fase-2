@@ -83,4 +83,123 @@ class Usuario extends Model {
 
         return (int)($row['id_usuario'] ?? 0);
     }
+
+    public function getRoles(): array {
+        return $this->fetchAll('SELECT id_rol, nombre, descripcion FROM rol ORDER BY id_rol ASC');
+    }
+
+    public function update(int $id, array $data, int $actorId): array {
+        $actual = $this->findById($id);
+        if (!$actual) {
+            throw new DomainValidationException('Usuario no encontrado.');
+        }
+
+        $nuevoRol = isset($data['rol']) ? strtoupper(trim((string)$data['rol'])) : strtoupper((string)$actual['rol']);
+        $nuevoEstado = isset($data['estado']) ? strtoupper(trim((string)$data['estado'])) : strtoupper((string)$actual['estado']);
+
+        $rolActual = strtoupper((string)$actual['rol']);
+        if ($id === $actorId && $nuevoEstado !== 'ACTIVO') {
+            throw new DomainConflictException('No puedes inactivar la cuenta que estas usando.');
+        }
+        if ($id === $actorId && $rolActual === 'ADMIN' && $nuevoRol !== 'ADMIN') {
+            throw new DomainConflictException('No puedes cambiar tu propia cuenta de administrador a otro rol.');
+        }
+
+        $dejaDeSerAdminActivo = ($rolActual === 'ADMIN' && $actual['estado'] === 'ACTIVO')
+            && ($nuevoRol !== 'ADMIN' || $nuevoEstado !== 'ACTIVO');
+        if ($dejaDeSerAdminActivo) {
+            $rowCnt = $this->fetchOne(
+                "SELECT COUNT(*) AS cnt FROM vw_usuarios_publico WHERE upper(rol_nombre) = 'ADMIN' AND estado = 'ACTIVO' AND id_usuario <> :id",
+                [':id' => $id]
+            );
+            if ((int)($rowCnt['cnt'] ?? 0) === 0) {
+                throw new DomainConflictException('Debe quedar al menos una cuenta de administrador activa.');
+            }
+        }
+
+        $rolRow = $this->fetchOne('SELECT id_rol FROM rol WHERE upper(nombre) = :nombre LIMIT 1', [':nombre' => $nuevoRol]);
+        if (!$rolRow) {
+            throw new DomainValidationException('El rol especificado no existe.');
+        }
+
+        $sets = [
+            'nombre = :nombre',
+            'apellido = :apellido',
+            'correo = lower(trim(:correo))',
+            'telefono = :telefono',
+            'estado = :estado',
+            'id_rol = :id_rol',
+        ];
+        $params = [
+            ':nombre'   => $data['nombre'] ?? $actual['nombre'],
+            ':apellido' => $data['apellido'] ?? $actual['apellido'],
+            ':correo'   => $data['correo'] ?? $actual['correo'],
+            ':telefono' => array_key_exists('telefono', $data) ? $data['telefono'] : $actual['telefono'],
+            ':estado'   => $nuevoEstado,
+            ':id_rol'   => (int)$rolRow['id_rol'],
+            ':id'       => $id,
+        ];
+        if (!empty($data['contrasena'])) {
+            $sets[] = 'contrasena = :contrasena';
+            $params[':contrasena'] = $data['contrasena'];
+        }
+
+        $sql = 'UPDATE usuario SET ' . implode(', ', $sets) . ' WHERE id_usuario = :id';
+        $this->execute($sql, $params);
+        return $this->findById($id) ?? ['id_usuario' => $id];
+    }
+
+    public function registrarClienteConUsuario(array $data): array {
+        $this->beginTransaction();
+        try {
+            $correo = strtolower(trim((string)$data['correo']));
+            $existe = $this->findByEmail($correo);
+            if ($existe) {
+                throw new DomainConflictException('Ya existe una cuenta registrada con ese correo.');
+            }
+
+            $partes = preg_split('/\s+/', trim((string)$data['nombre']), 2) ?: ['', ''];
+            $nombre = $partes[0];
+            $apellido = $partes[1] ?? 'Cliente';
+
+            $idUsuario = $this->create([
+                'nombre'     => $nombre,
+                'apellido'   => $apellido,
+                'documento'  => $data['documento'],
+                'correo'     => $correo,
+                'telefono'   => $data['telefono'] ?? null,
+                'contrasena' => $data['contrasena'],
+                'rol'        => 'CLIENTE',
+            ]);
+
+            $cliExistente = $this->fetchOne(
+                'SELECT id_cliente FROM vw_clientes_publico WHERE lower(correo) = lower(trim(:correo)) LIMIT 1',
+                [':correo' => $correo]
+            );
+            if ($cliExistente) {
+                $idCliente = (int)$cliExistente['id_cliente'];
+            } else {
+                $rowCli = $this->fetchOne(
+                    "INSERT INTO cliente (tipo_documento, documento_cifrado, documento_hash, nombre, telefono, correo)
+                     VALUES (:tipo_doc, fn_cifrar_documento(:doc_enc), fn_hash_documento(:doc_hash), :nombre, :telefono, lower(trim(:correo)))
+                     RETURNING id_cliente",
+                    [
+                        ':tipo_doc' => $data['tipo_documento'] ?? 'CC',
+                        ':doc_enc'  => $data['documento'],
+                        ':doc_hash' => $data['documento'],
+                        ':nombre'   => trim((string)$data['nombre']),
+                        ':telefono' => $data['telefono'] ?? null,
+                        ':correo'   => $correo,
+                    ]
+                );
+                $idCliente = (int)($rowCli['id_cliente'] ?? 0);
+            }
+
+            $this->commit();
+            return ['id_usuario' => $idUsuario, 'id_cliente' => $idCliente];
+        } catch (Throwable $e) {
+            $this->rollBack();
+            throw $e;
+        }
+    }
 }

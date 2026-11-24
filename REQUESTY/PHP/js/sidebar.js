@@ -1,9 +1,7 @@
 /**
- * Requesty - Navegación Lateral (Sidebar) & Modal de Confirmación
+ * Requesty - Navegación Lateral (Sidebar) & Modal de Confirmación de Cierre de Sesión
  */
 (function () {
-    const STORAGE_KEY = "rq_sidebar_collapsed";
-
     function initSidebar() {
         const sidebar = document.getElementById("appSidebar");
         const collapseBtn = document.getElementById("sidebarCollapseBtn");
@@ -16,10 +14,7 @@
 
         if (!sidebar) return;
 
-        // ==========================================
-        // 1. Estado de Colapso / Despliegue
-        // ==========================================
-        function setCollapsed(collapsed, saveStorage) {
+        function setCollapsed(collapsed) {
             if (collapsed) {
                 sidebar.classList.add("collapsed");
                 document.body.classList.add("sidebar-collapsed");
@@ -37,60 +32,35 @@
                     collapseBtn.setAttribute("aria-expanded", "true");
                 }
             }
-            if (saveStorage) {
-                try {
-                    localStorage.setItem(STORAGE_KEY, collapsed ? "1" : "0");
-                } catch (e) {}
-            }
         }
 
         function toggleSidebar() {
-            const isCurrentlyCollapsed = sidebar.classList.contains("collapsed") || document.body.classList.contains("sidebar-collapsed");
-            setCollapsed(!isCurrentlyCollapsed, true);
+            const isCollapsed = sidebar.classList.contains("collapsed") || document.body.classList.contains("sidebar-collapsed");
+            setCollapsed(!isCollapsed);
         }
 
-        // Leer preferencia guardada
-        try {
-            const savedState = localStorage.getItem(STORAGE_KEY);
-            if (savedState === "1") {
-                setCollapsed(true, false);
-            } else {
-                setCollapsed(false, false);
-            }
-        } catch (e) {
-            setCollapsed(false, false);
-        }
-
-        // Botón en la cabecera del sidebar
         if (collapseBtn) {
-            collapseBtn.addEventListener("click", function (e) {
+            collapseBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleSidebar();
             });
         }
 
-        // Botón en el topbar (hamburguesa)
         if (topbarToggle) {
-            topbarToggle.addEventListener("click", function (e) {
+            topbarToggle.addEventListener("click", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleSidebar();
             });
         }
 
-        // Al hacer click en el logo cuando está colapsado, desplegar
         if (sidebarLogo) {
-            sidebarLogo.addEventListener("click", function () {
-                if (sidebar.classList.contains("collapsed")) {
-                    setCollapsed(false, true);
-                }
+            sidebarLogo.addEventListener("click", () => {
+                if (sidebar.classList.contains("collapsed")) setCollapsed(false);
             });
         }
 
-        // ==========================================
-        // 2. Modal de Confirmación de Cerrar Sesión
-        // ==========================================
         function abrirModalLogout() {
             if (!logoutModal) return;
             logoutModal.style.display = "flex";
@@ -104,7 +74,7 @@
         function cerrarModalLogout() {
             if (!logoutModal) return;
             logoutModal.classList.remove("show");
-            setTimeout(function () {
+            setTimeout(() => {
                 logoutModal.style.display = "none";
                 logoutModal.setAttribute("aria-hidden", "true");
                 document.body.style.overflow = "";
@@ -112,44 +82,47 @@
         }
 
         if (logoutBtn) {
-            logoutBtn.addEventListener("click", function (e) {
+            logoutBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 abrirModalLogout();
             });
         }
 
-        document.querySelectorAll('[data-action="logout"], .btn-cerrar-sesion-js').forEach(function (btn) {
-            btn.addEventListener("click", function (e) {
+        document.querySelectorAll('[data-action="logout"], .btn-cerrar-sesion-js').forEach((btn) => {
+            btn.addEventListener("click", (e) => {
                 e.preventDefault();
                 abrirModalLogout();
             });
         });
 
         if (cancelLogoutBtn) {
-            cancelLogoutBtn.addEventListener("click", function (e) {
+            cancelLogoutBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 cerrarModalLogout();
             });
         }
 
         if (confirmLogoutBtn) {
-            confirmLogoutBtn.addEventListener("click", function () {
-                try {
-                    sessionStorage.removeItem("requestySesion");
-                    localStorage.removeItem("requestySesion");
-                } catch (e) {}
-            });
-        }
-
-        if (logoutModal) {
-            logoutModal.addEventListener("click", function (e) {
-                if (e.target === logoutModal) {
-                    cerrarModalLogout();
+            confirmLogoutBtn.addEventListener("click", async (e) => {
+                if (window.RequestyAPI) {
+                    e.preventDefault();
+                    try {
+                        await window.RequestyAPI.post("api/logout", {});
+                    } catch {
+                        // Fallback to standard server logout route
+                    }
+                    window.location.href = "index.php?page=logout";
                 }
             });
         }
 
-        document.addEventListener("keydown", function (e) {
+        if (logoutModal) {
+            logoutModal.addEventListener("click", (e) => {
+                if (e.target === logoutModal) cerrarModalLogout();
+            });
+        }
+
+        document.addEventListener("keydown", (e) => {
             if (e.key === "Escape" && logoutModal && logoutModal.classList.contains("show")) {
                 cerrarModalLogout();
             }

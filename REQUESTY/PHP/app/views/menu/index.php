@@ -51,7 +51,6 @@ require_once APPROOT . '/views/layouts/header.php';
 </dialog>
 
 <script src="<?= asset('js/auth.js') ?>"></script>
-<script>protegerPagina("menu");</script>
 <script src="<?= asset('js/inventario.js') ?>"></script>
 <script src="<?= asset('js/catalogo-cliente.js') ?>"></script>
 </body>

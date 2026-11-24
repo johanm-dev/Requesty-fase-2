@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle ?? 'Requesty - Inicio de Sesión') ?></title>
+    <meta name="csrf-token" content="<?= htmlspecialchars(CsrfService::token(), ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="app-base" content="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>">
+    <title><?= htmlspecialchars($pageTitle ?? 'Requesty - Inicio de Sesión', ENT_QUOTES, 'UTF-8') ?></title>
     <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
 </head>
 <body>
