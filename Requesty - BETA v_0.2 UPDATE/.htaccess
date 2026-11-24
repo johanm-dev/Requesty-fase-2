@@ -1,0 +1,30 @@
+# Apache / XAMPP Hardened Rewrite & Security Rules for Requesty MVC
+Options -Indexes
+
+<IfModule mod_setenvif.c>
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Preservar cabecera Authorization bajo CGI / PHP-FPM / mod_fcgid
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Bloquear acceso directo a directorios internos y artefactos sensibles
+    RewriteRule ^(app|tests|storage|database)/ - [F,L,NC]
+    RewriteRule (^|/)\.env - [F,L,NC]
+    RewriteRule \.(sql|log|md|json|lock|example|bak)$ - [F,L,NC]
+
+    # Ignorar archivos o carpetas fisicas publicas existentes (css, js, img)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Redirigir todo lo demas al Front Controller
+    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

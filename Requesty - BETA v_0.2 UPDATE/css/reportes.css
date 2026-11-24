@@ -24,18 +24,23 @@
 .pqrs-btn,
 .menu-btn {
     padding: var(--space-sm) var(--space-xl);
-    background-color: var(--color-sidebar);
-    color: var(--color-text-light);
-    border: none;
+    border-radius: var(--radius-sm);
     font-weight: bold;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+.generate-btn {
+    background-color: var(--color-primary);
+    color: var(--palette-ink);
+    border: none;
 }
 .generate-btn:hover {
-    background-color: var(--color-accent-dark);
+    background-color: var(--color-primary-dark);
 }
 .pqrs-btn {
     background-color: var(--color-sidebar);
     color: var(--color-text-light);
+    border: none;
 }
 .pqrs-btn:hover {
     background-color: var(--color-accent-dark);
@@ -43,9 +48,11 @@
 .menu-btn {
     background-color: var(--color-highlight);
     color: var(--color-sidebar);
+    border: 1px solid var(--color-sidebar);
 }
 .menu-btn:hover {
     background-color: var(--color-accent);
+    color: #FFFFFF;
 }
 
 .kpi-container {

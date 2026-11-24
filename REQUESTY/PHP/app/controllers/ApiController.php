@@ -231,14 +231,43 @@ class ApiController extends Controller {
         $mesaModel = $this->model('Mesa');
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-            $input = DtoValidator::parseJsonInput(['numero_mesa', 'estado']);
-            $num = DtoValidator::requireInt($input, 'numero_mesa');
+            $input = DtoValidator::parseJsonInput(['numero_mesa', 'numeros_mesa', 'estado']);
             $estado = DtoValidator::requireEnum($input, 'estado', ['DISPONIBLE', 'OCUPADA', 'RESERVADA', 'INACTIVA']);
-            $mesaModel->updateStatus($num, $estado);
+            if (array_key_exists('numeros_mesa', $input)) {
+                if (array_key_exists('numero_mesa', $input) || !is_array($input['numeros_mesa']) || $input['numeros_mesa'] === []) {
+                    throw new DomainValidationException('La lista de mesas seleccionadas no es valida.');
+                }
+                if (count($input['numeros_mesa']) > 100) {
+                    throw new DomainValidationException('No se pueden actualizar mas de 100 mesas a la vez.');
+                }
+                $numeros = [];
+                foreach ($input['numeros_mesa'] as $numero) {
+                    $numeros[] = DtoValidator::requireInt(['numero_mesa' => $numero], 'numero_mesa');
+                }
+                $mesaModel->updateStatuses($numeros, $estado);
+            } else {
+                $num = DtoValidator::requireInt($input, 'numero_mesa');
+                $mesaModel->updateStatus($num, $estado);
+            }
             $this->json(['success' => true]);
         }
 
         $this->json(['success' => true, 'mesas' => $mesaModel->getAll()]);
+    }
+
+    public function crearMesa(): void {
+        $user = $this->requireApiRole(['ADMIN']);
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            $this->json(['success' => false, 'message' => 'Metodo no permitido.'], 405);
+        }
+
+        RateLimiter::check('api_write:' . (int)$user['id'], 60, 60);
+        $input = DtoValidator::parseJsonInput(['capacidad']);
+        $capacidad = DtoValidator::requireInt($input, 'capacidad', 1, 12);
+        /** @var Mesa $mesaModel */
+        $mesaModel = $this->model('Mesa');
+        $mesa = $mesaModel->createMesa($capacidad);
+        $this->json(['success' => true, 'mesa' => $mesa], 201);
     }
 
     public function productos(): void {

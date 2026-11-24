@@ -31,7 +31,7 @@
 }
 .generate-btn {
     background-color: var(--color-primary);
-    color: #FFFFFF;
+    color: var(--palette-ink);
     border: none;
 }
 .generate-btn:hover {

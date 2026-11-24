@@ -1,25 +1,26 @@
 :root {
-  --bg-main: #f5ece3;
-  --bg-card: #ffffff;
-  --bg-input: #eee2d7;
-  --text-main: #2b2b2b;
-  --text-muted: #837870;
-  --primary: #c26a51;
-  --primary-hover: #aa5841;
-  --border-color: #ebdcd0;
+  --bg-main: #F6F1F0;
+  --bg-card: #FFFCFC;
+  --bg-input: #F6F1F0;
+  --text-main: #321719;
+  --text-muted: #76696A;
+  --primary: #963C40;
+  --primary-hover: #54272B;
+  --accent: #54272B;
+  --border-color: #E3D8D7;
   --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 
-  /* Estados */
-  --badge-preparando-bg: #efe1ec;
-  --badge-preparando-txt: #83567a;
-  --badge-nuevo-bg: #fdf2e9;
-  --badge-nuevo-txt: #d9822b;
-  --badge-listo-bg: #e2f3e8;
-  --badge-listo-txt: #3b8754;
-  --badge-entregado-bg: #f6e6e4;
-  --badge-entregado-txt: #b35955;
-  --badge-cancelado-bg: #fbe6e6;
-  --badge-cancelado-txt: #d93838;
+  /* Estados con tonos de la paleta y neutros */
+  --badge-preparando-bg: #F6F1F0;
+  --badge-preparando-txt: #321719;
+  --badge-nuevo-bg: #F6F1F0;
+  --badge-nuevo-txt: #54272B;
+  --badge-listo-bg: #E8F5E9;
+  --badge-listo-txt: #2E7D32;
+  --badge-entregado-bg: #E3D8D7;
+  --badge-entregado-txt: #76696A;
+  --badge-cancelado-bg: #F6F1F0;
+  --badge-cancelado-txt: #54272B;
 }
 
 * { font-family: var(--font-family); }
@@ -87,7 +88,7 @@
 }
 
 .icon-btn:hover {
-  background: #e8ded4;
+  background: var(--border-color);
 }
 
 .server-status {
@@ -135,7 +136,7 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #a09388;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -172,14 +173,14 @@
 }
 
 .tab-btn.active {
-  background-color: var(--bg-input);
-  color: var(--text-main);
+  background-color: var(--accent);
+  color: #FFFFFF;
   font-weight: 600;
 }
 
 .btn-primary {
   background-color: var(--primary);
-  color: white;
+  color: var(--text-main);
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
@@ -195,11 +196,12 @@
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
+  color: #FFFFFF;
 }
 
 .btn-secondary {
-  background-color: #e0d5cb;
-  color: #4a4039;
+  background-color: var(--border-color);
+  color: var(--text-main);
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
@@ -210,7 +212,8 @@
 }
 
 .btn-secondary:hover {
-  background-color: #d4c7bc;
+  background-color: var(--primary-hover);
+  color: #FFFFFF;
 }
 
 /* Tabla */
@@ -232,15 +235,15 @@
   padding: 14px 10px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #8c827a;
-  border-bottom: 1px solid #f0e6dd;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
   background-color: var(--color-card-bg);
 }
 
 .orders-table td {
   padding: 14px 10px;
   font-size: 0.85rem;
-  border-bottom: 1px solid #f5ece3;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .id-col, .price-col {
@@ -251,12 +254,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #f8f1eb;
+  background: var(--bg-main);
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #4a4039;
+  color: var(--text-main);
 }
 
 .badge-status {
@@ -299,7 +302,7 @@
 .action-btn {
   background: none;
   border: none;
-  color: #a09388;
+  color: var(--text-muted);
   cursor: pointer;
   margin-left: 8px;
   font-size: 0.95rem;
@@ -459,49 +462,9 @@
 }
 
 @media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    padding: var(--space-md);
-    flex-direction: row;
-    height: auto;
-    order: -1;
-  }
-
-  .sidebar-logo {
-    padding: 0 var(--space-md);
-    margin-bottom: 0;
-    font-size: var(--font-xl);
-  }
-
-  .sidebar-menu {
-    display: flex;
-    gap: var(--space-sm);
-    flex: 1;
-    flex-wrap: wrap;
-  }
-
-  .sidebar-item {
-    padding: var(--space-sm) var(--space-md);
-    margin: 0;
-    font-size: var(--font-sm);
-  }
-
-  .sidebar-profile {
-    border: none;
-    padding: 0;
-    order: 1;
-    width: 100%;
-    margin-top: var(--space-md);
-    border-top: 1px solid rgba(215, 180, 161, 0.2);
-    padding-top: var(--space-md);
-  }
-
   .main-content {
-    height: calc(100vh - 120px);
+    min-height: 0;
+  }
   }
 
   .top-bar {
@@ -648,7 +611,7 @@
   padding: 16px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: #fcfaf8;
+  background: var(--bg-main);
 }
 
 .order-builder > h3 {
@@ -775,7 +738,7 @@
   margin-top: 12px;
   padding: 12px;
   border-left: 3px solid var(--primary);
-  background: #fbf5f0;
+  background: var(--bg-main);
 }
 
 .order-item-options fieldset {
@@ -822,7 +785,7 @@
   border: 1px solid var(--primary);
   border-radius: 6px;
   background: var(--primary);
-  color: white;
+  color: var(--text-main);
   font: inherit;
   font-size: .75rem;
   font-weight: 700;

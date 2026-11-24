@@ -859,6 +859,100 @@ dialog {
 }
 
 /* ========================================================
+   BOTÓN ESPECÍFICO DE MODO CLARO / OSCURO
+   ======================================================== */
+.btn-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 40px;
+    width: 48px;
+    height: 40px;
+    padding: 0;
+    gap: 0;
+    border: 1px solid rgba(234, 234, 234, 0.16);
+    border-radius: 12px;
+    background: rgba(234, 234, 234, 0.07);
+    color: var(--palette-border, #E3D8D7);
+    cursor: pointer;
+    overflow: hidden;
+    transition: width 0.22s ease, background-color 0.16s ease, color 0.16s ease, transform 0.16s ease, border-color 0.16s ease;
+}
+
+.btn-theme-toggle:hover,
+.btn-theme-toggle:focus-visible {
+    background: rgba(228, 179, 83, 0.18);
+    border-color: var(--palette-gold, #C99B45);
+    color: var(--palette-gold, #C99B45);
+    transform: translateY(-1px);
+}
+
+.btn-theme-toggle .theme-toggle-icon {
+    width: 24px;
+    flex: 0 0 24px;
+    font-size: 15px;
+    text-align: center;
+    transition: transform 0.3s ease, color 0.2s ease;
+}
+
+.btn-theme-toggle:hover .theme-toggle-icon {
+    transform: rotate(20deg) scale(1.15);
+}
+
+.theme-toggle-text {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    font-size: var(--font-sm, 13px);
+    font-weight: 600;
+    transition: max-width 0.2s ease, opacity 0.16s ease;
+}
+
+html.nav-expanded .btn-theme-toggle {
+    justify-content: flex-start;
+    width: 100%;
+    gap: 12px;
+    padding: 0 14px;
+}
+
+html.nav-expanded .btn-theme-toggle .theme-toggle-text {
+    max-width: 160px;
+    opacity: 1;
+}
+
+.app-header-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: contain;
+}
+
+.theme-toggle-header {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    margin-left: auto;
+    border: 1px solid rgba(201, 155, 69, 0.45);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--palette-gold, #E4B353);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.theme-toggle-header:hover {
+    background: rgba(201, 155, 69, 0.22);
+    border-color: var(--palette-gold-hover, #D4A346);
+    color: #FFFFFF;
+    transform: translateY(-1px) scale(1.05);
+}
+
+/* ========================================================
    BARRA LATERAL DE NAVEGACIÓN
    ======================================================== */
 :root {
@@ -912,25 +1006,27 @@ html.nav-expanded {
 .brand-badge {
     width: 38px;
     height: 38px;
-    border-radius: 10px;
-    background: transparent;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: transparent;
+    box-shadow: none;
+    flex-shrink: 0;
     overflow: hidden;
 }
 
-.brand-badge .brand-logo-img {
-    width: 38px;
-    height: 38px;
+.brand-logo-img {
+    width: 100%;
+    height: 100%;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: 50%;
     display: block;
-    transition: transform 0.2s ease;
+    transition: transform 0.22s ease;
 }
 
 .top-nav-brand:hover .brand-logo-img {
-    transform: scale(1.08);
+    transform: scale(1.12);
 }
 
 .top-nav-brand .brand-icon {
@@ -1110,8 +1206,9 @@ html.nav-expanded .top-nav-brand {
 }
 
 html.nav-expanded .top-nav-brand .brand-text {
-    max-width: 0;
-    opacity: 0;
+    max-width: 140px;
+    opacity: 1;
+    margin-left: 6px;
 }
 
 html.nav-expanded .nav-toggle {
@@ -1320,15 +1417,6 @@ html.nav-expanded .top-nav-profile-name {
     white-space: nowrap;
 }
 
-.app-page-header-brand .header-brand-logo {
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-    border-radius: 6px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
 .app-page-header-brand::before {
     content: "";
     width: 3px;
@@ -1403,6 +1491,149 @@ html.nav-expanded .top-nav-logout-text {
     min-height: 100dvh;
     margin-left: var(--rq-sidebar-width);
     transition: width 0.22s ease, margin-left 0.22s ease;
+}
+
+/* ========================================================
+   TRANSICIÓN BREVE DE MÓDULO (MASCOTA2.GIF + LUCIÉRNAGAS)
+   ======================================================== */
+.rq-module-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 999998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 25% 30%, rgba(255, 253, 247, 0.9) 0%, rgba(248, 249, 250, 0.88) 55%, rgba(241, 239, 234, 0.9) 100%);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.rq-module-loader.instant {
+    transition: none;
+}
+
+.rq-module-loader.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.rq-loader-luciernagas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+#rqLoaderLuciernagasCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.rq-loader-luciernaga {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #FFF8D6 0%, #F5B942 45%, rgba(201, 155, 69, 0) 100%);
+    box-shadow:
+        0 0 8px 2px rgba(245, 185, 66, 0.85),
+        0 0 18px 6px rgba(228, 179, 83, 0.55),
+        0 0 30px 10px rgba(201, 155, 69, 0.28);
+    opacity: 0;
+    will-change: transform, opacity;
+}
+
+.rq-loader-luciernaga::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background-color: #FFFDF0;
+    box-shadow: 0 0 6px #FFD25A;
+}
+
+.rq-loader-luciernaga:nth-child(2)  { top: 14%; left: 10%; width: 9px;  height: 9px;  animation: rqFlotarLuciernaga1 14s ease-in-out infinite, rqDestelloLuciernaga 3.4s ease-in-out infinite 0.3s; }
+.rq-loader-luciernaga:nth-child(3)  { top: 26%; left: 22%; width: 7px;  height: 7px;  animation: rqFlotarLuciernaga2 18s ease-in-out infinite, rqDestelloLuciernaga 4.1s ease-in-out infinite 1.1s; }
+.rq-loader-luciernaga:nth-child(4)  { top: 68%; left: 12%; width: 10px; height: 10px; animation: rqFlotarLuciernaga3 16s ease-in-out infinite, rqDestelloLuciernaga 3.8s ease-in-out infinite 0.7s; }
+.rq-loader-luciernaga:nth-child(5)  { top: 82%; left: 28%; width: 8px;  height: 8px;  animation: rqFlotarLuciernaga1 20s ease-in-out infinite, rqDestelloLuciernaga 4.6s ease-in-out infinite 2.0s; }
+.rq-loader-luciernaga:nth-child(6)  { top: 45%; left: 36%; width: 11px; height: 11px; animation: rqFlotarLuciernaga2 15s ease-in-out infinite, rqDestelloLuciernaga 3.2s ease-in-out infinite 0.5s; }
+.rq-loader-luciernaga:nth-child(7)  { top: 18%; left: 48%; width: 7px;  height: 7px;  animation: rqFlotarLuciernaga3 19s ease-in-out infinite, rqDestelloLuciernaga 4.4s ease-in-out infinite 1.6s; }
+.rq-loader-luciernaga:nth-child(8)  { top: 74%; left: 46%; width: 9px;  height: 9px;  animation: rqFlotarLuciernaga1 17s ease-in-out infinite, rqDestelloLuciernaga 3.7s ease-in-out infinite 2.4s; }
+.rq-loader-luciernaga:nth-child(9)  { top: 32%; left: 62%; width: 8px;  height: 8px;  animation: rqFlotarLuciernaga2 16s ease-in-out infinite, rqDestelloLuciernaga 3.9s ease-in-out infinite 0.9s; }
+.rq-loader-luciernaga:nth-child(10) { top: 12%; left: 76%; width: 10px; height: 10px; animation: rqFlotarLuciernaga3 21s ease-in-out infinite, rqDestelloLuciernaga 4.8s ease-in-out infinite 1.3s; }
+.rq-loader-luciernaga:nth-child(11) { top: 55%; left: 84%; width: 9px;  height: 9px;  animation: rqFlotarLuciernaga1 15s ease-in-out infinite, rqDestelloLuciernaga 3.5s ease-in-out infinite 0.2s; }
+.rq-loader-luciernaga:nth-child(12) { top: 86%; left: 72%; width: 8px;  height: 8px;  animation: rqFlotarLuciernaga2 18s ease-in-out infinite, rqDestelloLuciernaga 4.2s ease-in-out infinite 1.8s; }
+.rq-loader-luciernaga:nth-child(13) { top: 40%; left: 16%; width: 7px;  height: 7px;  animation: rqFlotarLuciernaga3 14s ease-in-out infinite, rqDestelloLuciernaga 3.6s ease-in-out infinite 2.7s; }
+.rq-loader-luciernaga:nth-child(14) { top: 62%; left: 58%; width: 10px; height: 10px; animation: rqFlotarLuciernaga1 19s ease-in-out infinite, rqDestelloLuciernaga 4.0s ease-in-out infinite 0.6s; }
+.rq-loader-luciernaga:nth-child(15) { top: 22%; left: 88%; width: 8px;  height: 8px;  animation: rqFlotarLuciernaga2 17s ease-in-out infinite, rqDestelloLuciernaga 3.3s ease-in-out infinite 1.5s; }
+.rq-loader-luciernaga:nth-child(16) { top: 90%; left: 18%; width: 9px;  height: 9px;  animation: rqFlotarLuciernaga3 16s ease-in-out infinite, rqDestelloLuciernaga 4.5s ease-in-out infinite 2.2s; }
+.rq-loader-luciernaga:nth-child(17) { top: 52%; left: 6%;  width: 8px;  height: 8px;  animation: rqFlotarLuciernaga1 18s ease-in-out infinite, rqDestelloLuciernaga 3.8s ease-in-out infinite 1.0s; }
+.rq-loader-luciernaga:nth-child(18) { top: 10%; left: 34%; width: 9px;  height: 9px;  animation: rqFlotarLuciernaga2 20s ease-in-out infinite, rqDestelloLuciernaga 4.3s ease-in-out infinite 0.4s; }
+.rq-loader-luciernaga:nth-child(19) { top: 76%; left: 90%; width: 10px; height: 10px; animation: rqFlotarLuciernaga3 15s ease-in-out infinite, rqDestelloLuciernaga 3.5s ease-in-out infinite 1.9s; }
+
+@keyframes rqFlotarLuciernaga1 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    25% { transform: translate3d(45px, -35px, 0) scale(1.15); }
+    50% { transform: translate3d(-25px, -75px, 0) scale(0.95); }
+    75% { transform: translate3d(-55px, -25px, 0) scale(1.1); }
+}
+
+@keyframes rqFlotarLuciernaga2 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    30% { transform: translate3d(-50px, 40px, 0) scale(1.2); }
+    60% { transform: translate3d(35px, 65px, 0) scale(0.9); }
+    85% { transform: translate3d(55px, -20px, 0) scale(1.08); }
+}
+
+@keyframes rqFlotarLuciernaga3 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    35% { transform: translate3d(60px, 30px, 0) scale(1.12); }
+    70% { transform: translate3d(-40px, -50px, 0) scale(0.92); }
+}
+
+@keyframes rqDestelloLuciernaga {
+    0%, 100% { opacity: 0.15; }
+    40% { opacity: 0.95; }
+    60% { opacity: 0.45; }
+    80% { opacity: 1; }
+}
+
+.rq-module-loader-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 24px;
+    border-radius: 22px;
+    transform: scale(0.92);
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.rq-module-loader.active .rq-module-loader-card {
+    transform: scale(1);
+}
+
+.rq-module-loader-gif {
+    width: clamp(140px, 18vw, 210px);
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 24px rgba(21, 21, 21, 0.16));
+    user-select: none;
+    pointer-events: none;
 }
 
 @media (max-width: 600px) {

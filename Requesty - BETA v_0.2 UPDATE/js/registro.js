@@ -16,7 +16,7 @@ function configurarRegistroInicial() {
     const sesion = leerSesion();
     const rolSesion = String(sesion?.rol || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     if (rolSesion === "admin" || rolSesion === "administrador") {
-        window.location.replace("reportes.html#cuentas");
+        window.location.replace("index.php?page=reportes#cuentas");
         return;
     }
 
@@ -140,7 +140,7 @@ function validarFormulario(evento) {
     mostrarMensaje("Registro guardado correctamente.", "exito");
     // Después de 1.5 segundos lleva al inicio de sesión
     setTimeout(function () {
-        window.location.href = "index.html";
+        window.location.href = (typeof esEntornoPhp !== "undefined" && esEntornoPhp) ? "index.php" : "index.html";
     }, 1500);
 }
 

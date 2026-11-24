@@ -22,26 +22,36 @@
 .btn-primary,
 .btn-secundario,
 .btn-accion {
-    border: 1px solid var(--color-sidebar);
     border-radius: var(--radius-md);
-    padding: 10px 14px;
+    padding: 10px 16px;
     font: inherit;
     font-weight: 700;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .btn-primary {
-    color: var(--color-text-light);
-    background: var(--color-sidebar);
+    color: var(--palette-ink);
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
 }
 
 .btn-primary:hover {
-    background: var(--color-accent-dark);
+    background: var(--color-primary-dark);
+    color: #FFFFFF;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(155, 60, 64, 0.25);
 }
 
 .btn-secundario {
     color: var(--color-sidebar);
-    background: transparent;
+    background: var(--color-highlight);
+    border: 1px solid var(--color-highlight);
+}
+
+.btn-secundario:hover {
+    background: var(--color-accent);
+    color: #FFFFFF;
 }
 
 .resumen-cuentas {
@@ -106,12 +116,22 @@
 .campos-cuenta input,
 .campos-cuenta select {
     min-height: 40px;
-    border: 1px solid var(--color-accent-dark);
+    border: 1.5px solid var(--color-highlight);
     border-radius: var(--radius-sm);
     padding: 8px 10px;
-    background: #fff;
+    background: var(--palette-light);
     color: var(--color-sidebar);
     font: inherit;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.busqueda-cuentas input:focus,
+.campos-cuenta input:focus,
+.campos-cuenta select:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(155, 60, 64, 0.15);
+    background: #FFFFFF;
 }
 
 .tabla-scroll {

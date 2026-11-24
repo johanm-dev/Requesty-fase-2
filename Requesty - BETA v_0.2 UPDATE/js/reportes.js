@@ -79,17 +79,17 @@ function createChart() {
             datasets: [{
                 label: 'Ventas ($)',
                 data: data,
-                borderColor: '#2563EB',
-                backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                borderColor: '#E4B353',
+                backgroundColor: 'rgba(228, 179, 83, 0.08)',
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 5,
-                pointBackgroundColor: '#2563EB',
-                pointBorderColor: '#FAF8F6',
+                pointBackgroundColor: '#C99B45',
+                pointBorderColor: '#FFFFFF',
                 pointBorderWidth: 2,
                 pointHoverRadius: 7,
-                pointHoverBackgroundColor: '#1e40af',
+                pointHoverBackgroundColor: '#C99B45',
             }]
         },
         options: {
@@ -99,7 +99,7 @@ function createChart() {
                 legend: {
                     display: true,
                     labels: {
-                        color: '#36353A',
+                        color: '#333333',
                         font: { size: 12, weight: 'bold' },
                         padding: 15,
                         usePointStyle: true,
@@ -110,7 +110,7 @@ function createChart() {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        color: '#725F5B',
+                        color: '#777777',
                         callback: function(value) {
                             return '$' + (value / 1000).toFixed(0) + 'k';
                         }
@@ -122,7 +122,7 @@ function createChart() {
                 },
                 x: {
                     ticks: {
-                        color: '#725F5B'
+                        color: '#777777'
                     },
                     grid: {
                         display: false
@@ -852,7 +852,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnReiniciarProcesos = document.getElementById('btn-reiniciar-procesos');
 
     // Función para cambiar de vista activa
-    function mostrarVista(vistaAMostrar) {
+    function mostrarVista(vistaAMostrar, conTransicion = true) {
+        if (conTransicion && typeof window.mostrarTransicionModulo === 'function') {
+            window.mostrarTransicionModulo(520);
+        }
         vistaReportes.classList.add('oculto');
         vistaMenu.classList.add('oculto');
         vistaPqrs.classList.add('oculto');
@@ -900,7 +903,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (location.hash === '#cuentas' && btnVerCuentas && !btnVerCuentas.hidden) {
-        mostrarVista(vistaCuentas);
+        mostrarVista(vistaCuentas, false);
     }
 });
 

@@ -1,13 +1,13 @@
 :root {
-    --fondo-durazno: #F8F9FA;
-    --tarjeta-blanca: #ffffff;
-    --borde-negro: #333333;
-    --boton-oscuro: #333333;
-    --boton-oscuro-hover: #777777;
-    --texto-gris: #777777;
-    --color-accent: #C99B45;
-    --color-primary: #E4B353;
-    --color-highlight: #EAEAEA;
+    --fondo-durazno: #F6F1F0;
+    --tarjeta-blanca: #FFFCFC;
+    --borde-negro: #321719;
+    --boton-oscuro: #321719;
+    --boton-oscuro-hover: #76696A;
+    --texto-gris: #76696A;
+    --color-accent: #54272B;
+    --color-primary: #963C40;
+    --color-highlight: #E3D8D7;
 }
 
 .logo {
@@ -53,11 +53,11 @@
 }
 
 .tarjeta-resumen.pendiente {
-    border-left-color: #C99B45; 
+    border-left-color: var(--color-accent);
 }
 
 .tarjeta-resumen.preparacion {
-    border-left-color: #E4B353; 
+    border-left-color: var(--color-primary);
 }
 
 .tarjeta-resumen.listo {
@@ -97,11 +97,11 @@
 
 
 .tarjeta-pedido.estado-pendiente {
-    border-top-color: #C99B45;
+    border-top-color: var(--color-accent);
 }
 
 .tarjeta-pedido.estado-preparacion {
-    border-top-color: #E4B353;
+    border-top-color: var(--color-primary);
 }
 
 .tarjeta-pedido.estado-listo {
@@ -109,11 +109,11 @@
 }
 
 .tarjeta-pedido.alerta-normal { border-color: #d7e8dc; border-top-color: #4caf50; }
-.tarjeta-pedido.alerta-advertencia { border-color: #f2cf76; border-top-color: #e6a700; background: #fff9e8; }
+.tarjeta-pedido.alerta-advertencia { border-color: var(--color-primary); border-top-color: var(--color-accent); background: #F8EEEE; }
 .tarjeta-pedido.alerta-critica { border-color: #efaaa5; border-top-color: #c62828; background: #fff0ef; }
 .tarjeta-pedido.alerta-listo { border-color: #b7dfc1; border-top-color: #4caf50; }
 
-.tarjeta-pedido.alerta-advertencia .pedido-espera { color: #8a5a00; }
+.tarjeta-pedido.alerta-advertencia .pedido-espera { color: var(--palette-red-dark); }
 .tarjeta-pedido.alerta-critica .pedido-espera { color: #b91c1c; }
 .inventario-descontado { color: #166534; font-weight: 700; }
 
@@ -132,7 +132,7 @@
 }
 
 .leyenda-normal { background: #e8f5e9; color: #25612b; }
-.leyenda-advertencia { background: #fff1c2; color: #805300; }
+.leyenda-advertencia { background: #F7EDEE; color: var(--palette-red-dark); }
 .leyenda-critica { background: #fee2e2; color: #991b1b; }
 
 .mensaje-cocina:not(:empty) {
@@ -222,8 +222,8 @@
 }
 
 .etiqueta-estado.estado-pendiente {
-    background-color: #ffc107;
-    color: #5a4500;
+    background-color: var(--color-primary);
+    color: var(--boton-oscuro);
 }
 
 .etiqueta-estado.estado-preparacion {

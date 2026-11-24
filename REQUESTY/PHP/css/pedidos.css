@@ -1,26 +1,26 @@
 :root {
-  --bg-main: #F8F9FA;
-  --bg-card: #ffffff;
-  --bg-input: #F8F9FA;
-  --text-main: #333333;
-  --text-muted: #777777;
-  --primary: #E4B353;
-  --primary-hover: #C99B45;
-  --accent: #C99B45;
-  --border-color: #EAEAEA;
+  --bg-main: #F6F1F0;
+  --bg-card: #FFFCFC;
+  --bg-input: #F6F1F0;
+  --text-main: #321719;
+  --text-muted: #76696A;
+  --primary: #963C40;
+  --primary-hover: #54272B;
+  --accent: #54272B;
+  --border-color: #E3D8D7;
   --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 
-  /* Estados con tonos dorados y neutros */
-  --badge-preparando-bg: #F8F9FA;
-  --badge-preparando-txt: #333333;
-  --badge-nuevo-bg: #F8F9FA;
-  --badge-nuevo-txt: #C99B45;
+  /* Estados con tonos de la paleta y neutros */
+  --badge-preparando-bg: #F6F1F0;
+  --badge-preparando-txt: #321719;
+  --badge-nuevo-bg: #F6F1F0;
+  --badge-nuevo-txt: #54272B;
   --badge-listo-bg: #E8F5E9;
   --badge-listo-txt: #2E7D32;
-  --badge-entregado-bg: #EAEAEA;
-  --badge-entregado-txt: #777777;
-  --badge-cancelado-bg: #F8F9FA;
-  --badge-cancelado-txt: #E4B353;
+  --badge-entregado-bg: #E3D8D7;
+  --badge-entregado-txt: #76696A;
+  --badge-cancelado-bg: #F6F1F0;
+  --badge-cancelado-txt: #54272B;
 }
 
 * { font-family: var(--font-family); }
@@ -88,7 +88,7 @@
 }
 
 .icon-btn:hover {
-  background: #EAEAEA;
+  background: var(--border-color);
 }
 
 .server-status {
@@ -136,7 +136,7 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #777777;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -180,7 +180,7 @@
 
 .btn-primary {
   background-color: var(--primary);
-  color: white;
+  color: var(--text-main);
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
@@ -196,11 +196,12 @@
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
+  color: #FFFFFF;
 }
 
 .btn-secondary {
-  background-color: #EAEAEA;
-  color: #333333;
+  background-color: var(--border-color);
+  color: var(--text-main);
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
@@ -211,7 +212,8 @@
 }
 
 .btn-secondary:hover {
-  background-color: #777777;
+  background-color: var(--primary-hover);
+  color: #FFFFFF;
 }
 
 /* Tabla */
@@ -233,15 +235,15 @@
   padding: 14px 10px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #777777;
-  border-bottom: 1px solid #EAEAEA;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
   background-color: var(--color-card-bg);
 }
 
 .orders-table td {
   padding: 14px 10px;
   font-size: 0.85rem;
-  border-bottom: 1px solid #EAEAEA;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .id-col, .price-col {
@@ -252,12 +254,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #F8F9FA;
+  background: var(--bg-main);
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #333333;
+  color: var(--text-main);
 }
 
 .badge-status {
@@ -300,7 +302,7 @@
 .action-btn {
   background: none;
   border: none;
-  color: #777777;
+  color: var(--text-muted);
   cursor: pointer;
   margin-left: 8px;
   font-size: 0.95rem;
@@ -609,7 +611,7 @@
   padding: 16px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: #F8F9FA;
+  background: var(--bg-main);
 }
 
 .order-builder > h3 {
@@ -736,7 +738,7 @@
   margin-top: 12px;
   padding: 12px;
   border-left: 3px solid var(--primary);
-  background: #F8F9FA;
+  background: var(--bg-main);
 }
 
 .order-item-options fieldset {
@@ -783,7 +785,7 @@
   border: 1px solid var(--primary);
   border-radius: 6px;
   background: var(--primary);
-  color: white;
+  color: var(--text-main);
   font: inherit;
   font-size: .75rem;
   font-weight: 700;

@@ -4,15 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? 'Registro - Requesty') ?></title>
+    <script src="<?= asset('js/theme.js') ?>"></script>
     <link rel="icon" type="image/png" href="<?= asset('img/logo.png') ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?= asset('css/registro.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/theme.css') ?>">
 </head>
 <body>
-  <header>
-     <div class="logo-wrapper">
-         <img src="<?= asset('img/logo.png') ?>" alt="Logo Oficial Requesty" class="registro-logo-img">
-         <h1 class="logo">Requesty</h1>
-     </div>
+  <div class="luciernagas-fondo" aria-hidden="true">
+    <canvas id="luciernagasCanvas"></canvas>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+  </div>
+  <header class="registro-theme-header">
+     <h1 class="logo">Requesty</h1>
+     <button type="button" class="btn-theme-toggle auth-theme-toggle" data-theme-toggle
+             title="Cambiar a modo oscuro" aria-label="Cambiar a modo oscuro" aria-pressed="false">
+         <i class="fa-solid fa-moon theme-toggle-icon" aria-hidden="true"></i>
+     </button>
   </header>
 
   <main id="contenido">
@@ -56,8 +81,8 @@
         <input type="hidden" name="rol" value="Cliente">
 
         <div class="fila-botones-grandes">
-          <button type="button" id="btnBorrarTodo" class="btn-secundario">Borrar</button>
-          <button type="submit" class="btn-primario">Guardar y continuar</button>
+          <button type="button" id="btnBorrarTodo" class="boton btn-secundario">Borrar</button>
+          <button type="submit" class="boton btn-primario">Guardar y continuar</button>
         </div>
 
         <p id="formularioMensaje" class="formulario-mensaje" aria-live="polite">

@@ -179,7 +179,7 @@ function renderizarSeguimientoPedidos(datosGuardados = localStorage.getItem("req
                     ? "Pagado"
                     : estado;
                 const irACaja = pendienteDePago
-                    ? `<a class="seguimiento-ir-caja" href="caja.html?pedido=${encodeURIComponent(pedido.id)}">Ir a caja para pagar</a>`
+                    ? `<a class="seguimiento-ir-caja" href="index.php?page=caja&pedido=${encodeURIComponent(pedido.id)}">Ir a caja para pagar</a>`
                     : "";
                 return `<article class="seguimiento-pedido"><strong>Pedido ${escaparHTML(pedido.id)}</strong><span>${escaparHTML(pedido.destination || pedido.channel || "")}</span><span class="seguimiento-estado ${clase}">${escaparHTML(historialEstado)}</span>${irACaja}</article>`;
             }).join("")

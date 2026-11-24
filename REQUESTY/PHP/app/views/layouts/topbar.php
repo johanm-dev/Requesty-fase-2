@@ -15,7 +15,9 @@ if (empty($iniciales)) $iniciales = 'RQ';
 ?>
 <aside class="top-bar-nav" id="appTopNavbar" aria-label="Navegación principal">
     <a href="<?= url('pedidos') ?>" class="top-nav-brand" title="Requesty" aria-label="Requesty">
-        <span class="brand-badge"><img src="<?= asset('img/logo.png') ?>" alt="Logo Requesty" class="brand-logo-img"></span>
+        <span class="brand-badge brand-logo-badge">
+            <img src="<?= asset('img/logo.png') ?>" alt="Logo Requesty" class="brand-logo-img">
+        </span>
         <span class="brand-text">Requesty</span>
     </a>
 
@@ -81,9 +83,13 @@ if (empty($iniciales)) $iniciales = 'RQ';
 
 <header class="app-page-header">
     <a href="<?= url('pedidos') ?>" class="app-page-header-brand">
-        <img src="<?= asset('img/logo.png') ?>" alt="Logo Requesty" class="header-brand-logo">
+        <img src="<?= asset('img/logo.png') ?>" alt="Logo Requesty" class="app-header-logo">
         <span>Requesty</span>
     </a>
+    <button type="button" class="btn-theme-toggle theme-toggle-header" data-theme-toggle
+            title="Cambiar a modo oscuro" aria-label="Cambiar a modo oscuro" aria-pressed="false">
+        <i class="fa-solid fa-moon theme-toggle-icon" aria-hidden="true"></i>
+    </button>
 </header>
 
 <!-- Modal de Confirmación de Cierre de Sesión -->
@@ -102,5 +108,45 @@ if (empty($iniciales)) $iniciales = 'RQ';
         </div>
     </div>
 </div>
+
+<!-- Pantalla breve de transición al cambiar de módulo -->
+<div id="rqModuleLoader" class="rq-module-loader" aria-hidden="true">
+    <div class="rq-loader-luciernagas" aria-hidden="true">
+        <canvas id="rqLoaderLuciernagasCanvas"></canvas>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+        <span class="rq-loader-luciernaga"></span>
+    </div>
+    <div class="rq-module-loader-card">
+        <img src="<?= asset('img/mascota2.gif') ?>" alt="Cambiando de módulo..." class="rq-module-loader-gif">
+    </div>
+</div>
+<script>
+    (function () {
+        try {
+            if (sessionStorage.getItem('rq_module_transition') === '1') {
+                var loader = document.getElementById('rqModuleLoader');
+                if (loader) {
+                    loader.classList.add('active', 'instant');
+                }
+            }
+        } catch (e) {}
+    })();
+</script>
 
 <script src="<?= asset('js/sidebar.js') ?>"></script>

@@ -7,11 +7,16 @@ abstract class Controller {
 
     public function model(string $model) {
         $modelClass = ucfirst($model);
-        $modelFile = APPROOT . '/models/' . $modelClass . '.php';
+        $candidates = [
+            APPROOT . '/models/' . $modelClass . '.php',
+            APPROOT . '/controllers/models/' . $modelClass . '.php',
+        ];
 
-        if (file_exists($modelFile)) {
-            require_once $modelFile;
-            return new $modelClass();
+        foreach ($candidates as $modelFile) {
+            if (file_exists($modelFile)) {
+                require_once $modelFile;
+                return new $modelClass();
+            }
         }
 
         throw new RuntimeException("Modelo {$modelClass} no disponible.");

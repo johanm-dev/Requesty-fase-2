@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? 'Requesty') ?></title>
+    <script src="<?= asset('js/theme.js') ?>"></script>
     
     <!-- Favicon Oficial Requesty -->
     <link rel="icon" type="image/png" href="<?= asset('img/logo.png') ?>">
@@ -20,6 +21,7 @@
             <link rel="stylesheet" href="<?= asset($css) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
+    <link rel="stylesheet" href="<?= asset('css/theme.css') ?>">
 
     <?php if (!empty($extraHead)): ?>
         <?= $extraHead ?>

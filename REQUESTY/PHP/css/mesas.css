@@ -261,7 +261,7 @@
     gap: var(--space-md);
     padding: var(--space-md);
     border-left: 3px solid var(--color-accent);
-    background: #F8F9FA;
+    background: var(--palette-light);
 }
 
 .campo-personalizacion,
@@ -380,5 +380,758 @@
     .menu-item-qty button {
         width: 40px;
         height: 40px;
+    }
+}
+
+.mesas-page .mesas-controls {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.mesas-page .mesas-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 0;
+}
+
+.mesas-page .stat-card {
+    position: relative;
+    min-height: 112px;
+    overflow: hidden;
+    padding: 20px 24px;
+    border: 1px solid rgba(155, 60, 64, .46);
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(193,118,121,.78));
+    box-shadow: 0 10px 24px rgba(31, 37, 41, .08);
+    backdrop-filter: blur(8px);
+}
+
+.mesas-page .stat-card::after {
+    position: absolute;
+    top: -38px;
+    right: -24px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(155,60,64,.24), transparent 70%);
+    content: "";
+    pointer-events: none;
+}
+
+.mesas-page .stat-label,
+.mesas-page .stat-value {
+    position: relative;
+    z-index: 1;
+    color: var(--palette-ink);
+}
+
+.mesas-page .stat-label {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.mesas-page .stat-value {
+    font-size: clamp(32px, 3.2vw, 42px);
+    line-height: 1.15;
+}
+
+.mesas-page .stat-card-ocupadas {
+    border-color: rgba(155, 60, 64, .72);
+    background: linear-gradient(135deg, rgba(255,255,255,.97), rgba(193,118,121,.42));
+}
+
+.mesas-page .mesas-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.mesas-page .filter-btn {
+    min-height: 42px;
+    padding: 8px 18px;
+    border: 1px solid rgba(155, 60, 64, .65);
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: var(--palette-ink);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color .16s ease, color .16s ease, transform .16s ease;
+}
+
+.mesas-page .filter-btn:hover {
+    transform: translateY(-1px);
+    background: #F7EDEE;
+}
+
+.mesas-page .filter-btn.active {
+    border-color: var(--palette-red);
+    background: var(--palette-red);
+    color: var(--palette-ink);
+}
+
+.mesas-ocupacion-nota {
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 24px;
+    padding: 10px 32px 10px 16px;
+    border-left: 5px solid var(--palette-red-light);
+    background: linear-gradient(100deg, var(--palette-red-light), var(--palette-red));
+    color: var(--palette-ink);
+    font-size: 15px;
+    font-weight: 700;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 34px) 50%, 100% 100%, 0 100%);
+}
+
+.mesas-ocupacion-nota strong {
+    font-size: 27px;
+    line-height: 1;
+}
+
+.mesas-plan-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 15px;
+}
+
+.mesas-plan-toolbar h2 {
+    color: var(--color-sidebar);
+    font-size: var(--font-xl);
+}
+
+.mesas-plan-toolbar p,
+.mesas-selection-hint {
+    margin-top: 5px;
+    color: var(--color-text-muted);
+    font-size: var(--font-sm);
+}
+
+.mesas-plan-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+.mesas-action-btn {
+    min-height: 42px;
+    padding: 8px 16px;
+    border: 1px solid var(--palette-red-light);
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: var(--palette-ink);
+    font: inherit;
+    font-size: var(--font-sm);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color .16s ease, color .16s ease, transform .16s ease;
+}
+
+.mesas-action-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: #F7EDEE;
+}
+
+.mesas-action-primary,
+.mesas-action-btn:disabled {
+    background: var(--palette-red);
+    color: var(--palette-ink);
+}
+
+.mesas-action-btn:disabled {
+    opacity: .48;
+    cursor: not-allowed;
+}
+
+.mesas-action-secondary {
+    border-color: var(--palette-border);
+}
+
+.mesas-action-btn[hidden],
+.mesas-selection-hint[hidden] {
+    display: none;
+}
+
+.mesas-selection-hint {
+    margin: 0 0 12px;
+    color: var(--palette-red-light);
+    font-weight: 700;
+}
+
+.mesas-page .mesas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid rgba(76, 105, 121, .14);
+    border-radius: 18px;
+    background-color: #EAF1F4;
+    background-image:
+        linear-gradient(rgba(79, 112, 130, .1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79, 112, 130, .1) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.mesas-page .mesa-card {
+    min-width: 0;
+    min-height: 270px;
+    padding: 12px 14px 14px;
+    border: 1px solid rgba(46, 125, 50, .32);
+    border-radius: 16px;
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 5px 16px rgba(21,21,21,.07);
+}
+
+.mesas-page .mesa-card:hover {
+    transform: none;
+    box-shadow: 0 8px 20px rgba(21,21,21,.12);
+}
+
+.mesas-page .mesa-card.libre {
+    border-color: rgba(46, 125, 50, .38);
+    background: rgba(255,255,255,.94);
+}
+
+.mesas-page .mesa-card.ocupada {
+    border-color: rgba(155, 60, 64, .8);
+    background: rgba(255, 248, 231, .97);
+}
+
+.mesas-page .mesa-card.reservada {
+    border-color: rgba(102, 140, 161, .6);
+    background: rgba(240, 246, 249, .96);
+}
+
+.mesas-page .mesa-card.inactiva {
+    border-color: rgba(119, 119, 119, .34);
+    background: rgba(244, 245, 246, .96);
+}
+
+.mesas-page .mesa-card.seleccionada {
+    border-color: #668CA1;
+    box-shadow: 0 0 0 3px rgba(102,140,161,.2);
+}
+
+.mesas-page .mesa-card.ocupada.seleccionada {
+    border-color: var(--palette-red-light);
+    box-shadow: 0 0 0 3px rgba(155,60,64,.3);
+}
+
+.mesas-page .mesa-card-main {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--palette-ink);
+    font: inherit;
+    cursor: pointer;
+}
+
+.mesas-page .mesa-card-main:focus-visible,
+.mesas-page .mesa-separar:focus-visible,
+.mesas-action-btn:focus-visible,
+.mesas-page .filter-btn:focus-visible {
+    outline: 3px solid rgba(102,140,161,.65);
+    outline-offset: 2px;
+}
+
+.mesas-page .mesa-number {
+    margin-top: 1px;
+    color: var(--palette-ink);
+    font-size: var(--font-md);
+}
+
+.mesas-page .mesa-capacity {
+    color: var(--color-text-muted);
+    font-size: var(--font-sm);
+}
+
+.mesas-page .mesa-status {
+    margin-top: 3px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: rgba(46,125,50,.14);
+    color: var(--palette-ink);
+    font-size: var(--font-sm);
+    font-weight: 700;
+}
+
+.mesas-page .mesa-card.ocupada .mesa-status {
+    background: rgba(155,60,64,.24);
+    color: var(--palette-ink);
+}
+
+.mesas-page .mesa-card.reservada .mesa-status {
+    background: rgba(102,140,161,.18);
+    color: var(--palette-ink);
+}
+
+.mesas-page .mesa-reservation-date {
+    margin-top: 2px;
+    color: #4F6875;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.mesas-page .mesa-card.inactiva .mesa-status,
+.mesas-page .mesa-card.mesa-mixta .mesa-status {
+    background: rgba(119,119,119,.14);
+    color: var(--palette-ink);
+}
+
+.mesa-table-stage {
+    position: relative;
+    width: min(230px, 100%);
+    height: 145px;
+    flex: 0 0 auto;
+    margin: 0 auto;
+}
+
+.mesa-seat {
+    position: absolute;
+    z-index: 1;
+    top: var(--seat-y);
+    left: var(--seat-x);
+    color: #64737B;
+    font-size: 17px;
+    line-height: 1;
+    transform: translate(-50%, -50%);
+}
+
+.mesa-table-surface {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+    display: grid;
+    width: 78px;
+    height: 78px;
+    place-items: center;
+    border: 2px solid rgba(79,112,130,.2);
+    border-radius: 50%;
+    background: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(21,21,21,.12);
+    color: var(--palette-ink);
+    font-size: var(--font-md);
+    font-weight: 800;
+    transform: translate(-50%, -50%);
+}
+
+.mesa-table-stage.forma-rectangular .mesa-table-surface {
+    width: 112px;
+    height: 62px;
+    border-radius: 14px;
+}
+
+.mesa-table-stage.capacidad-1 .mesa-table-surface {
+    width: 66px;
+    height: 66px;
+}
+
+.mesa-table-stage.capacidad-8 .mesa-table-surface,
+.mesa-table-stage.capacidad-9 .mesa-table-surface,
+.mesa-table-stage.capacidad-10 .mesa-table-surface,
+.mesa-table-stage.capacidad-11 .mesa-table-surface,
+.mesa-table-stage.capacidad-12 .mesa-table-surface {
+    width: 132px;
+    height: 64px;
+}
+
+.mesa-card.ocupada .mesa-table-surface {
+    border-color: var(--palette-red-light);
+    background: #C17679;
+}
+
+.mesa-card.ocupada .mesa-seat {
+    color: #98672A;
+}
+
+.mesa-card.reservada .mesa-table-surface {
+    border-color: #668CA1;
+    background: #DCE8EE;
+}
+
+.mesa-separar {
+    align-self: center;
+    margin-top: 6px;
+    padding: 5px 12px;
+    border: 1px solid rgba(91,131,153,.48);
+    border-radius: 999px;
+    background: #FFFFFF;
+    color: #3F6173;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.mesa-separar:hover {
+    background: #E6EFF3;
+}
+
+.mesas-page .mesas-grid.modo-combinacion .mesa-card-main {
+    cursor: crosshair;
+}
+
+.toast-list {
+    position: fixed;
+    z-index: 2000;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    width: min(390px, calc(100vw - 32px));
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #248653;
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 600;
+    animation: toast-enter .18s ease-out;
+}
+
+.toast-error,
+.toast-lleno {
+    background: #D84A4A;
+}
+
+.toast-alerta {
+    background: var(--palette-red);
+    color: var(--palette-ink);
+}
+
+.toast-close {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.toast-close:hover {
+    background: rgba(255,255,255,.16);
+}
+
+@keyframes toast-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal[hidden],
+.modal-overlay[hidden] {
+    display: none !important;
+}
+
+#modalMesa:not([hidden]),
+#modalNuevaMesa:not([hidden]) {
+    display: block;
+}
+
+#modalMesa,
+#modalNuevaMesa {
+    position: fixed;
+    z-index: 1002;
+    top: 50%;
+    left: 50%;
+    width: min(540px, calc(100% - 32px));
+    max-height: min(90vh, 760px);
+    overflow: hidden;
+    border: 1px solid rgba(155,60,64,.3);
+    border-radius: 16px;
+    background: #FFFFFF;
+    box-shadow: 0 24px 70px rgba(24,35,42,.28);
+    transform: translate(-50%, -50%);
+}
+
+#modalMesa .mesa-modal-content {
+    display: flex;
+    max-height: min(90vh, 760px);
+    flex-direction: column;
+}
+
+#modalMesa .modal-header,
+#modalNuevaMesa .modal-header {
+    flex: 0 0 auto;
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(155,60,64,.22);
+    background: linear-gradient(120deg, #F7EEEE, #FFFFFF 78%);
+}
+
+.mesa-modal-heading span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--color-accent-dark);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+#modalMesa .modal-header h2,
+#modalNuevaMesa .modal-header h2 {
+    margin: 0;
+    color: var(--palette-ink);
+    font-size: 23px;
+}
+
+#modalMesa .modal-close,
+#modalNuevaMesa .modal-close {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(155,60,64,.12);
+    transition: background-color .18s ease, transform .18s ease;
+}
+
+#modalMesa .modal-close:hover,
+#modalNuevaMesa .modal-close:hover {
+    background: rgba(155,60,64,.24);
+    transform: rotate(90deg);
+}
+
+#modalMesa .modal-body,
+#modalNuevaMesa .modal-body {
+    display: grid;
+    min-height: 0;
+    flex: 1 1 auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 16px 22px;
+    overflow-y: auto;
+}
+
+#modalMesa .info-item {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 10px 12px;
+    border: 1px solid rgba(78,105,120,.1);
+    border-radius: 11px;
+    background: #F7F9FA;
+}
+
+#modalMesa .info-item:nth-child(6) {
+    grid-column: 1 / -1;
+}
+
+#modalMesa .info-label,
+#modalNuevaMesa .info-label {
+    color: #64737B;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#modalMesa .info-value {
+    color: var(--palette-ink);
+    font-size: 15px;
+}
+
+#modalMesa.mesa-modal-libre #modalEstado {
+    color: #23734D;
+}
+
+#modalMesa.mesa-modal-ocupada #modalEstado {
+    color: #825B1F;
+}
+
+#modalMesa .mesa-asignacion[hidden],
+#modalMesa #clienteAsignadoGroup[hidden],
+#modalMesa #btnAccion[hidden] {
+    display: none !important;
+}
+
+#modalMesa .mesa-asignacion:not([hidden]) {
+    display: grid;
+    grid-column: 1 / -1;
+    gap: 7px;
+    border-color: rgba(155,60,64,.3);
+    background: #F7EEEE;
+}
+
+#modalMesa .mesa-info-wide {
+    grid-column: 1 / -1;
+}
+
+#modalMesa input,
+#modalNuevaMesa input,
+#modalMesa select {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #D6DFE3;
+    border-radius: 9px;
+    background: #FFFFFF;
+    color: var(--palette-ink);
+    font: inherit;
+}
+
+#modalMesa input:focus,
+#modalNuevaMesa input:focus,
+#modalMesa select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(155,60,64,.2);
+}
+
+.form-error {
+    color: var(--color-danger);
+    font-size: 12px;
+}
+
+.form-error[hidden] {
+    display: none !important;
+}
+
+#modalMesa .modal-actions,
+#modalNuevaMesa .modal-actions {
+    flex: 0 0 auto;
+    padding: 14px 22px 18px;
+    border-top: 1px solid rgba(78,105,120,.12);
+}
+
+#modalMesa .modal-actions button,
+#modalNuevaMesa .modal-actions button {
+    min-height: 44px;
+    border-radius: 10px;
+    transition: filter .18s ease, transform .18s ease;
+}
+
+#modalMesa .modal-actions button:hover:not(:disabled),
+#modalNuevaMesa .modal-actions button:hover:not(:disabled) {
+    filter: brightness(.96);
+    transform: translateY(-1px);
+}
+
+#modalNuevaMesaOverlay {
+    z-index: 1001;
+}
+
+#modalNuevaMesa .modal-body {
+    grid-template-columns: 1fr;
+}
+
+.modal-overlay:not([hidden]) {
+    display: block;
+    position: fixed;
+    z-index: 1001;
+    inset: 0;
+    background: rgba(20,25,29,.54);
+    backdrop-filter: blur(3px);
+}
+
+@media (max-width: 768px) {
+    .mesas-page .mesas-stats {
+        gap: 10px;
+    }
+
+    .mesas-plan-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mesas-plan-actions {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .mesas-page .mesas-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+        gap: 12px;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mesas-page .mesas-stats {
+        gap: 8px;
+    }
+
+    .mesas-page .stat-card {
+        min-height: 94px;
+        padding: 14px;
+    }
+
+    .mesas-page .stat-label {
+        font-size: 12px;
+    }
+
+    .mesas-page .mesas-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .mesas-ocupacion-nota {
+        max-width: 100%;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .mesas-ocupacion-nota strong {
+        font-size: 23px;
+    }
+
+    #modalMesa,
+    #modalNuevaMesa {
+        width: calc(100% - 24px);
+        max-height: calc(100vh - 24px);
+    }
+
+    #modalMesa .mesa-modal-content {
+        max-height: calc(100vh - 24px);
+    }
+
+    #modalMesa .modal-header,
+    #modalNuevaMesa .modal-header {
+        padding: 15px 17px;
+    }
+
+    #modalMesa .modal-body,
+    #modalNuevaMesa .modal-body {
+        padding: 12px 15px;
+        gap: 8px;
+    }
+
+    #modalMesa .modal-actions,
+    #modalNuevaMesa .modal-actions {
+        padding: 12px 15px 16px;
+    }
+
+    .toast-list {
+        right: 12px;
+        bottom: 12px;
+        width: calc(100vw - 24px);
     }
 }

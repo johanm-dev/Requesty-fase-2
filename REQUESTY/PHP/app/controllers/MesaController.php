@@ -12,7 +12,8 @@ class MesaController extends Controller {
             'pageTitle'   => 'Gestión de Mesas - Requesty',
             'currentPage' => 'mesas',
             'mesas'       => $mesas,
-            'user'        => $this->getUser()
+            'user'        => $this->getUser(),
+            'puedeCrearMesas' => $this->hasRole(['ADMIN'])
         ]);
     }
 }
