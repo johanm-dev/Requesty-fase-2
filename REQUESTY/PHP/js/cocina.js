@@ -23,6 +23,8 @@ const pedidosDemoKds = [
         mesa: 24,
         destination: "Mesa 24",
         channel: "Mesa",
+        prioridad: "alta",
+        priority: "alta",
         time: "12:35 PM",
         receivedAt: new Date(Date.now() - 18 * 60000).toISOString(),
         status: "En preparación",
@@ -38,6 +40,8 @@ const pedidosDemoKds = [
         mesa: 33,
         destination: "Mesa 33",
         channel: "Mesa",
+        prioridad: "alta",
+        priority: "alta",
         time: "12:36 PM",
         receivedAt: new Date(Date.now() - 17 * 60000).toISOString(),
         status: "En preparación",
@@ -249,11 +253,18 @@ function renderizarItem(item) {
     </li>`;
 }
 
+let filtroMesaActual = "todas";
+
+function esPedidoPrioritario(pedido, espera) {
+    return pedido.prioridad === "alta" || pedido.priority === "alta" || espera >= 15;
+}
+
 function renderizarPedido(pedido, ahora) {
     const estado = pedido.status;
     const espera = minutosEnEspera(pedido, ahora);
     const claseEspera = claseAlerta(pedido, espera);
     const mesaNumero = extraerNumeroMesa(pedido);
+    const esPrioridad = esPedidoPrioritario(pedido, espera);
 
     const fechaRecepcion = new Date(obtenerFechaRecepcion(pedido));
     const hora = Number.isNaN(fechaRecepcion.getTime())
@@ -288,9 +299,20 @@ function renderizarPedido(pedido, ahora) {
         ? pedido.items.map(renderizarItem).join("")
         : '<li class="item-producto-kds"><div class="item-principal"><span class="item-nombre">Sin productos registrados</span></div></li>';
 
-    return `<article class="libreta-comanda ${claseEspera}" data-pedido-id="${escaparHTML(pedido.id)}" id="comanda-${escaparHTML(pedido.id)}">
+    const clasePrioridad = esPrioridad ? "prioridad-alta prioridad-vibracion" : "";
+    const cintaPrioridad = esPrioridad
+        ? `<div class="cinta-prioridad-alta" role="status">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span>${espera >= 15 ? `TIEMPO EXCESIVO (${espera}m) · PRIORIDAD` : "PRIORIDAD ALTA"}</span>
+          </div>`
+        : "";
+
+    return `<article class="libreta-comanda ${claseEspera} ${clasePrioridad}" data-pedido-id="${escaparHTML(pedido.id)}" id="comanda-${escaparHTML(pedido.id)}">
         <!-- Pinza metálica superior -->
         <div class="pinza-comanda" aria-hidden="true"></div>
+
+        <!-- Cinta de alta prioridad con sutil vibración si aplica -->
+        ${cintaPrioridad}
 
         <!-- Encabezado con SOLO: ID, MESA, HORA -->
         <div class="libreta-encabezado">
@@ -334,6 +356,44 @@ function renderizarPedido(pedido, ahora) {
     </article>`;
 }
 
+function renderizarFiltrosMesas(pedidos) {
+    const contenedor = document.getElementById("filtroMesasCocina");
+    if (!contenedor) return;
+
+    // Conteo por mesa
+    const conteos = {};
+    pedidos.forEach(p => {
+        const mesa = extraerNumeroMesa(p);
+        conteos[mesa] = (conteos[mesa] || 0) + 1;
+    });
+
+    const mesasOrdenadas = Object.keys(conteos).sort((a, b) => {
+        const numA = Number(a), numB = Number(b);
+        if (!Number.isNaN(numA) && !Number.isNaN(numB)) return numA - numB;
+        return a.localeCompare(b);
+    });
+
+    // Si la mesa seleccionada ya no tiene comandas, volver a 'todas'
+    if (filtroMesaActual !== "todas" && !conteos[filtroMesaActual]) {
+        filtroMesaActual = "todas";
+    }
+
+    let html = `<button type="button" class="btn-filtro-mesa ${filtroMesaActual === 'todas' ? 'active' : ''}" data-mesa="todas">
+        <i class="fa-solid fa-layer-group"></i> Todas las mesas
+        <span class="badge-conteo-mesa">${pedidos.length}</span>
+    </button>`;
+
+    mesasOrdenadas.forEach(mesa => {
+        const activa = String(filtroMesaActual) === String(mesa) ? "active" : "";
+        html += `<button type="button" class="btn-filtro-mesa ${activa}" data-mesa="${escaparHTML(mesa)}">
+            <i class="fa-solid fa-chair"></i> Mesa ${escaparHTML(mesa)}
+            <span class="badge-conteo-mesa">${conteos[mesa]}</span>
+        </button>`;
+    });
+
+    contenedor.innerHTML = html;
+}
+
 function renderizarBarraInferior(pedidos, ahora) {
     const contenedor = document.getElementById("pildorasComandas");
     if (!contenedor) return;
@@ -347,8 +407,10 @@ function renderizarBarraInferior(pedidos, ahora) {
         const mesa = extraerNumeroMesa(p);
         const espera = minutosEnEspera(p, ahora);
         const clase = claseAlerta(p, espera);
+        const esPrioridad = esPedidoPrioritario(p, espera);
+        const iconoPrioridad = esPrioridad ? '<i class="fa-solid fa-bolt" style="color: #F87171; margin-right: 2px;"></i>' : '';
         return `<button type="button" class="pildora-comanda-btn ${clase}" data-scroll-comanda="comanda-${escaparHTML(p.id)}">
-            <span>Mesa ${escaparHTML(mesa)}</span>
+            ${iconoPrioridad}<span>Mesa ${escaparHTML(mesa)}</span>
             <span style="opacity: 0.7;">#${escaparHTML(p.id)}</span>
         </button>`;
     }).join("");
@@ -358,27 +420,47 @@ function mostrarPedidos() {
     const contenedor = document.getElementById("contenedor-pedidos");
     if (!contenedor) return;
 
-    const pedidos = leerPedidos()
-        .map(pedido => ({ ...pedido, status: normalizarEstado(pedido.status) }))
-        .filter(pedido => ![nombresEstados.entregado, nombresEstados.cancelado].includes(pedido.status))
-        .sort((a, b) => {
-            // Prioridad a comandas en preparación y más antiguas
-            if (a.status === nombresEstados.preparacion && b.status !== nombresEstados.preparacion) return -1;
-            if (b.status === nombresEstados.preparacion && a.status !== nombresEstados.preparacion) return 1;
-            return obtenerFechaRecepcion(a) - obtenerFechaRecepcion(b);
-        });
-
     const ahora = Date.now();
+    const pedidosActivos = leerPedidos()
+        .map(pedido => ({ ...pedido, status: normalizarEstado(pedido.status) }))
+        .filter(pedido => ![nombresEstados.entregado, nombresEstados.cancelado].includes(pedido.status));
 
-    contenedor.innerHTML = pedidos.length
-        ? pedidos.map(pedido => renderizarPedido(pedido, ahora)).join("")
-        : '<p class="cocina-vacia" style="margin: 30px auto; color: var(--palette-gold, #C99B45); font-weight: 700; text-align: center;">No hay comandas activas en la cuerda. Las nuevas aparecerán aquí automáticamente.</p>';
+    // Actualizar los 3 contadores icónicos globales
+    const contadorPendientes = document.getElementById("contador-pendientes");
+    const contadorPreparacion = document.getElementById("contador-preparacion");
+    const contadorListos = document.getElementById("contador-listos");
+    if (contadorPendientes) contadorPendientes.textContent = pedidosActivos.filter(p => p.status === nombresEstados.cola).length;
+    if (contadorPreparacion) contadorPreparacion.textContent = pedidosActivos.filter(p => p.status === nombresEstados.preparacion).length;
+    if (contadorListos) contadorListos.textContent = pedidosActivos.filter(p => p.status === nombresEstados.listo).length;
 
-    document.getElementById("contador-pendientes").textContent = pedidos.filter(pedido => pedido.status === nombresEstados.cola).length;
-    document.getElementById("contador-preparacion").textContent = pedidos.filter(pedido => pedido.status === nombresEstados.preparacion).length;
-    document.getElementById("contador-listos").textContent = pedidos.filter(pedido => pedido.status === nombresEstados.listo).length;
+    // Renderizar filtro de mesas (ubicado debajo de las 3 cajas)
+    renderizarFiltrosMesas(pedidosActivos);
 
-    renderizarBarraInferior(pedidos, ahora);
+    // Filtrar comandas según mesa seleccionada
+    const pedidosFiltrados = (filtroMesaActual === "todas")
+        ? pedidosActivos
+        : pedidosActivos.filter(p => String(extraerNumeroMesa(p)) === String(filtroMesaActual));
+
+    // Ordenar: pedidos de ALTA PRIORIDAD primero, luego en preparación, luego por antigüedad
+    pedidosFiltrados.sort((a, b) => {
+        const esperaA = minutosEnEspera(a, ahora);
+        const esperaB = minutosEnEspera(b, ahora);
+        const prioA = esPedidoPrioritario(a, esperaA) ? 1 : 0;
+        const prioB = esPedidoPrioritario(b, esperaB) ? 1 : 0;
+
+        if (prioA !== prioB) return prioB - prioA; // Prioridad alta primero
+        if (a.status === nombresEstados.preparacion && b.status !== nombresEstados.preparacion) return -1;
+        if (b.status === nombresEstados.preparacion && a.status !== nombresEstados.preparacion) return 1;
+        return obtenerFechaRecepcion(a) - obtenerFechaRecepcion(b);
+    });
+
+    contenedor.innerHTML = pedidosFiltrados.length
+        ? pedidosFiltrados.map(pedido => renderizarPedido(pedido, ahora)).join("")
+        : `<p class="cocina-vacia" style="margin: 30px auto; color: var(--palette-gold, #C99B45); font-weight: 700; text-align: center;">
+            ${filtroMesaActual === "todas" ? "No hay comandas activas en la cuerda." : `No hay comandas activas para la Mesa ${escaparHTML(filtroMesaActual)}.`}
+          </p>`;
+
+    renderizarBarraInferior(pedidosFiltrados, ahora);
 }
 
 // ========================================================
@@ -474,7 +556,26 @@ document.getElementById("contenedor-pedidos")?.addEventListener("click", evento 
     }
 });
 
-// Botón para restaurar/recargar ejemplos
+// Click en píldoras de filtro de mesas (ubicado debajo de las 3 cajas)
+document.getElementById("filtroMesasCocina")?.addEventListener("click", (e) => {
+    const boton = e.target.closest("[data-mesa]");
+    if (boton) {
+        filtroMesaActual = boton.dataset.mesa || "todas";
+        mostrarPedidos();
+    }
+});
+
+// Botón para restaurar/recargar ejemplos (solo visible y accesible para admin)
+function asegurarVisibilidadDemo() {
+    const sesion = typeof leerSesion === "function" ? leerSesion() : null;
+    const rol = sesion?.rol ? claveRol(sesion.rol) : "";
+    if (rol === "cocina") {
+        const btn = document.getElementById("btnRestaurarDemo");
+        if (btn) btn.remove();
+    }
+}
+asegurarVisibilidadDemo();
+
 document.getElementById("btnRestaurarDemo")?.addEventListener("click", () => {
     localStorage.setItem(clavePedidos, JSON.stringify(pedidosDemoKds));
     window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: pedidosDemoKds }));
@@ -489,14 +590,5 @@ window.addEventListener(eventoPedidos, mostrarPedidos);
 // Inicialización
 mostrarPedidos();
 window.setInterval(() => {
-    const ahora = Date.now();
-    leerPedidos().forEach(pedido => {
-        const tarjeta = document.querySelector(`.libreta-comanda[data-pedido-id="${CSS.escape(String(pedido.id))}"]`);
-        if (!tarjeta) return;
-        const espera = minutosEnEspera(pedido, ahora);
-        tarjeta.classList.remove("alerta-normal", "alerta-advertencia", "alerta-critica", "alerta-listo");
-        tarjeta.classList.add(claseAlerta(pedido, espera));
-        const crono = tarjeta.querySelector(`[data-cronometro="${CSS.escape(String(pedido.id))}"]`);
-        if (crono) crono.textContent = `${espera}m`;
-    });
+    mostrarPedidos();
 }, 15000);

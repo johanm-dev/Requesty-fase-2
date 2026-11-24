@@ -5,26 +5,31 @@
 }
 
 :root {
-    --palette-gold: #E4B353;
-    --palette-gold-hover: #C99B45;
-    --palette-dark: #151515;
-    --palette-light: #F8F9FA;
+    --palette-red: #8A3539;
+    --palette-red-actual: #963C40;
+    --palette-red-light: #A8484D;
+    --palette-red-dark: #6E262B;
+    --palette-gold: #C99B45;
+    --palette-gold-hover: #B08536;
+    --palette-gold-light: #E4B353;
+    --palette-dark: #1F1116;
+    --palette-light: #F7F3F1;
     --palette-card: #FFFFFF;
-    --palette-text: #333333;
-    --palette-muted: #777777;
-    --palette-border: #EAEAEA;
+    --palette-text: #1F1116;
+    --palette-muted: #6B5B60;
+    --palette-border: rgba(201, 155, 69, 0.28);
     --palette-nav-text: #FFFFFF;
 
     /* Variables Globales del Sistema */
     --color-bg-primary: var(--palette-light);
-    --color-sidebar: var(--palette-text);
+    --color-sidebar: var(--palette-dark);
     --color-text-light: var(--palette-nav-text);
     --color-text-muted: var(--palette-muted);
     --color-card-bg: var(--palette-card);
     --color-accent: var(--palette-gold);
     --color-accent-dark: var(--palette-gold-hover);
-    --color-primary: var(--palette-gold);
-    --color-primary-dark: var(--palette-gold-hover);
+    --color-primary: var(--palette-red);
+    --color-primary-dark: var(--palette-red-dark);
     --color-highlight: var(--palette-border);
     --color-success: #2E7D32;
     --color-danger: #B42318;

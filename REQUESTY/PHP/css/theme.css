@@ -1,15 +1,26 @@
 :root {
-    --palette-red: #963C40;
-    --palette-red-light: #C17679;
-    --palette-red-dark: #54272B;
-    --palette-dark: #321719;
-    --palette-light: #F6F1F0;
-    --palette-card: #FFFCFC;
-    --palette-text: #321719;
-    --palette-ink: #321719;
-    --palette-muted: #76696A;
-    --palette-border: #E3D8D7;
+    /* Paleta Oficial Requesty: Rojo Actual, Negro y Dorado */
+    --palette-red: #8A3539;
+    --palette-red-actual: #963C40;
+    --palette-red-light: #A8484D;
+    --palette-red-dark: #6E262B;
+    --palette-dark: #1F1116;
+    --palette-black: #160B0F;
+    --palette-gold: #C99B45;
+    --palette-gold-light: #E4B353;
+    --palette-gold-hover: #B08536;
+    --palette-gold-subtle: rgba(201, 155, 69, 0.28);
+    --palette-light: #F7F3F1;
+    --palette-card: #FFFFFF;
+    --palette-text: #1F1116;
+    --palette-ink: #160B0F;
+    --palette-muted: #6B5B60;
+    --palette-border: rgba(201, 155, 69, 0.28);
     --palette-nav-text: #FFFFFF;
+    --color-accent: var(--palette-gold);
+    --color-accent-dark: var(--palette-gold-hover);
+    --color-primary: var(--palette-red);
+    --color-primary-dark: var(--palette-red-dark);
 }
 
 .theme-toggle {
@@ -143,6 +154,160 @@
     position: absolute;
     top: 20px;
     right: 20px;
+}
+
+/* ========================================================
+   MODO CLARO: DETALLES EN ROJO ACTUAL, NEGRO Y DORADO (EN TODAS LAS VISTAS)
+   ======================================================== */
+:root:not([data-theme="dark"]),
+:root[data-theme="light"] {
+    --bg-main: #F7F3F1;
+    --bg-card: #FFFFFF;
+    --text-main: #1F1116;
+    --text-muted: #6B5B60;
+}
+
+/* Tarjetas y Contenedores con sutil borde dorado y profundidad elegante */
+:root:not([data-theme="dark"]) .card,
+:root:not([data-theme="dark"]) .panel,
+:root:not([data-theme="dark"]) .table-card,
+:root:not([data-theme="dark"]) .order-builder,
+:root:not([data-theme="dark"]) .stat-card,
+:root:not([data-theme="dark"]) .kpi-card,
+:root:not([data-theme="dark"]) .chart-section,
+:root:not([data-theme="dark"]) .mesa-card,
+:root:not([data-theme="dark"]) .modal-content,
+:root:not([data-theme="dark"]) .rq-modal-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(201, 155, 69, 0.3);
+    box-shadow: 0 4px 18px rgba(31, 17, 22, 0.06);
+    color: #1F1116;
+}
+
+/* Títulos y Encabezados en Negro Intenso con detalles */
+:root:not([data-theme="dark"]) h1,
+:root:not([data-theme="dark"]) h2,
+:root:not([data-theme="dark"]) h3,
+:root:not([data-theme="dark"]) .page-title,
+:root:not([data-theme="dark"]) .sidebar-logo,
+:root:not([data-theme="dark"]) .app-page-header-brand span {
+    color: #1F1116;
+}
+
+/* Botones Principales: Rojo Actual con Borde Dorado y Sombra Reducida */
+:root:not([data-theme="dark"]) .btn-primary,
+:root:not([data-theme="dark"]) .btn-primario,
+:root:not([data-theme="dark"]) .btn-cobrar,
+:root:not([data-theme="dark"]) .generate-btn,
+:root:not([data-theme="dark"]) .mesas-action-primary,
+:root:not([data-theme="dark"]) #boton_inicio_de_sesion,
+:root:not([data-theme="dark"]) #boton_crear_cuenta,
+:root:not([data-theme="dark"]) .seguimiento-ir-caja {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.5) !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(138, 53, 57, 0.32) !important;
+    transition: all 0.2s ease !important;
+}
+
+:root:not([data-theme="dark"]) .btn-primary:hover,
+:root:not([data-theme="dark"]) .btn-primario:hover,
+:root:not([data-theme="dark"]) .btn-cobrar:hover,
+:root:not([data-theme="dark"]) .generate-btn:hover,
+:root:not([data-theme="dark"]) .mesas-action-primary:hover,
+:root:not([data-theme="dark"]) #boton_inicio_de_sesion:hover,
+:root:not([data-theme="dark"]) #boton_crear_cuenta:hover {
+    background: linear-gradient(135deg, #9E3D42 0%, #8A3539 100%) !important;
+    border-color: #C99B45 !important;
+    box-shadow: 0 6px 18px rgba(201, 155, 69, 0.35) !important;
+    transform: translateY(-1px);
+}
+
+/* Botones Secundarios y Píldoras de Filtro: Borde Dorado y Texto Negro/Rojo */
+:root:not([data-theme="dark"]) .btn-secondary,
+:root:not([data-theme="dark"]) .btn-secundario,
+:root:not([data-theme="dark"]) .filter-btn,
+:root:not([data-theme="dark"]) .filter-tabs .tab-btn,
+:root:not([data-theme="dark"]) .mesas-action-btn,
+:root:not([data-theme="dark"]) .mesa-page .filter-btn,
+:root:not([data-theme="dark"]) .mesas-page .filter-btn {
+    border: 1.5px solid var(--palette-gold, #C99B45) !important;
+    background: #FFFFFF !important;
+    color: #1F1116 !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease;
+}
+
+:root:not([data-theme="dark"]) .filter-btn:hover,
+:root:not([data-theme="dark"]) .filter-tabs .tab-btn:hover,
+:root:not([data-theme="dark"]) .btn-secondary:hover,
+:root:not([data-theme="dark"]) .btn-secundario:hover,
+:root:not([data-theme="dark"]) .mesas-action-btn:hover {
+    background: rgba(201, 155, 69, 0.14) !important;
+    border-color: var(--palette-gold-light, #E4B353) !important;
+    color: #8A3539 !important;
+    transform: translateY(-1px);
+}
+
+/* Filtro Activo: Fondo Rojo Actual con Borde Dorado */
+:root:not([data-theme="dark"]) .filter-btn.active,
+:root:not([data-theme="dark"]) .filter-tabs .tab-btn.active,
+:root:not([data-theme="dark"]) .mesa-page .filter-btn.active,
+:root:not([data-theme="dark"]) .mesas-page .filter-btn.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border-color: var(--palette-gold, #C99B45) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 14px rgba(138, 53, 57, 0.35) !important;
+}
+
+/* Tablas en Modo Claro: Encabezados con Detalle Dorado y Texto Negro */
+:root:not([data-theme="dark"]) table th,
+:root:not([data-theme="dark"]) .orders-table th {
+    background-color: #FAF6F4;
+    color: #1F1116;
+    font-weight: 800;
+    border-bottom: 2px solid var(--palette-gold, #C99B45);
+}
+
+:root:not([data-theme="dark"]) table td,
+:root:not([data-theme="dark"]) .orders-table td {
+    border-color: rgba(201, 155, 69, 0.2);
+    color: #1F1116;
+}
+
+/* Inputs y Selects: Detalle de Borde Dorado sutil y foco en Rojo */
+:root:not([data-theme="dark"]) input:not([type="checkbox"]):not([type="radio"]),
+:root:not([data-theme="dark"]) select,
+:root:not([data-theme="dark"]) textarea {
+    border: 1px solid rgba(201, 155, 69, 0.38);
+    background-color: #FFFFFF;
+    color: #1F1116;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+:root:not([data-theme="dark"]) input:focus,
+:root:not([data-theme="dark"]) select:focus,
+:root:not([data-theme="dark"]) textarea:focus {
+    border-color: #8A3539 !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(201, 155, 69, 0.28) !important;
+}
+
+/* Insignias de Mesas */
+:root:not([data-theme="dark"]) .mesas-page .mesa-number {
+    color: #8A3539 !important;
+    font-weight: 900;
+}
+
+:root:not([data-theme="dark"]) .mesas-page .mesa-card.ocupada {
+    border-color: #8A3539;
+    background: rgba(138, 53, 57, 0.06);
+}
+
+:root:not([data-theme="dark"]) .mesas-page .mesa-card.ocupada .mesa-status {
+    color: #8A3539;
+    font-weight: 800;
 }
 
 :root[data-theme="dark"] {

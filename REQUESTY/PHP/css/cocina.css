@@ -51,56 +51,206 @@
     transform: translateY(-1px);
 }
 
+/* ========================================================
+   3 CAJAS DE RESUMEN KDS - DISEÑO ICÓNICO
+   ======================================================== */
 .cocina-resumen {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
     padding: 0;
 }
 
-.tarjeta-resumen {
+.tarjeta-resumen.kds-caja-iconica {
     background: var(--palette-card, #FFFFFF);
+    border-radius: 14px;
+    padding: 16px 20px;
+    border: 1.5px solid rgba(201, 155, 69, 0.32);
+    box-shadow: 0 6px 20px rgba(31, 17, 22, 0.07);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tarjeta-resumen.kds-caja-iconica:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 26px rgba(31, 17, 22, 0.12);
+    border-color: var(--palette-gold, #C99B45);
+}
+
+.caja-icono-wrap {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
     border-radius: 12px;
-    padding: 12px 18px;
-    border: 1px solid rgba(201, 155, 69, 0.25);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #FFFFFF;
+    position: relative;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.caja-icono-wrap.icono-pendiente {
+    background: linear-gradient(135deg, #E4B353 0%, #C99B45 100%);
+    box-shadow: 0 6px 16px rgba(201, 155, 69, 0.4);
+}
+
+.caja-icono-wrap.icono-preparacion {
+    background: linear-gradient(135deg, #B91C1C 0%, #8A3539 100%);
+    box-shadow: 0 6px 16px rgba(185, 28, 28, 0.4);
+}
+
+.caja-icono-wrap.icono-listo {
+    background: linear-gradient(135deg, #2E7D32 0%, #15803D 100%);
+    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4);
+}
+
+.caja-info {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    transition: transform 0.2s ease;
+    flex: 1;
 }
 
-.tarjeta-resumen:hover {
-    transform: translateY(-2px);
+.caja-info .numero-resumen {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--palette-dark, #1F1116);
+    letter-spacing: -0.5px;
 }
 
-.tarjeta-resumen.pendiente {
-    border-top: 4px solid var(--palette-gold, #C99B45);
-}
-
-.tarjeta-resumen.preparacion {
-    border-top: 4px solid #8A3539;
-}
-
-.tarjeta-resumen.listo {
-    border-top: 4px solid #2E7D32;
-}
-
-.numero-resumen {
-    font-size: 28px;
-    font-weight: 800;
-    line-height: 1.1;
-    color: var(--palette-text, #321719);
-}
-
-.texto-resumen {
+.caja-info .texto-resumen {
     font-size: 13px;
     font-weight: 700;
-    color: var(--palette-muted, #76696A);
+    color: var(--palette-muted, #6B5B60);
     margin-top: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.caja-badge-iconico {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(201, 155, 69, 0.12);
+    color: var(--palette-gold-hover, #B58428);
+    border: 1px solid rgba(201, 155, 69, 0.28);
+}
+
+.tarjeta-resumen.kds-caja-iconica.pendiente .caja-badge-iconico {
+    background: rgba(228, 179, 83, 0.15);
+    color: #9A6E1E;
+    border-color: rgba(228, 179, 83, 0.4);
+}
+
+.tarjeta-resumen.kds-caja-iconica.preparacion .caja-badge-iconico {
+    background: rgba(185, 28, 28, 0.1);
+    color: #8A3539;
+    border-color: rgba(185, 28, 28, 0.3);
+}
+
+.tarjeta-resumen.kds-caja-iconica.listo .caja-badge-iconico {
+    background: rgba(46, 125, 50, 0.1);
+    color: #2E7D32;
+    border-color: rgba(46, 125, 50, 0.3);
+}
+
+/* ========================================================
+   FILTRO DE MESAS (UBICADO DEBAJO DE LAS 3 CAJAS)
+   ======================================================== */
+.cocina-filtro-mesas-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+    padding: 12px 16px;
+    background: var(--palette-card, #FFFFFF);
+    border: 1px solid rgba(201, 155, 69, 0.28);
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    overflow-x: auto;
+}
+
+.filtro-mesas-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--palette-dark, #1F1116);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    padding-right: 8px;
+    border-right: 1.5px solid rgba(201, 155, 69, 0.25);
+}
+
+.filtro-mesas-label i {
+    color: var(--palette-gold, #C99B45);
+}
+
+.filtro-mesas-lista {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.btn-filtro-mesa {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(201, 155, 69, 0.32);
+    background: transparent;
+    color: var(--palette-text, #1F1116);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-filtro-mesa:hover {
+    background: rgba(201, 155, 69, 0.14);
+    border-color: var(--palette-gold, #C99B45);
+    color: var(--palette-dark, #1F1116);
+    transform: translateY(-1px);
+}
+
+.btn-filtro-mesa.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%);
+    border-color: var(--palette-gold, #C99B45);
+    color: #FFFFFF !important;
+    box-shadow: 0 3px 10px rgba(138, 53, 57, 0.38);
+}
+
+.btn-filtro-mesa .badge-conteo-mesa {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.08);
+    color: inherit;
+}
+
+.btn-filtro-mesa.active .badge-conteo-mesa {
+    background: rgba(255, 255, 255, 0.25);
+    color: #FFFFFF;
 }
 
 /* ========================================================
@@ -185,6 +335,77 @@
     border: 1px solid var(--papel-borde);
     border-top: none;
     user-select: none;
+}
+
+/* ========================================================
+   CINTA DE PRIORIDAD Y ANIMACIÓN DE VIBRACIÓN SUTIL
+   ======================================================== */
+.cinta-prioridad-alta {
+    background: linear-gradient(135deg, #B91C1C 0%, #8A1313 100%);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    box-shadow: 0 3px 8px rgba(185, 28, 28, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    position: relative;
+    z-index: 5;
+}
+
+.cinta-prioridad-alta i {
+    font-size: 12px;
+    color: #FEE2E2;
+    animation: pulsoIconoPrioridad 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulsoIconoPrioridad {
+    0% { transform: scale(0.9); opacity: 0.85; }
+    100% { transform: scale(1.22); opacity: 1; }
+}
+
+@keyframes sutilVibracion {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    12% {
+        transform: translateY(-1.5px) rotate(-0.55deg);
+    }
+    24% {
+        transform: translateY(1.2px) rotate(0.45deg);
+    }
+    36% {
+        transform: translateY(-1px) rotate(-0.35deg);
+    }
+    48% {
+        transform: translateY(1px) rotate(0.35deg);
+    }
+    60% {
+        transform: translateY(-0.6px) rotate(-0.2deg);
+    }
+    72% {
+        transform: translateY(0.6px) rotate(0.2deg);
+    }
+    84% {
+        transform: translateY(0) rotate(0deg);
+    }
+}
+
+.libreta-comanda.prioridad-vibracion,
+.libreta-comanda.prioridad-alta {
+    animation: sutilVibracion 2.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+    border: 1.5px solid #B91C1C !important;
+    box-shadow: 0 12px 32px rgba(185, 28, 28, 0.32), 0 0 14px rgba(201, 155, 69, 0.3) !important;
+}
+
+.libreta-comanda.prioridad-alta .pinza-comanda {
+    background: linear-gradient(135deg, #EF4444 0%, #B91C1C 50%, #991B1B 100%);
+    box-shadow: 0 4px 10px rgba(185, 28, 28, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.7);
 }
 
 .libreta-comanda:hover {
@@ -656,6 +877,49 @@
 /* ========================================================
    MODO OSCURO PARA LA COCINA
    ======================================================== */
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica {
+    background: var(--palette-card, #341C25);
+    border-color: rgba(201, 155, 69, 0.28);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="dark"] .caja-info .numero-resumen {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .caja-info .texto-resumen {
+    color: var(--palette-muted, #C5B4B7);
+}
+
+:root[data-theme="dark"] .cocina-filtro-mesas-wrapper {
+    background: var(--palette-card, #341C25);
+    border-color: rgba(201, 155, 69, 0.25);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme="dark"] .filtro-mesas-label {
+    color: #FFFFFF;
+    border-right-color: rgba(201, 155, 69, 0.25);
+}
+
+:root[data-theme="dark"] .btn-filtro-mesa {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(201, 155, 69, 0.28);
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .btn-filtro-mesa:hover {
+    background: rgba(201, 155, 69, 0.2);
+    border-color: var(--palette-gold, #E4B353);
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .btn-filtro-mesa.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%);
+    border-color: var(--palette-gold, #E4B353);
+    color: #FFFFFF !important;
+}
+
 :root[data-theme="dark"] .libreta-comanda {
     --papel-libreta: #2E1822;
     --papel-borde: rgba(201, 155, 69, 0.25);
