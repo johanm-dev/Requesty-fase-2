@@ -1,0 +1,262 @@
+*{
+    box-sizing: border-box;
+}
+
+body{
+    min-height: 100vh;
+    background-color: #F7EEED;
+    margin: 0;
+    color: #3E2834;
+}
+
+#general{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 10px;
+    grid-template-areas: "titulo registro";
+    width: 100%;
+    min-height: 100vh;
+}
+
+#titulo{
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    display: grid;
+    align-items: center;
+    text-align: center;
+    animation: aparecerInicio 0.8s ease-out forwards;
+    grid-area: titulo;
+    padding: 5%;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+}
+
+#general h1{
+    font-size: clamp(32px, 5vw, 60px);
+    margin: 0px;
+    color: #3E2834; /* PANTONE 6322 C */
+    font-weight: 800;
+}
+
+#eslogan{
+    color: #C15C24; /* PANTONE 6259 C */
+    margin-top: 5px;
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 600;
+}
+
+#general h3{
+    font-size: clamp(12px, 1.5vw, 15px);
+    margin-top: 10px;
+    color: #5E504F; /* PANTONE 6441 C */
+    line-height: 1.5;
+}
+
+#registro{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto auto auto auto auto auto;
+    grid-template-areas: "titulo titulo"
+                         "subtitulo subtitulo"
+                         "correo correo"
+                         "contraseña contraseña"
+                         "reduerdame recuperar"
+                         "iniciar iniciar"
+                         "o o"
+                         "iniciarg iniciarg";
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    align-items: center;
+    padding: 35px;
+    width: min(450px, 90%);
+    margin: 40px auto;
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    border: 2px solid #3E2834; /* PANTONE 6322 C */
+    box-shadow: 0 12px 36px rgba(62, 40, 52, 0.12);
+    grid-area: registro;
+    animation: aparecerInicio 0.8s ease-out forwards;
+}
+
+@keyframes aparecerInicio {
+  from {
+    opacity: 0;
+    transform: translateY(20px); 
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);    
+  }
+}
+
+#titulo2{
+    grid-area: titulo;
+    color: #3E2834;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+}
+
+#subtitulo{
+    grid-area: subtitulo;
+    margin-top: 6px;
+    margin-bottom: 20px;
+    color: #5E504F;
+    font-size: 13px;
+    text-align: center;
+}
+
+#usuario{
+    grid-area: correo;
+    width: 100%;
+    height: 2.8rem;
+    border-radius: 10px;
+    background-color: #FDF8F8;
+    border: 1.5px solid #E5C7C9; /* PANTONE 6268 C */
+    color: #3E2834;
+    padding: 0 14px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+}
+
+#usuario:focus {
+    border-color: #C15C24;
+}
+
+#contraseña{
+    grid-area: contraseña;
+    width: 100%;
+    height: 2.8rem;
+    border-radius: 10px;
+    background-color: #FDF8F8;
+    border: 1.5px solid #E5C7C9; /* PANTONE 6268 C */
+    color: #3E2834;
+    padding: 0 14px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#contraseña:focus {
+    border-color: #C15C24;
+}
+
+.campo-recuerdame{
+    grid-area: reduerdame;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #5E504F;
+    margin: 12px 0;
+}
+
+.campo-recuerdame input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #9D2227; /* PANTONE 6294 C */
+}
+
+#a1{
+    grid-area: recuperar;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    text-decoration: none;
+    color: #C15C24; /* PANTONE 6259 C */
+    margin: 12px 0;
+    font-weight: 500;
+}
+
+#a1:hover {
+    color: #9D2227;
+    text-decoration: underline;
+}
+
+#boton_inicio_de_sesion{
+    grid-area: iniciar;
+    width: 100%;
+    height: 2.8rem;
+    border-radius: 10px;
+    background-color: #9D2227; /* PANTONE 6294 C */
+    color: #FFFFFF;
+    border: none;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#boton_inicio_de_sesion:hover {
+    background-color: #7D1A1E;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(157, 34, 39, 0.25);
+}
+
+#loginMensaje {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    color: #9D2227;
+    text-align: center;
+    min-height: 20px;
+    margin: 8px 0 0;
+}
+
+#o{
+    grid-area: o;
+    text-align: center;
+    margin: 12px 0;
+    color: #5E504F;
+    font-size: 13px;
+}
+
+#a2{
+    grid-area: iniciarg;
+    text-decoration: none;
+}
+
+#boton_crear_cuenta{
+    width: 100%;
+    height: 2.8rem;
+    border-radius: 10px;
+    background-color: #3E2834; /* PANTONE 6322 C */
+    color: #FFFFFF;
+    border: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#boton_crear_cuenta:hover {
+    background-color: #C15C24; /* PANTONE 6259 C */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(193, 92, 36, 0.25);
+}
+
+@media (max-width: 900px) {
+    #general{
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        grid-template-areas: "titulo"
+                             "registro";
+    }
+    #titulo{
+        padding: 30px 5% 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    #registro{
+        width: 95%;
+        margin: 20px auto;
+        padding: 6%;
+    }
+    #general h1{
+        font-size: 32px;
+    }
+}
