@@ -2,7 +2,7 @@
 $pageTitle = $pageTitle ?? 'Requesty - Reportes';
 $currentPage = 'reportes';
 $extraCss = ['css/reportes.css', 'css/cuentas.css'];
-$extraHead = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>';
+$extraHeadScripts = ['https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js'];
 require_once APPROOT . '/views/layouts/header.php';
 ?>
 <div class="container">
@@ -330,7 +330,7 @@ require_once APPROOT . '/views/layouts/header.php';
             <label id="campoDocumentoWrap">Documento<input id="documentoCuenta" name="documento" maxlength="30" placeholder="Ej. 1005005005"></label>
             <label>Correo electrónico<input id="correoCuenta" name="correo" type="email" required maxlength="150" autocomplete="email"></label>
             <label>Teléfono<input id="telefonoCuenta" name="telefono" type="tel" maxlength="20" autocomplete="tel"></label>
-            <label id="etiquetaContrasena">Contraseña<input id="contrasenaCuenta" name="contrasena" type="password" minlength="6" autocomplete="new-password"></label>
+            <label id="etiquetaContrasena">Contraseña<input id="contrasenaCuenta" name="contrasena" type="password" minlength="8" autocomplete="new-password"></label>
             <label>Rol<select id="rolCuenta" name="rol" required>
                 <option value="ADMIN">Administrador</option>
                 <option value="CAJERO">Cajero</option>

@@ -15,7 +15,14 @@ abstract class Model {
 
     protected function query(string $sql, array $params = []): PDOStatement {
         $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
+        foreach ($params as $key => $val) {
+            $paramKey = is_int($key) ? ($key + 1) : $key;
+            $type = is_int($val)
+                ? PDO::PARAM_INT
+                : (is_bool($val) ? PDO::PARAM_BOOL : ($val === null ? PDO::PARAM_NULL : PDO::PARAM_STR));
+            $stmt->bindValue($paramKey, $val, $type);
+        }
+        $stmt->execute();
         return $stmt;
     }
 

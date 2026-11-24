@@ -43,7 +43,7 @@
 
         <div class="campo">
           <label for="contrasena">Contraseña *</label>
-          <input type="password" id="contrasena" name="contrasena" placeholder="Mínimo 6 caracteres" required>
+          <input type="password" id="contrasena" name="contrasena" minlength="8" placeholder="Mínimo 8 caracteres (A-Z, a-z, 0-9)" required>
         </div>
 
         <div class="campo">

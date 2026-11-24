@@ -85,7 +85,9 @@ $r = httpRequest('GET', "{$baseUrl}/api/pedidos", null, ['Origin: http://127.0.0
 assertTrue($r['status'] === 401, "Esperado 401 sin token, recibido {$r['status']}");
 assertTrue(($r['headers']['x-content-type-options'] ?? '') === 'nosniff', 'Falta X-Content-Type-Options: nosniff');
 assertTrue(($r['headers']['x-frame-options'] ?? '') === 'DENY', 'Falta X-Frame-Options: DENY');
-assertTrue(str_contains($r['headers']['strict-transport-security'] ?? '', 'max-age='), 'Falta HSTS');
+assertTrue(!isset($r['headers']['strict-transport-security']), 'HSTS no debe enviarse sobre HTTP plano');
+$rHttps = httpRequest('GET', "{$baseUrl}/api/pedidos", null, ['Origin: http://127.0.0.1:8088', 'X-Forwarded-Proto: https']);
+assertTrue(str_contains($rHttps['headers']['strict-transport-security'] ?? '', 'max-age='), 'Falta HSTS en HTTPS');
 assertTrue(str_contains($r['headers']['content-security-policy'] ?? '', "default-src 'self'"), 'Falta CSP');
 assertTrue(($r['headers']['referrer-policy'] ?? '') === 'no-referrer', 'Falta Referrer-Policy');
 assertTrue(($r['headers']['access-control-allow-origin'] ?? '') === 'http://127.0.0.1:8088', 'CORS whitelist fallo');

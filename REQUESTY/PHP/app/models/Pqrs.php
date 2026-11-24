@@ -3,7 +3,9 @@
  * Modelo de PQRS (PostgreSQL 17: lista, registro y cambio de estado).
  */
 class Pqrs extends Model {
-    public function getAll(?int $idCliente = null): array {
+    public function getAll(?int $idCliente = null, int $limit = 100, int $offset = 0): array {
+        $limit = max(1, min($limit, 200));
+        $offset = max(0, $offset);
         $sql = "SELECT pq.id_pqrs, pq.tipo, pq.descripcion, pq.fecha, pq.estado,
                        pq.id_cliente, pq.id_pedido,
                        c.nombre AS cliente_nombre, c.correo AS cliente_correo
@@ -14,7 +16,9 @@ class Pqrs extends Model {
             $sql .= " WHERE pq.id_cliente = :id_cliente";
             $params[':id_cliente'] = $idCliente;
         }
-        $sql .= " ORDER BY pq.id_pqrs DESC";
+        $sql .= " ORDER BY pq.id_pqrs DESC LIMIT :limit OFFSET :offset";
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
         return $this->fetchAll($sql, $params);
     }
 

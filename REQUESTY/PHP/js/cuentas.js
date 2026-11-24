@@ -143,6 +143,14 @@
             rol: campoRol.value
         };
         const pass = campoContrasena.value;
+        if (pass && (pass.length < 8 || !/[A-Z]/.test(pass) || !/[a-z]/.test(pass) || !/[0-9]/.test(pass))) {
+            mensaje.textContent = "La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula y número.";
+            return;
+        }
+        if (!idUsuario && !pass) {
+            mensaje.textContent = "La contraseña es obligatoria para cuentas nuevas.";
+            return;
+        }
 
         try {
             if (idUsuario) {

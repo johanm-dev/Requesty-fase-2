@@ -20,13 +20,10 @@ class AuthController extends Controller {
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             RateLimiter::check('auth_login', 5, 60);
+            $this->requireCsrfForWebPost();
 
             $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
                 || str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
-
-            if (!$isAjax) {
-                $this->requireCsrfForWebPost();
-            }
 
             $email = trim((string)($_POST['correo'] ?? $_POST['usuario'] ?? ''));
             $password = (string)($_POST['contrasena'] ?? $_POST['contraseña'] ?? '');
@@ -86,13 +83,10 @@ class AuthController extends Controller {
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             RateLimiter::check('auth_register', 5, 60);
+            $this->requireCsrfForWebPost();
 
             $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
                 || str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
-
-            if (!$isAjax) {
-                $this->requireCsrfForWebPost();
-            }
 
             $nombre = trim((string)($_POST['nombre'] ?? ''));
             $correo = strtolower(trim((string)($_POST['correo'] ?? '')));
@@ -101,10 +95,11 @@ class AuthController extends Controller {
             $contrasena = (string)($_POST['contrasena'] ?? '');
             $confirmar = (string)($_POST['confirmar_contrasena'] ?? '');
 
+            $pwdError = $contrasena !== '' ? DtoValidator::validatePasswordStrength($contrasena) : null;
             if ($nombre === '' || $correo === '' || $documento === '' || $contrasena === '') {
                 $error = 'Por favor completa todos los campos obligatorios.';
-            } elseif (mb_strlen($contrasena, 'UTF-8') < 6) {
-                $error = 'La contrasena debe tener al menos 6 caracteres.';
+            } elseif ($pwdError !== null) {
+                $error = $pwdError;
             } elseif ($contrasena !== $confirmar) {
                 $error = 'Las contrasenas no coinciden.';
             } else {
@@ -145,10 +140,7 @@ class AuthController extends Controller {
     }
 
     public function logout() {
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            $_SESSION = [];
-            session_destroy();
-        }
+        $this->destroySessionAndCookie();
         $this->redirect('login');
     }
 }

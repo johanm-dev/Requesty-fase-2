@@ -62,21 +62,8 @@ class Router {
             $this->currentController = $this->routes[$route]['controller'];
             $this->currentMethod = $this->routes[$route]['action'];
         } else {
-            $parts = explode('/', $route);
-            $candidateController = ucfirst(strtolower($parts[0])) . 'Controller';
-
-            if (file_exists(APPROOT . '/controllers/' . $candidateController . '.php')) {
-                $this->currentController = $candidateController;
-                array_shift($parts);
-                $this->currentMethod = !empty($parts[0]) ? strtolower($parts[0]) : 'index';
-                if (!empty($parts)) {
-                    array_shift($parts);
-                }
-                $this->params = $parts;
-            } else {
-                $this->currentController = 'ErrorController';
-                $this->currentMethod = 'notFound';
-            }
+            $this->currentController = 'ErrorController';
+            $this->currentMethod = 'notFound';
         }
 
         $controllerFile = APPROOT . '/controllers/' . $this->currentController . '.php';

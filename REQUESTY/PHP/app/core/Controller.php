@@ -76,6 +76,7 @@ abstract class Controller {
     }
 
     public function requireApiAuth(): array {
+        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
         $token = $this->extractBearerToken();
         if ($token !== null) {
             $claims = JwtService::verify($token);
@@ -90,21 +91,48 @@ abstract class Controller {
                 'jti'    => (string)$claims['jti'],
                 'exp'    => (int)$claims['exp'],
             ];
+            if ($method === 'GET' || $method === 'HEAD') {
+                RateLimiter::check('api_read:' . (int)$this->jwtUser['id'], 300, 60);
+            }
             return $this->jwtUser;
         }
 
         if (isset($_SESSION['usuario'])) {
-            $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
             if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
                 $csrfHeader = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf'] ?? null;
                 if (!CsrfService::verify(is_string($csrfHeader) ? $csrfHeader : null)) {
                     throw new ForbiddenException('Token CSRF invalido o ausente para sesion web.');
                 }
+            } elseif ($method === 'GET' || $method === 'HEAD') {
+                RateLimiter::check('api_read:' . (int)($_SESSION['usuario']['id'] ?? 0), 300, 60);
             }
             return $_SESSION['usuario'];
         }
 
         throw new AuthException('Autenticacion requerida (JWT Bearer o sesion activa).');
+    }
+
+    protected function destroySessionAndCookie(): void {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                [
+                    'expires'  => time() - 42000,
+                    'path'     => $params['path'] ?: '/',
+                    'domain'   => $params['domain'] ?? '',
+                    'secure'   => (bool)$params['secure'],
+                    'httponly' => (bool)$params['httponly'],
+                    'samesite' => $params['samesite'] ?? 'Lax',
+                ]
+            );
+        }
+        session_destroy();
     }
 
     protected function registrarActividad(int $idUsuario, string $accion, string $modulo): void {

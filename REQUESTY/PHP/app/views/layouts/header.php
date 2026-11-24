@@ -19,8 +19,10 @@
         <?php endforeach; ?>
     <?php endif; ?>
 
-    <?php if (!empty($extraHead)): ?>
-        <?= $extraHead ?>
+    <?php if (!empty($extraHeadScripts)): ?>
+        <?php foreach ((array)$extraHeadScripts as $scriptUrl): ?>
+            <script src="<?= htmlspecialchars((string)$scriptUrl, ENT_QUOTES, 'UTF-8') ?>"></script>
+        <?php endforeach; ?>
     <?php endif; ?>
 </head>
 <body data-page="<?= htmlspecialchars($currentPage ?? '', ENT_QUOTES, 'UTF-8') ?>">

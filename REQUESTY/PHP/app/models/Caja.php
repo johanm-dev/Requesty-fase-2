@@ -157,7 +157,9 @@ class Caja extends Model {
         }
     }
 
-    public function getFacturas(?int $idMesero = null, ?int $idCliente = null): array {
+    public function getFacturas(?int $idMesero = null, ?int $idCliente = null, int $limit = 100, int $offset = 0): array {
+        $limit = max(1, min($limit, 200));
+        $offset = max(0, $offset);
         $sql = "SELECT f.*, p.id_mesero, p.id_cliente, p.estado AS pedido_estado,
                        c.nombre AS cliente_nombre, c.correo AS cliente_correo,
                        m.numero_mesa, u.nombre AS mesero_nombre, u.correo AS mesero_correo,
@@ -184,7 +186,9 @@ class Caja extends Model {
         if (!empty($conds)) {
             $sql .= ' WHERE ' . implode(' AND ', $conds);
         }
-        $sql .= ' ORDER BY f.id_factura DESC';
+        $sql .= ' ORDER BY f.id_factura DESC LIMIT :limit OFFSET :offset';
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
         return $this->fetchAll($sql, $params);
     }
 
