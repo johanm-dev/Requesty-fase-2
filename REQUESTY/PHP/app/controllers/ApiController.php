@@ -4,6 +4,28 @@
  */
 class ApiController extends Controller {
 
+    private function extractPagination(int $defaultLimit = 100, int $maxLimit = 200): array {
+        $limit = $defaultLimit;
+        if (isset($_GET['limit']) && $_GET['limit'] !== '') {
+            $val = filter_var($_GET['limit'], FILTER_VALIDATE_INT);
+            if ($val === false || (int)$val < 1) {
+                throw new DomainValidationException('Parametro limit invalido.', 400);
+            }
+            $limit = min((int)$val, $maxLimit);
+        }
+
+        $offset = 0;
+        if (isset($_GET['offset']) && $_GET['offset'] !== '') {
+            $val = filter_var($_GET['offset'], FILTER_VALIDATE_INT);
+            if ($val === false || (int)$val < 0) {
+                throw new DomainValidationException('Parametro offset invalido.', 400);
+            }
+            $offset = (int)$val;
+        }
+
+        return [$limit, $offset];
+    }
+
     public function sesion(): void {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         if ($method === 'POST') {
@@ -66,10 +88,7 @@ class ApiController extends Controller {
         if (isset($_SESSION['usuario']['id'])) {
             $this->registrarActividad((int)$_SESSION['usuario']['id'], 'Cierre de sesion', 'AUTH');
         }
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            $_SESSION = [];
-            session_destroy();
-        }
+        $this->destroySessionAndCookie();
         $this->json(['success' => true, 'message' => 'Sesion cerrada y token revocado.']);
     }
 
@@ -95,7 +114,7 @@ class ApiController extends Controller {
                 'documento'  => DtoValidator::requireString($input, 'documento', 4, 30),
                 'correo'     => DtoValidator::requireEmail($input, 'correo'),
                 'telefono'   => DtoValidator::optionalString($input, 'telefono', 20),
-                'contrasena' => DtoValidator::requireString($input, 'contrasena', 6, 128),
+                'contrasena' => DtoValidator::requireStrongPassword($input, 'contrasena'),
                 'rol'        => DtoValidator::requireEnum($input, 'rol', ['ADMIN', 'CAJERO', 'MESERO', 'COCINA', 'CLIENTE']),
             ]);
             $this->registrarActividad((int)$user['id'], "Creacion de usuario #{$id}", 'USUARIOS');
@@ -120,7 +139,7 @@ class ApiController extends Controller {
                 $payload['telefono'] = DtoValidator::optionalString($input, 'telefono', 20);
             }
             if (!empty($input['contrasena'])) {
-                $payload['contrasena'] = DtoValidator::requireString($input, 'contrasena', 6, 128);
+                $payload['contrasena'] = DtoValidator::requireStrongPassword($input, 'contrasena');
             }
             if (array_key_exists('rol', $input)) {
                 $payload['rol'] = DtoValidator::requireEnum($input, 'rol', ['ADMIN', 'CAJERO', 'MESERO', 'COCINA', 'CLIENTE']);
@@ -148,7 +167,12 @@ class ApiController extends Controller {
             $found = $userModel->findByDocument((string)$_GET['documento']);
             $this->json(['success' => true, 'usuario' => $found]);
         }
-        $this->json(['success' => true, 'usuarios' => $userModel->getAll()]);
+        [$limit, $offset] = $this->extractPagination();
+        $this->json([
+            'success'    => true,
+            'usuarios'   => $userModel->getAll($limit, $offset),
+            'pagination' => ['limit' => $limit, 'offset' => $offset],
+        ]);
     }
 
     public function asistencia(): void {
@@ -178,7 +202,12 @@ class ApiController extends Controller {
         }
 
         $filterUser = ($user['rol'] === 'ADMIN') ? null : (int)$user['id'];
-        $this->json(['success' => true, 'asistencia' => $asistenciaModel->getAll($filterUser)]);
+        [$limit, $offset] = $this->extractPagination(200, 200);
+        $this->json([
+            'success'    => true,
+            'asistencia' => $asistenciaModel->getAll($filterUser, $limit, $offset),
+            'pagination' => ['limit' => $limit, 'offset' => $offset],
+        ]);
     }
 
     public function clientes(): void {
@@ -204,7 +233,12 @@ class ApiController extends Controller {
             $found = $clienteModel->findByDocument((string)$_GET['documento']);
             $this->json(['success' => true, 'cliente' => $found]);
         }
-        $this->json(['success' => true, 'clientes' => $clienteModel->getAll()]);
+        [$limit, $offset] = $this->extractPagination();
+        $this->json([
+            'success'    => true,
+            'clientes'   => $clienteModel->getAll($limit, $offset),
+            'pagination' => ['limit' => $limit, 'offset' => $offset],
+        ]);
     }
 
     public function mesas(): void {
@@ -564,16 +598,25 @@ class ApiController extends Controller {
             $this->json(['success' => true, 'pedido' => $pedido]);
         }
 
+        [$limit, $offset] = $this->extractPagination();
         if ($user['rol'] === 'CLIENTE') {
             /** @var Cliente $cliModel */
             $cliModel = $this->model('Cliente');
             $cli = $cliModel->findByEmail((string)$user['correo']);
-            $list = $cli ? $pedidoModel->getAll(null, (int)$cli['id_cliente']) : [];
-            $this->json(['success' => true, 'pedidos' => $list]);
+            $list = $cli ? $pedidoModel->getAll(null, (int)$cli['id_cliente'], $limit, $offset) : [];
+            $this->json([
+                'success'    => true,
+                'pedidos'    => $list,
+                'pagination' => ['limit' => $limit, 'offset' => $offset],
+            ]);
         }
 
         $filterMesero = ($user['rol'] === 'MESERO') ? (int)$user['id'] : null;
-        $this->json(['success' => true, 'pedidos' => $pedidoModel->getAll($filterMesero)]);
+        $this->json([
+            'success'    => true,
+            'pedidos'    => $pedidoModel->getAll($filterMesero, null, $limit, $offset),
+            'pagination' => ['limit' => $limit, 'offset' => $offset],
+        ]);
     }
 
     public function pedidoDescuento(): void {
@@ -762,7 +805,12 @@ class ApiController extends Controller {
             $cli = $cliModel->findByEmail((string)$user['correo']);
             $filterCliente = $cli ? (int)$cli['id_cliente'] : -1;
         }
-        $this->json(['success' => true, 'facturas' => $cajaModel->getFacturas($filterMesero, $filterCliente)]);
+        [$limit, $offset] = $this->extractPagination();
+        $this->json([
+            'success'    => true,
+            'facturas'   => $cajaModel->getFacturas($filterMesero, $filterCliente, $limit, $offset),
+            'pagination' => ['limit' => $limit, 'offset' => $offset],
+        ]);
     }
 
     public function facturaAnular(): void {
@@ -806,14 +854,22 @@ class ApiController extends Controller {
 
     public function actividad(): void {
         $this->requireApiRole(['ADMIN']);
+        [$limit, $offset] = $this->extractPagination();
         $db = Database::getConnection();
-        $stmt = $db->query(
+        $stmt = $db->prepare(
             "SELECT a.id_actividad, a.id_usuario, u.nombre AS usuario_nombre, a.accion, a.modulo, a.fecha_hora, a.direccion_ip
              FROM actividad a
              LEFT JOIN vw_usuarios_publico u ON u.id_usuario = a.id_usuario
-             ORDER BY a.id_actividad DESC LIMIT 100"
+             ORDER BY a.id_actividad DESC LIMIT :limit OFFSET :offset"
         );
-        $this->json(['success' => true, 'actividad' => $stmt->fetchAll()]);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $this->json([
+            'success'    => true,
+            'actividad'  => $stmt->fetchAll(),
+            'pagination' => ['limit' => $limit, 'offset' => $offset],
+        ]);
     }
 
     public function notificaciones(): void {
@@ -882,7 +938,12 @@ class ApiController extends Controller {
             $cli = $cliModel->findByEmail((string)$user['correo']);
             $filterCliente = $cli ? (int)$cli['id_cliente'] : -1;
         }
-        $this->json(['success' => true, 'pqrs' => $pqrsModel->getAll($filterCliente)]);
+        [$limit, $offset] = $this->extractPagination();
+        $this->json([
+            'success'    => true,
+            'pqrs'       => $pqrsModel->getAll($filterCliente, $limit, $offset),
+            'pagination' => ['limit' => $limit, 'offset' => $offset],
+        ]);
     }
 
     public function reportes(): void {

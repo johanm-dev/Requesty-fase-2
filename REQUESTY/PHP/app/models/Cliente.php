@@ -3,11 +3,14 @@
  * Modelo de Cliente (PostgreSQL 17: cifrado AES-256 + Blind Index HMAC-SHA256).
  */
 class Cliente extends Model {
-    public function getAll(): array {
+    public function getAll(int $limit = 100, int $offset = 0): array {
+        $limit = max(1, min($limit, 200));
+        $offset = max(0, $offset);
         $sql = "SELECT id_cliente, tipo_documento, documento_hash, nombre, telefono, correo, fecha_registro, activo
                 FROM vw_clientes_publico
-                ORDER BY id_cliente DESC";
-        return $this->fetchAll($sql);
+                ORDER BY id_cliente DESC
+                LIMIT :limit OFFSET :offset";
+        return $this->fetchAll($sql, [':limit' => $limit, ':offset' => $offset]);
     }
 
     public function findById(int $id): ?array {

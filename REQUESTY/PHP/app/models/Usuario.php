@@ -3,12 +3,15 @@
  * Modelo de Usuario (PostgreSQL 17: vw_usuarios_publico + fn_autenticar_usuario + AES-256/Blind Index).
  */
 class Usuario extends Model {
-    public function getAll(): array {
+    public function getAll(int $limit = 100, int $offset = 0): array {
+        $limit = max(1, min($limit, 200));
+        $offset = max(0, $offset);
         $sql = "SELECT id_usuario, nombre, apellido, documento_hash, correo, telefono,
                        estado, fecha_registro, ultimo_inicio_sesion, id_rol, rol_nombre AS rol
                 FROM vw_usuarios_publico
-                ORDER BY id_usuario ASC";
-        return $this->fetchAll($sql);
+                ORDER BY id_usuario ASC
+                LIMIT :limit OFFSET :offset";
+        return $this->fetchAll($sql, [':limit' => $limit, ':offset' => $offset]);
     }
 
     public function findById(int $id): ?array {

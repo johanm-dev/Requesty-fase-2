@@ -47,8 +47,8 @@
             mostrarMensaje("El teléfono debe contener solo dígitos (7 a 15).", "error");
             return;
         }
-        if (contrasena.length < 6) {
-            mostrarMensaje("La contraseña debe tener al menos 6 caracteres.", "error");
+        if (contrasena.length < 8 || !/[A-Z]/.test(contrasena) || !/[a-z]/.test(contrasena) || !/[0-9]/.test(contrasena)) {
+            mostrarMensaje("La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula y número.", "error");
             return;
         }
         if (contrasena !== confirmar) {

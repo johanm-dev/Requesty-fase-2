@@ -3,7 +3,9 @@
  * Modelo de Asistencia de Personal (PostgreSQL 17: tabla asistencia + vista vw_asistencia_horas).
  */
 class Asistencia extends Model {
-    public function getAll(?int $idUsuario = null): array {
+    public function getAll(?int $idUsuario = null, int $limit = 200, int $offset = 0): array {
+        $limit = max(1, min($limit, 200));
+        $offset = max(0, $offset);
         $sql = "SELECT v.id_asistencia, v.id_usuario, v.fecha, v.hora_entrada, v.hora_salida,
                        v.horas_trabajadas, v.horas_extra,
                        u.nombre, u.apellido, u.rol_nombre AS rol
@@ -14,7 +16,9 @@ class Asistencia extends Model {
             $sql .= " WHERE v.id_usuario = :id_usuario";
             $params[':id_usuario'] = $idUsuario;
         }
-        $sql .= " ORDER BY v.id_asistencia DESC LIMIT 200";
+        $sql .= " ORDER BY v.id_asistencia DESC LIMIT :limit OFFSET :offset";
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
         return $this->fetchAll($sql, $params);
     }
 

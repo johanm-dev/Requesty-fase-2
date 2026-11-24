@@ -10,7 +10,12 @@ class SecurityHeaders {
 
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: DENY');
-        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+        $isHttps = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
+            || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443
+            || strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+        if ($isHttps) {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+        }
         header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https:; frame-ancestors 'none'; base-uri 'self'");
         header('Referrer-Policy: no-referrer');
         header('Permissions-Policy: geolocation=(), microphone=(), camera=()');

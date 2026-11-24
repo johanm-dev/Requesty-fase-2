@@ -3,7 +3,9 @@
  * Modelo de Pedidos (PostgreSQL 17: detalle, personalizacion 1FN, descuentos, inventario y notificaciones).
  */
 class Pedido extends Model {
-    public function getAll(?int $idMesero = null, ?int $idCliente = null): array {
+    public function getAll(?int $idMesero = null, ?int $idCliente = null, int $limit = 100, int $offset = 0): array {
+        $limit = max(1, min($limit, 200));
+        $offset = max(0, $offset);
         $sql = "SELECT p.id_pedido, p.fecha_hora, p.estado, p.observaciones,
                        p.subtotal, p.descuento_total, p.impuesto_total, p.total,
                        p.id_cliente, p.id_mesa, p.id_mesero,
@@ -30,7 +32,9 @@ class Pedido extends Model {
         if (!empty($conds)) {
             $sql .= ' WHERE ' . implode(' AND ', $conds);
         }
-        $sql .= ' ORDER BY p.id_pedido DESC';
+        $sql .= ' ORDER BY p.id_pedido DESC LIMIT :limit OFFSET :offset';
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
 
         $pedidos = $this->fetchAll($sql, $params);
         return $this->hydrateDetailsAndDiscounts($pedidos);
@@ -365,8 +369,15 @@ class Pedido extends Model {
         if (empty($pedidos)) {
             return [];
         }
-        $ids = array_map(static fn($p) => (int)$p['id_pedido'], $pedidos);
-        $inList = implode(',', $ids);
+        $ids = array_values(array_unique(array_map(static fn($p) => (int)$p['id_pedido'], $pedidos)));
+        $params = [];
+        $placeholders = [];
+        foreach ($ids as $idx => $idPedido) {
+            $ph = ':pid' . $idx;
+            $placeholders[] = $ph;
+            $params[$ph] = $idPedido;
+        }
+        $inClause = implode(', ', $placeholders);
 
         $detRows = $this->fetchAll(
             "SELECT dp.id_detalle, dp.id_pedido, dp.id_producto, dp.cantidad,
@@ -375,8 +386,9 @@ class Pedido extends Model {
              FROM detalle_pedido dp
              JOIN producto pr ON pr.id_producto = dp.id_producto
              LEFT JOIN categoria c ON c.id_categoria = pr.id_categoria
-             WHERE dp.id_pedido IN ({$inList})
-             ORDER BY dp.id_detalle ASC"
+             WHERE dp.id_pedido IN ({$inClause})
+             ORDER BY dp.id_detalle ASC",
+            $params
         );
 
         $persRows = $this->fetchAll(
@@ -386,7 +398,8 @@ class Pedido extends Model {
              LEFT JOIN personalizacion_ingrediente pin ON pin.id_personalizacion = pp.id_personalizacion
              LEFT JOIN ingrediente i ON i.id_ingrediente = pin.id_ingrediente
              JOIN detalle_pedido dp ON dp.id_detalle = pp.id_detalle
-             WHERE dp.id_pedido IN ({$inList})"
+             WHERE dp.id_pedido IN ({$inClause})",
+            $params
         );
 
         $persPorDet = [];
@@ -432,7 +445,8 @@ class Pedido extends Model {
                     pd.monto_descontado, d.nombre AS descuento_nombre
              FROM pedido_descuento pd
              JOIN descuento d ON d.id_descuento = pd.id_descuento
-             WHERE pd.id_pedido IN ({$inList})"
+             WHERE pd.id_pedido IN ({$inClause})",
+            $params
         );
         $descPorPed = [];
         foreach ($descRows as $dr) {
