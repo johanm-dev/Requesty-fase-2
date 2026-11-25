@@ -31,7 +31,7 @@ require_once APPROOT . '/views/layouts/header.php';
 
             <p id="mensaje-cocina" class="mensaje-cocina" role="alert" aria-live="assertive"></p>
 
-            <!-- 3 Cajas de Resumen KDS con diseño icónico -->
+            <!-- 3 Cajas de Resumen KDS: directas, sin redundancias y con colores destacados -->
             <section class="resumen cocina-resumen" aria-label="Resumen de comandas">
                 <div class="tarjeta-resumen kds-caja-iconica pendiente">
                     <div class="caja-icono-wrap icono-pendiente">
@@ -39,9 +39,8 @@ require_once APPROOT . '/views/layouts/header.php';
                     </div>
                     <div class="caja-info">
                         <span class="numero-resumen" id="contador-pendientes">0</span>
-                        <span class="texto-resumen">En cola</span>
+                        <span class="texto-resumen">En espera</span>
                     </div>
-                    <div class="caja-badge-iconico">Pendientes</div>
                 </div>
                 <div class="tarjeta-resumen kds-caja-iconica preparacion">
                     <div class="caja-icono-wrap icono-preparacion">
@@ -51,7 +50,6 @@ require_once APPROOT . '/views/layouts/header.php';
                         <span class="numero-resumen" id="contador-preparacion">0</span>
                         <span class="texto-resumen">En preparación</span>
                     </div>
-                    <div class="caja-badge-iconico">Al Fuego</div>
                 </div>
                 <div class="tarjeta-resumen kds-caja-iconica listo">
                     <div class="caja-icono-wrap icono-listo">
@@ -59,9 +57,8 @@ require_once APPROOT . '/views/layouts/header.php';
                     </div>
                     <div class="caja-info">
                         <span class="numero-resumen" id="contador-listos">0</span>
-                        <span class="texto-resumen">Listos hoy</span>
+                        <span class="texto-resumen">Listos</span>
                     </div>
-                    <div class="caja-badge-iconico">A Servir</div>
                 </div>
             </section>
 

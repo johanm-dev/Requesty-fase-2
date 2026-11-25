@@ -271,9 +271,9 @@ function renderizarPedido(pedido, ahora) {
         ? escaparHTML(pedido.time || "12:00 PM")
         : fechaRecepcion.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
 
-    // Mensaje de estado específico
+    // Mensaje de estado específico (directo y sin redundancias)
     let estadoMensajeClass = "estado-cola";
-    let estadoTexto = "En cola (Pendiente)";
+    let estadoTexto = "En espera";
     let estadoIcono = "fa-clock";
     let botonAccion = `<button type="button" class="btn-accion-libreta btn-iniciar" data-estado-pedido="${escaparHTML(pedido.id)}" data-nuevo-estado="${nombresEstados.preparacion}">
         <i class="fa-solid fa-fire-burner"></i> Iniciar preparación
@@ -281,14 +281,14 @@ function renderizarPedido(pedido, ahora) {
 
     if (estado === nombresEstados.preparacion) {
         estadoMensajeClass = "estado-preparacion";
-        estadoTexto = "En preparación en cocina";
+        estadoTexto = "En preparación";
         estadoIcono = "fa-fire";
         botonAccion = `<button type="button" class="btn-accion-libreta btn-completar" data-completar-pedido="${escaparHTML(pedido.id)}">
             <i class="fa-solid fa-check"></i> Completar pedido
         </button>`;
     } else if (estado === nombresEstados.listo) {
         estadoMensajeClass = "estado-listo";
-        estadoTexto = "¡Listo para servir!";
+        estadoTexto = "Listo";
         estadoIcono = "fa-circle-check";
         botonAccion = `<button type="button" class="btn-accion-libreta btn-retirar" data-completar-pedido="${escaparHTML(pedido.id)}">
             <i class="fa-solid fa-paper-plane"></i> Retirar de cocina
@@ -502,7 +502,7 @@ function arrugarYTirarComanda(id, nuevoEstado = nombresEstados.listo) {
         }
 
         mostrarPedidos();
-    }, 780);
+    }, 600);
 }
 
 function cambiarEstadoSimple(id, nuevoEstado) {

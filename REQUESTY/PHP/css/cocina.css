@@ -52,7 +52,7 @@
 }
 
 /* ========================================================
-   3 CAJAS DE RESUMEN KDS - DISEÑO ICÓNICO
+   3 CAJAS DE RESUMEN KDS - COLORES DESTACADOS Y DIRECTOS
    ======================================================== */
 .cocina-resumen {
     display: grid;
@@ -66,8 +66,7 @@
     background: var(--palette-card, #FFFFFF);
     border-radius: 14px;
     padding: 16px 20px;
-    border: 1.5px solid rgba(201, 155, 69, 0.32);
-    box-shadow: 0 6px 20px rgba(31, 17, 22, 0.07);
+    box-shadow: 0 6px 20px rgba(31, 17, 22, 0.08);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -78,8 +77,36 @@
 
 .tarjeta-resumen.kds-caja-iconica:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 26px rgba(31, 17, 22, 0.12);
-    border-color: var(--palette-gold, #C99B45);
+}
+
+.tarjeta-resumen.kds-caja-iconica.pendiente {
+    border: 2px solid var(--palette-gold, #C99B45);
+    box-shadow: 0 8px 24px rgba(201, 155, 69, 0.22);
+}
+
+.tarjeta-resumen.kds-caja-iconica.pendiente:hover {
+    border-color: #E4B353;
+    box-shadow: 0 12px 28px rgba(201, 155, 69, 0.32);
+}
+
+.tarjeta-resumen.kds-caja-iconica.preparacion {
+    border: 2px solid #8A3539;
+    box-shadow: 0 8px 24px rgba(138, 53, 57, 0.25);
+}
+
+.tarjeta-resumen.kds-caja-iconica.preparacion:hover {
+    border-color: #A8484D;
+    box-shadow: 0 12px 28px rgba(138, 53, 57, 0.35);
+}
+
+.tarjeta-resumen.kds-caja-iconica.listo {
+    border: 2px solid #2E7D32;
+    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.22);
+}
+
+.tarjeta-resumen.kds-caja-iconica.listo:hover {
+    border-color: #388E3C;
+    box-shadow: 0 12px 28px rgba(46, 125, 50, 0.32);
 }
 
 .caja-icono-wrap {
@@ -93,22 +120,21 @@
     font-size: 22px;
     color: #FFFFFF;
     position: relative;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
 .caja-icono-wrap.icono-pendiente {
-    background: linear-gradient(135deg, #E4B353 0%, #C99B45 100%);
-    box-shadow: 0 6px 16px rgba(201, 155, 69, 0.4);
+    background: linear-gradient(135deg, #F5CE7A 0%, #D4A346 50%, #B08536 100%);
+    box-shadow: 0 6px 18px rgba(201, 155, 69, 0.5);
 }
 
 .caja-icono-wrap.icono-preparacion {
-    background: linear-gradient(135deg, #B91C1C 0%, #8A3539 100%);
-    box-shadow: 0 6px 16px rgba(185, 28, 28, 0.4);
+    background: linear-gradient(135deg, #DC2626 0%, #963C40 50%, #6E262B 100%);
+    box-shadow: 0 6px 18px rgba(185, 28, 28, 0.5);
 }
 
 .caja-icono-wrap.icono-listo {
-    background: linear-gradient(135deg, #2E7D32 0%, #15803D 100%);
-    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4);
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 50%, #15803D 100%);
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.45);
 }
 
 .caja-info {
@@ -118,7 +144,7 @@
 }
 
 .caja-info .numero-resumen {
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 900;
     line-height: 1;
     color: var(--palette-dark, #1F1116);
@@ -127,44 +153,22 @@
 
 .caja-info .texto-resumen {
     font-size: 13px;
-    font-weight: 700;
-    color: var(--palette-muted, #6B5B60);
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.caja-badge-iconico {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    font-size: 10px;
     font-weight: 800;
+    margin-top: 5px;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: rgba(201, 155, 69, 0.12);
-    color: var(--palette-gold-hover, #B58428);
-    border: 1px solid rgba(201, 155, 69, 0.28);
 }
 
-.tarjeta-resumen.kds-caja-iconica.pendiente .caja-badge-iconico {
-    background: rgba(228, 179, 83, 0.15);
-    color: #9A6E1E;
-    border-color: rgba(228, 179, 83, 0.4);
+.tarjeta-resumen.kds-caja-iconica.pendiente .texto-resumen {
+    color: var(--palette-gold-hover, #B08536);
 }
 
-.tarjeta-resumen.kds-caja-iconica.preparacion .caja-badge-iconico {
-    background: rgba(185, 28, 28, 0.1);
+.tarjeta-resumen.kds-caja-iconica.preparacion .texto-resumen {
     color: #8A3539;
-    border-color: rgba(185, 28, 28, 0.3);
 }
 
-.tarjeta-resumen.kds-caja-iconica.listo .caja-badge-iconico {
-    background: rgba(46, 125, 50, 0.1);
+.tarjeta-resumen.kds-caja-iconica.listo .texto-resumen {
     color: #2E7D32;
-    border-color: rgba(46, 125, 50, 0.3);
 }
 
 /* ========================================================
@@ -318,23 +322,43 @@
 }
 
 /* ========================================================
-   LIBRETA DE COMANDA (TICKET NOTEPAD)
+   LIBRETA DE COMANDA (NOTA DE PAPEL NATURAL KDS)
    ======================================================== */
 .libreta-comanda {
     position: relative;
-    flex: 0 0 310px;
-    width: 310px;
-    background: var(--papel-libreta);
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+    flex: 0 0 315px;
+    width: 315px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+    border-radius: 4px 4px 18px 18px;
+    box-shadow: 0 4px 12px rgba(31, 17, 22, 0.08), 0 16px 36px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     scroll-snap-align: start;
-    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
     transform-origin: top center;
-    border: 1px solid var(--papel-borde);
+    border: 1px solid rgba(201, 155, 69, 0.35);
     border-top: none;
     user-select: none;
+    overflow: visible;
+}
+
+/* Inclinación gravitacional natural de notas de papel colgadas */
+.libreta-comanda:nth-child(3n+1) {
+    transform: rotate(-0.7deg);
+}
+
+.libreta-comanda:nth-child(3n+2) {
+    transform: rotate(0.8deg);
+}
+
+.libreta-comanda:nth-child(3n+3) {
+    transform: rotate(-0.4deg);
+}
+
+.libreta-comanda:hover {
+    transform: translateY(3px) rotate(0deg) scale(1.015) !important;
+    box-shadow: 0 8px 24px rgba(31, 17, 22, 0.14), 0 22px 48px rgba(0, 0, 0, 0.18) !important;
+    z-index: 25;
 }
 
 /* ========================================================
@@ -572,6 +596,13 @@
     gap: 12px;
     flex: 1;
     min-height: 220px;
+    background-color: var(--papel-libreta);
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 31px,
+        rgba(201, 155, 69, 0.08) 32px
+    );
 }
 
 .libreta-seccion-titulo {
@@ -658,14 +689,29 @@
    ESTADO DEL PEDIDO Y BOTÓN DE ACCIÓN
    ======================================================== */
 .libreta-pie {
-    padding: 12px 16px 16px;
+    padding: 12px 16px 20px;
     margin-top: auto;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    background: rgba(0, 0, 0, 0.015);
-    border-top: 1px solid var(--papel-linea);
-    border-radius: 0 0 12px 12px;
+    background: rgba(0, 0, 0, 0.02);
+    border-top: 1px dashed var(--papel-linea);
+    border-radius: 0 0 18px 18px;
+    position: relative;
+}
+
+/* Borde inferior rasgado / perforado de libreta de pedidos */
+.libreta-pie::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 4px;
+    right: 4px;
+    height: 6px;
+    background-image: radial-gradient(circle, transparent 2.5px, var(--papel-libreta) 3px);
+    background-size: 8px 6px;
+    background-repeat: repeat-x;
+    z-index: 2;
 }
 
 .mensaje-estado-comanda {
@@ -745,53 +791,45 @@
 }
 
 /* ========================================================
-   ANIMACIÓN DE ARRUGAR Y TIRAR LA NOTA (CRUMPLE & THROW)
+   ANIMACIÓN LIMPIA Y FLUIDA AL DESECHAR COMANDAS
    ======================================================== */
 .libreta-comanda.animacion-arrugar {
-    animation: arrugarYTirar 0.85s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: desecharComandaLimpia 0.62s cubic-bezier(0.25, 0.9, 0.3, 1) forwards;
     pointer-events: none;
     z-index: 100;
+    transform-origin: center center;
 }
 
-@keyframes arrugarYTirar {
+@keyframes desecharComandaLimpia {
     0% {
-        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-        filter: brightness(1) contrast(1);
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
         opacity: 1;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
     }
     18% {
-        /* Desenganchada de la cuerda y primer quiebre */
-        transform: translate3d(0, 18px, 0) rotate(-8deg) scale(0.9, 0.94) skew(8deg, -4deg);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
-        border-radius: 8px;
+        /* Desprende limpio de la pinza */
+        transform: translate3d(0, -8px, 0) scale(0.96) rotate(-2deg);
+        border-radius: 14px;
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
     }
-    38% {
-        /* Plegado tridimensional tipo acordeón */
-        transform: translate3d(12px, 45px, 0) rotate(16deg) scale(0.68, 0.6) skew(18deg, -12deg);
-        filter: brightness(0.88) contrast(1.4);
-        border-radius: 24px;
-        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 14px 28px rgba(0, 0, 0, 0.4);
-    }
-    60% {
-        /* Bola de papel arrugada */
-        transform: translate3d(-18px, 95px, 0) rotate(-55deg) scale(0.38, 0.35) skew(-24deg, 18deg);
-        filter: brightness(0.72) contrast(1.75);
-        border-radius: 45%;
-        box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.7), 0 8px 18px rgba(0, 0, 0, 0.5);
-    }
-    82% {
-        /* Lanzamiento en caída acelerada */
-        transform: translate3d(40px, 320px, 0) rotate(240deg) scale(0.24, 0.22);
-        filter: brightness(0.55);
+    45% {
+        /* Compresión compacta tipo bola de papel sin deformaciones bruscas */
+        transform: translate3d(0, 24px, 0) scale(0.48) rotate(14deg);
         border-radius: 50%;
-        opacity: 0.85;
+        filter: brightness(0.9) contrast(1.15);
+        box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.4), 0 12px 24px rgba(0, 0, 0, 0.3);
+        opacity: 0.95;
+    }
+    75% {
+        /* Lanzamiento fluido hacia abajo */
+        transform: translate3d(15px, 200px, 0) scale(0.28) rotate(45deg);
+        opacity: 0.5;
     }
     100% {
-        /* Caída total fuera de pantalla a la papelera */
-        transform: translate3d(85px, 900px, 0) rotate(520deg) scale(0.1, 0.1);
-        filter: brightness(0.3);
-        border-radius: 50%;
+        /* Descarte final limpio */
+        transform: translate3d(25px, 420px, 0) scale(0.08) rotate(65deg);
         opacity: 0;
+        filter: blur(2px);
     }
 }
 
@@ -883,6 +921,33 @@
     box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
 }
 
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.pendiente {
+    border: 2px solid var(--palette-gold, #E4B353) !important;
+    box-shadow: 0 8px 24px rgba(228, 179, 83, 0.25) !important;
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.preparacion {
+    border: 2px solid #A8484D !important;
+    box-shadow: 0 8px 24px rgba(168, 72, 77, 0.28) !important;
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.listo {
+    border: 2px solid #2E7D32 !important;
+    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.25) !important;
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.pendiente .texto-resumen {
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.preparacion .texto-resumen {
+    color: #F18488;
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.listo .texto-resumen {
+    color: #85E8A8;
+}
+
 :root[data-theme="dark"] .caja-info .numero-resumen {
     color: #FFFFFF;
 }
@@ -921,12 +986,13 @@
 }
 
 :root[data-theme="dark"] .libreta-comanda {
-    --papel-libreta: #2E1822;
-    --papel-borde: rgba(201, 155, 69, 0.25);
+    --papel-libreta: #27141E;
+    --papel-borde: rgba(201, 155, 69, 0.35);
     --papel-linea: rgba(201, 155, 69, 0.12);
     --texto-comanda: #FFFFFF;
     --texto-secundario: #C5B4B7;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    background: linear-gradient(180deg, #2E1824 0%, #221019 100%);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
 }
 
 :root[data-theme="dark"] .item-principal {
