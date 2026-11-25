@@ -322,33 +322,61 @@
 }
 
 /* ========================================================
-   LIBRETA DE COMANDA (NOTA DE PAPEL NATURAL KDS)
+   LIBRETA DE COMANDA (HOJA DE PAPEL FÍSICA KDS)
    ======================================================== */
 .libreta-comanda {
     position: relative;
     flex: 0 0 315px;
     width: 315px;
-    background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
-    border-radius: 4px 4px 18px 18px;
-    box-shadow: 0 4px 12px rgba(31, 17, 22, 0.08), 0 16px 36px rgba(0, 0, 0, 0.12);
+    background: #FAF7EE;
+    border-radius: 2px 2px 8px 8px;
     display: flex;
     flex-direction: column;
     scroll-snap-align: start;
-    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+    transition: transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s ease;
     transform-origin: top center;
-    border: 1px solid rgba(201, 155, 69, 0.35);
+    border: 1px solid rgba(210, 198, 182, 0.7);
     border-top: none;
     user-select: none;
     overflow: visible;
+    box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 6px 16px rgba(31, 17, 22, 0.08),
+        0 14px 28px rgba(0, 0, 0, 0.1);
 }
 
-/* Inclinación gravitacional natural de notas de papel colgadas */
+/* Efecto 3D de esquinas de papel curvadas (Curled paper curl shadow) */
+.libreta-comanda::before,
+.libreta-comanda::after {
+    content: "";
+    position: absolute;
+    bottom: 12px;
+    width: 44%;
+    height: 22px;
+    max-width: 130px;
+    box-shadow: 0 16px 22px rgba(0, 0, 0, 0.26);
+    z-index: -1;
+    pointer-events: none;
+    transition: transform 0.25s ease;
+}
+
+.libreta-comanda::before {
+    left: 8px;
+    transform: rotate(-3.5deg);
+}
+
+.libreta-comanda::after {
+    right: 8px;
+    transform: rotate(3.5deg);
+}
+
+/* Inclinación natural y gravitacional de hojas de papel colgadas */
 .libreta-comanda:nth-child(3n+1) {
-    transform: rotate(-0.7deg);
+    transform: rotate(-0.8deg);
 }
 
 .libreta-comanda:nth-child(3n+2) {
-    transform: rotate(0.8deg);
+    transform: rotate(0.9deg);
 }
 
 .libreta-comanda:nth-child(3n+3) {
@@ -356,98 +384,25 @@
 }
 
 .libreta-comanda:hover {
-    transform: translateY(3px) rotate(0deg) scale(1.015) !important;
-    box-shadow: 0 8px 24px rgba(31, 17, 22, 0.14), 0 22px 48px rgba(0, 0, 0, 0.18) !important;
+    transform: translateY(3px) rotate(0deg) scale(1.018) !important;
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.06),
+        0 10px 24px rgba(31, 17, 22, 0.14),
+        0 24px 44px rgba(0, 0, 0, 0.18) !important;
     z-index: 25;
 }
 
-/* ========================================================
-   CINTA DE PRIORIDAD Y ANIMACIÓN DE VIBRACIÓN SUTIL
-   ======================================================== */
-.cinta-prioridad-alta {
-    background: linear-gradient(135deg, #B91C1C 0%, #8A1313 100%);
-    color: #FFFFFF;
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    padding: 6px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    box-shadow: 0 3px 8px rgba(185, 28, 28, 0.4);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-    position: relative;
-    z-index: 5;
-}
-
-.cinta-prioridad-alta i {
-    font-size: 12px;
-    color: #FEE2E2;
-    animation: pulsoIconoPrioridad 1.2s ease-in-out infinite alternate;
-}
-
-@keyframes pulsoIconoPrioridad {
-    0% { transform: scale(0.9); opacity: 0.85; }
-    100% { transform: scale(1.22); opacity: 1; }
-}
-
-@keyframes sutilVibracion {
-    0%, 100% {
-        transform: translateY(0) rotate(0deg);
-    }
-    12% {
-        transform: translateY(-1.5px) rotate(-0.55deg);
-    }
-    24% {
-        transform: translateY(1.2px) rotate(0.45deg);
-    }
-    36% {
-        transform: translateY(-1px) rotate(-0.35deg);
-    }
-    48% {
-        transform: translateY(1px) rotate(0.35deg);
-    }
-    60% {
-        transform: translateY(-0.6px) rotate(-0.2deg);
-    }
-    72% {
-        transform: translateY(0.6px) rotate(0.2deg);
-    }
-    84% {
-        transform: translateY(0) rotate(0deg);
-    }
-}
-
-.libreta-comanda.prioridad-vibracion,
-.libreta-comanda.prioridad-alta {
-    animation: sutilVibracion 2.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
-    border: 1.5px solid #B91C1C !important;
-    box-shadow: 0 12px 32px rgba(185, 28, 28, 0.32), 0 0 14px rgba(201, 155, 69, 0.3) !important;
-}
-
-.libreta-comanda.prioridad-alta .pinza-comanda {
-    background: linear-gradient(135deg, #EF4444 0%, #B91C1C 50%, #991B1B 100%);
-    box-shadow: 0 4px 10px rgba(185, 28, 28, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.7);
-}
-
-.libreta-comanda:hover {
-    transform: translateY(2px) rotate(0.4deg);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
-}
-
-/* Pinza metálica superior que sujeta la libreta a la cuerda */
+/* Pinza metálica superior de latón / bronce que sujeta la hoja a la cuerda */
 .pinza-comanda {
     position: absolute;
-    top: -18px;
+    top: -19px;
     left: 50%;
     transform: translateX(-50%);
-    width: 26px;
-    height: 28px;
-    background: linear-gradient(135deg, #D4A346 0%, #A87622 45%, #E5BD6A 100%);
-    border-radius: 4px 4px 2px 2px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    width: 28px;
+    height: 30px;
+    background: linear-gradient(135deg, #F5CE7A 0%, #D4A346 35%, #8C6524 70%, #E5BD6A 100%);
+    border-radius: 5px 5px 2px 2px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.7);
     z-index: 15;
     display: flex;
     align-items: center;
@@ -458,39 +413,79 @@
     content: "";
     width: 14px;
     height: 4px;
-    background: #4A3311;
+    background: #3B240B;
     border-radius: 1px;
 }
 
 /* ========================================================
-   ENCABEZADO DE LA LIBRETA (SOLO ID, MESA, HORA)
+   TROQUELADO Y PERFORACIÓN DE TALONARIO / HOJA ARRANCADA
+   ======================================================== */
+.papel-troquelado-superior {
+    position: relative;
+    background: #EDE6D8;
+    padding: 7px 12px 5px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 1.5px dashed rgba(201, 155, 69, 0.45);
+}
+
+.agujeros-perforados {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 6px;
+}
+
+.agujeros-perforados span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #D8CEBE;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.linea-desprendimiento {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dashed rgba(138, 53, 57, 0.25);
+}
+
+/* ========================================================
+   ENCABEZADO IMPRESO EN PAPEL (MESA, ID, HORA)
    ======================================================== */
 .libreta-encabezado {
-    padding: 14px 16px 12px;
-    color: #FFFFFF;
+    padding: 12px 18px 10px;
+    background: transparent;
     position: relative;
-    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    border-bottom: 1px solid rgba(201, 155, 69, 0.22);
 }
 
-/* Colores de urgencia en el encabezado (como en la imagen KDS) */
+/* Sello lateral de color indicando estado sobre la hoja */
 .libreta-comanda.alerta-normal .libreta-encabezado {
-    background: linear-gradient(135deg, #D4A346 0%, #B58428 100%);
+    border-left: 5px solid #C99B45;
+    background: linear-gradient(90deg, rgba(201, 155, 69, 0.12) 0%, transparent 65%);
 }
 
 .libreta-comanda.alerta-advertencia .libreta-encabezado {
-    background: linear-gradient(135deg, #C2632E 0%, #A34818 100%);
+    border-left: 5px solid #D97706;
+    background: linear-gradient(90deg, rgba(217, 119, 6, 0.12) 0%, transparent 65%);
 }
 
 .libreta-comanda.alerta-critica .libreta-encabezado {
-    background: linear-gradient(135deg, #B91C1C 0%, #8A1313 100%);
+    border-left: 5px solid #B91C1C;
+    background: linear-gradient(90deg, rgba(185, 28, 28, 0.14) 0%, transparent 65%);
 }
 
 .libreta-comanda.alerta-listo .libreta-encabezado {
-    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+    border-left: 5px solid #16A34A;
+    background: linear-gradient(90deg, rgba(22, 163, 74, 0.12) 0%, transparent 65%);
 }
 
 .comanda-meta-izq {
@@ -500,22 +495,25 @@
 }
 
 .comanda-mesa {
-    font-size: 24px;
-    font-weight: 900;
-    line-height: 1.1;
-    letter-spacing: -0.5px;
-    color: #FFFFFF;
     display: flex;
     align-items: baseline;
     gap: 6px;
+    line-height: 1.1;
 }
 
 .comanda-mesa-label {
     font-size: 11px;
-    font-weight: 700;
-    opacity: 0.85;
+    font-weight: 800;
+    color: #8A3539;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+}
+
+.comanda-mesa-numero {
+    font-size: 28px;
+    font-weight: 900;
+    color: #160B0F;
+    letter-spacing: -0.5px;
 }
 
 .comanda-detalles-fila {
@@ -524,48 +522,79 @@
     gap: 8px;
     font-size: 12px;
     font-weight: 700;
-    opacity: 0.95;
+    color: #4A3A40;
 }
 
 .comanda-id {
-    background: rgba(0, 0, 0, 0.22);
+    background: rgba(138, 53, 57, 0.08);
+    color: #8A3539;
     padding: 2px 7px;
     border-radius: 4px;
-    font-family: monospace;
-    font-size: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 800;
+    font-size: 13px;
     letter-spacing: 0.5px;
+    border: 1px solid rgba(138, 53, 57, 0.2);
 }
 
 .comanda-hora {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    color: #6B5B60;
 }
 
-/* Botón Check redondo estilo KDS */
+/* Botón Check / Sello KDS */
 .btn-completar-kds {
-    width: 44px;
-    height: 44px;
-    flex: 0 0 44px;
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.65);
-    background: rgba(255, 255, 255, 0.18);
-    color: #FFFFFF;
-    font-size: 20px;
+    border: 2px solid #8A3539;
+    background: #FFFFFF;
+    color: #8A3539;
+    font-size: 18px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 8px rgba(138, 53, 57, 0.2);
 }
 
 .btn-completar-kds:hover {
-    background: #FFFFFF;
-    color: #8A3539;
-    border-color: #FFFFFF;
+    background: #8A3539;
+    color: #FFFFFF;
     transform: scale(1.08);
+    box-shadow: 0 5px 14px rgba(138, 53, 57, 0.4);
+}
+
+.libreta-comanda.alerta-normal .btn-completar-kds {
+    border-color: #C99B45;
+    color: #C99B45;
+}
+
+.libreta-comanda.alerta-normal .btn-completar-kds:hover {
+    background: #C99B45;
+    color: #FFFFFF;
+}
+
+.libreta-comanda.alerta-listo .btn-completar-kds {
+    border-color: #16A34A;
+    color: #16A34A;
+}
+
+.libreta-comanda.alerta-listo .btn-completar-kds:hover {
+    background: #16A34A;
+    color: #FFFFFF;
+}
+
+.btn-completar-kds .timer-transcurrido {
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 1px;
 }
 
 .btn-completar-kds .timer-transcurrido {
@@ -590,19 +619,23 @@
    CUERPO DE LA NOTA: PRODUCTOS Y ESPECIFICACIONES
    ======================================================== */
 .libreta-cuerpo {
-    padding: 14px 16px;
+    padding: 14px 18px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     flex: 1;
     min-height: 220px;
-    background-color: var(--papel-libreta);
+    background-color: transparent;
+    /* Rayado horizontal sutil tipo libreta de mesero */
     background-image: repeating-linear-gradient(
         to bottom,
         transparent,
-        transparent 31px,
-        rgba(201, 155, 69, 0.08) 32px
+        transparent 29px,
+        rgba(201, 155, 69, 0.1) 30px
     );
+    /* Margen rojo clásico vertical en el lado izquierdo */
+    border-left: 2px solid rgba(138, 53, 57, 0.22);
+    margin-left: 10px;
 }
 
 .libreta-seccion-titulo {
@@ -689,29 +722,31 @@
    ESTADO DEL PEDIDO Y BOTÓN DE ACCIÓN
    ======================================================== */
 .libreta-pie {
-    padding: 12px 16px 20px;
+    padding: 12px 18px 22px;
     margin-top: auto;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    background: rgba(0, 0, 0, 0.02);
-    border-top: 1px dashed var(--papel-linea);
-    border-radius: 0 0 18px 18px;
+    background: #FAF7EE;
+    border-top: 1px dashed rgba(201, 155, 69, 0.35);
+    border-radius: 0 0 6px 6px;
     position: relative;
 }
 
-/* Borde inferior rasgado / perforado de libreta de pedidos */
+/* Borde inferior rasgado / perforado de talonario con dientes triangulares */
 .libreta-pie::after {
     content: "";
     position: absolute;
-    bottom: -5px;
-    left: 4px;
-    right: 4px;
-    height: 6px;
-    background-image: radial-gradient(circle, transparent 2.5px, var(--papel-libreta) 3px);
-    background-size: 8px 6px;
+    bottom: -7px;
+    left: 0;
+    right: 0;
+    height: 7px;
+    background: 
+        linear-gradient(135deg, #FAF7EE 4px, transparent 0),
+        linear-gradient(-135deg, #FAF7EE 4px, transparent 0);
+    background-size: 8px 7px;
     background-repeat: repeat-x;
-    z-index: 2;
+    z-index: 5;
 }
 
 .mensaje-estado-comanda {
@@ -791,45 +826,53 @@
 }
 
 /* ========================================================
-   ANIMACIÓN LIMPIA Y FLUIDA AL DESECHAR COMANDAS
+   ANIMACIÓN FLUIDA DE HOJA QUE SE ARRUGA (PAPER CRUMPLE & TOSS)
    ======================================================== */
 .libreta-comanda.animacion-arrugar {
-    animation: desecharComandaLimpia 0.62s cubic-bezier(0.25, 0.9, 0.3, 1) forwards;
+    animation: arrugarHojaPapelFluida 0.72s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
     pointer-events: none;
     z-index: 100;
     transform-origin: center center;
 }
 
-@keyframes desecharComandaLimpia {
+@keyframes arrugarHojaPapelFluida {
     0% {
         transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+        filter: brightness(1) contrast(1);
         opacity: 1;
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
     }
-    18% {
-        /* Desprende limpio de la pinza */
-        transform: translate3d(0, -8px, 0) scale(0.96) rotate(-2deg);
-        border-radius: 14px;
-        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+    14% {
+        /* La hoja se desprende de la cuerda y se doblan las esquinas hacia el centro */
+        transform: translate3d(0, 6px, 0) scale(0.92, 0.95) rotate(-3deg);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.25);
+        filter: brightness(0.97) contrast(1.1);
     }
-    45% {
-        /* Compresión compacta tipo bola de papel sin deformaciones bruscas */
-        transform: translate3d(0, 24px, 0) scale(0.48) rotate(14deg);
-        border-radius: 50%;
-        filter: brightness(0.9) contrast(1.15);
-        box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.4), 0 12px 24px rgba(0, 0, 0, 0.3);
+    32% {
+        /* Arrugado 3D realista con pliegues diagonales y arrugas */
+        transform: translate3d(2px, 20px, 0) scale(0.7, 0.65) rotate(14deg) rotateX(24deg) rotateY(-18deg);
+        border-radius: 28% 38% 34% 42% / 38% 28% 42% 32%;
+        filter: brightness(0.88) contrast(1.35);
+        box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5), 0 14px 28px rgba(0, 0, 0, 0.35);
+    }
+    54% {
+        /* Compresión máxima en una bola de papel arrugada */
+        transform: translate3d(-4px, 45px, 0) scale(0.38, 0.35) rotate(-40deg) rotateX(50deg) rotateY(35deg);
+        border-radius: 48% 52% 46% 54% / 54% 46% 54% 46%;
+        filter: brightness(0.78) contrast(1.55);
+        box-shadow: inset 0 0 32px rgba(0, 0, 0, 0.7), 0 10px 20px rgba(0, 0, 0, 0.4);
         opacity: 0.95;
     }
-    75% {
-        /* Lanzamiento fluido hacia abajo */
-        transform: translate3d(15px, 200px, 0) scale(0.28) rotate(45deg);
-        opacity: 0.5;
+    76% {
+        /* Lanzamiento limpio y fluido hacia abajo */
+        transform: translate3d(18px, 240px, 0) scale(0.24, 0.22) rotate(100deg);
+        opacity: 0.55;
+        filter: brightness(0.65) blur(0.5px);
     }
     100% {
-        /* Descarte final limpio */
-        transform: translate3d(25px, 420px, 0) scale(0.08) rotate(65deg);
+        /* Cae fuera de la pantalla a la papelera */
+        transform: translate3d(35px, 580px, 0) scale(0.08) rotate(200deg);
         opacity: 0;
-        filter: blur(2px);
+        filter: brightness(0.4) blur(2px);
     }
 }
 
@@ -995,6 +1038,48 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
 }
 
+:root[data-theme="dark"] .libreta-comanda::before,
+:root[data-theme="dark"] .libreta-comanda::after {
+    box-shadow: 0 16px 22px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="dark"] .papel-troquelado-superior {
+    background: #1F1018;
+    border-bottom-color: rgba(201, 155, 69, 0.35);
+}
+
+:root[data-theme="dark"] .agujeros-perforados span {
+    background: #14080F;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="dark"] .linea-desprendimiento {
+    border-bottom-color: rgba(201, 155, 69, 0.25);
+}
+
+:root[data-theme="dark"] .comanda-mesa-label {
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .comanda-mesa-numero {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .comanda-detalles-fila span {
+    color: #C5B4B7;
+}
+
+:root[data-theme="dark"] .libreta-cuerpo {
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 29px,
+        rgba(201, 155, 69, 0.1) 30px
+    );
+    border-left: 2px solid rgba(201, 155, 69, 0.35);
+}
+
 :root[data-theme="dark"] .item-principal {
     color: #FFFFFF;
 }
@@ -1028,7 +1113,16 @@
 }
 
 :root[data-theme="dark"] .libreta-pie {
-    background: rgba(0, 0, 0, 0.15);
+    background: #221019;
+    border-top-color: rgba(201, 155, 69, 0.25);
+}
+
+:root[data-theme="dark"] .libreta-pie::after {
+    background: 
+        linear-gradient(135deg, #221019 4px, transparent 0),
+        linear-gradient(-135deg, #221019 4px, transparent 0);
+    background-size: 8px 7px;
+    background-repeat: repeat-x;
 }
 
 /* ========================================================

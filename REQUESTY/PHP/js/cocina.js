@@ -109,13 +109,18 @@ function reproducirSonidoArrugar() {
         if (!audioCtx) audioCtx = new AudioContextClass();
         if (audioCtx.state === "suspended") audioCtx.resume();
 
-        const bufferSize = audioCtx.sampleRate * 0.45;
+        const duracion = 0.55;
+        const bufferSize = Math.floor(audioCtx.sampleRate * duracion);
         const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const data = buffer.getChannelData(0);
 
-        // Generar ruido blanco con textura granulada tipo papel
+        // Generar crujido de papel con múltiples picos y ráfagas (arrugado realista)
         for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 0.7);
+            const t = i / bufferSize;
+            const envolvente = Math.pow(1 - t, 0.75);
+            // Picos erráticos de fibras de papel crujiendo
+            const crujidoFibra = Math.random() > 0.86 ? (Math.random() * 2 - 1) * 1.4 : (Math.random() * 0.4 - 0.2);
+            data[i] = crujidoFibra * envolvente;
         }
 
         const noise = audioCtx.createBufferSource();
@@ -123,13 +128,13 @@ function reproducirSonidoArrugar() {
 
         const filter = audioCtx.createBiquadFilter();
         filter.type = "bandpass";
-        filter.frequency.setValueAtTime(1400, audioCtx.currentTime);
-        filter.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 0.4);
-        filter.Q.value = 3.5;
+        filter.frequency.setValueAtTime(1800, audioCtx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(420, audioCtx.currentTime + duracion);
+        filter.Q.value = 2.8;
 
         const gainNode = audioCtx.createGain();
-        gainNode.gain.setValueAtTime(0.35, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+        gainNode.gain.setValueAtTime(0.42, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duracion);
 
         noise.connect(filter);
         filter.connect(gainNode);
@@ -308,44 +313,49 @@ function renderizarPedido(pedido, ahora) {
         : "";
 
     return `<article class="libreta-comanda ${claseEspera} ${clasePrioridad}" data-pedido-id="${escaparHTML(pedido.id)}" id="comanda-${escaparHTML(pedido.id)}">
-        <!-- Pinza metálica superior -->
+        <!-- Pinza metálica superior sujetando la hoja -->
         <div class="pinza-comanda" aria-hidden="true"></div>
 
         <!-- Cinta de alta prioridad con sutil vibración si aplica -->
         ${cintaPrioridad}
 
-        <!-- Encabezado con SOLO: ID, MESA, HORA -->
+        <!-- Troquelado y perforaciones de libreta de pedidos arrancada -->
+        <div class="papel-troquelado-superior" aria-hidden="true">
+            <div class="agujeros-perforados">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="linea-desprendimiento"></div>
+        </div>
+
+        <!-- Encabezado impreso en papel: Mesa, ID, Hora y Sello KDS -->
         <div class="libreta-encabezado">
             <div class="comanda-meta-izq">
                 <div class="comanda-mesa">
                     <span class="comanda-mesa-label">Mesa</span>
-                    <span>${escaparHTML(mesaNumero)}</span>
+                    <span class="comanda-mesa-numero">${escaparHTML(mesaNumero)}</span>
                 </div>
                 <div class="comanda-detalles-fila">
-                    <span class="comanda-id">ID: #${escaparHTML(pedido.id)}</span>
+                    <span class="comanda-id">#${escaparHTML(pedido.id)}</span>
                     <span class="comanda-hora"><i class="fa-regular fa-clock" aria-hidden="true"></i> ${hora}</span>
                 </div>
             </div>
 
-            <!-- Botón Check KDS con tiempo transcurrido -->
+            <!-- Botón / Sello KDS con cronómetro de espera -->
             <button type="button" class="btn-completar-kds" data-completar-pedido="${escaparHTML(pedido.id)}" title="Completar pedido #${escaparHTML(pedido.id)}" aria-label="Completar pedido #${escaparHTML(pedido.id)}">
                 <i class="fa-solid fa-check" aria-hidden="true"></i>
                 <span class="timer-transcurrido" data-cronometro="${escaparHTML(pedido.id)}">${espera}m</span>
             </button>
         </div>
 
-        <!-- Línea de desprendimiento / perforación -->
-        <div class="libreta-perforacion" aria-hidden="true"></div>
-
-        <!-- Cuerpo: Productos y sus especificaciones -->
+        <!-- Cuerpo: Productos en hoja rayada con margen rojo de mesero -->
         <div class="libreta-cuerpo">
-            <div class="libreta-seccion-titulo">Productos y Comanda</div>
+            <div class="libreta-seccion-titulo">Comanda de cocina</div>
             <ul class="lista-productos-kds">
                 ${productos}
             </ul>
         </div>
 
-        <!-- Pie: Mensaje de estado y botón de acción -->
+        <!-- Pie: Mensaje de estado y botón de acción con borde rasgado -->
         <div class="libreta-pie">
             <div class="mensaje-estado-comanda ${estadoMensajeClass}">
                 <i class="fa-solid ${estadoIcono}" aria-hidden="true"></i>
@@ -502,7 +512,7 @@ function arrugarYTirarComanda(id, nuevoEstado = nombresEstados.listo) {
         }
 
         mostrarPedidos();
-    }, 600);
+    }, 700);
 }
 
 function cambiarEstadoSimple(id, nuevoEstado) {
