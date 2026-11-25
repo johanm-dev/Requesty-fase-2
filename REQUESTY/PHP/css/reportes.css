@@ -57,7 +57,7 @@
 
 .kpi-container {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: var(--space-lg);
     margin-bottom: var(--space-2xl);
 }

@@ -14,7 +14,7 @@ require_once APPROOT . '/views/layouts/header.php';
             <header>
                 <h2>Caja y Facturación</h2>
                 <nav>
-                    <button onclick="switchTab('ventas')">🛒 Ventas y Cobro</button>
+                    <button class="active" onclick="switchTab('ventas')">🛒 Ventas y Cobro</button>
                     <button onclick="switchTab('facturas')">📄 Historial y facturas</button>
                     <button onclick="switchTab('cierre')">💰 Cierre de Caja</button>
                 </nav>

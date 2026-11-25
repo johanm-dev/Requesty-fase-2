@@ -21,9 +21,9 @@
 /* ---------- Card genérica ---------- */
 .card {
     background-color: var(--color-card-bg);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 4px 16px rgba(21, 21, 21, 0.08);
-    border: 1.5px solid var(--color-highlight);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(31, 17, 22, 0.08);
+    border: 1.5px solid rgba(201, 155, 69, 0.32);
     padding: var(--space-xl);
 }
 

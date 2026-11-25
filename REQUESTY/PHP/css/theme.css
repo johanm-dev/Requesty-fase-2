@@ -708,3 +708,443 @@
         min-height: 42px;
     }
 }
+
+/* ========================================================
+   ESTILO VISUAL UNIFICADO DE COCINA (KDS) PARA TODAS LAS INTERFACES
+   Requesty: Rojo Actual (#8A3539), Negro (#160B0F) y Dorado (#C99B45)
+   ======================================================== */
+
+/* 1. CAJAS DE RESUMEN Y STATS ICONICAS (MESAS, REPORTES, CUENTAS) */
+.mesas-stats .stat-card,
+.kpi-container .kpi-card,
+.resumen-cuentas > div {
+    position: relative !important;
+    background: var(--palette-card, #FFFFFF) !important;
+    border-radius: 14px !important;
+    padding: 18px 22px !important;
+    border: 2px solid rgba(201, 155, 69, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(31, 17, 22, 0.06) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    transition: transform 0.24s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.24s ease !important;
+}
+
+.mesas-stats .stat-card:hover,
+.kpi-container .kpi-card:hover,
+.resumen-cuentas > div:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 24px rgba(31, 17, 22, 0.12) !important;
+}
+
+/* Bordes y estados icónicos tipo Cocina */
+.stat-card-disponibles,
+.kpi-container .kpi-card:nth-child(3) {
+    border: 2px solid #2E7D32 !important;
+    box-shadow: 0 4px 18px rgba(46, 125, 50, 0.14) !important;
+}
+
+.stat-card-ocupadas,
+.kpi-container .kpi-card:nth-child(2) {
+    border: 2px solid #8A3539 !important;
+    box-shadow: 0 4px 18px rgba(138, 53, 57, 0.16) !important;
+}
+
+.kpi-container .kpi-card:nth-child(1),
+.resumen-cuentas > div:first-child {
+    border: 2px solid var(--palette-gold, #C99B45) !important;
+    box-shadow: 0 4px 18px rgba(201, 155, 69, 0.16) !important;
+}
+
+.kpi-container .kpi-card:nth-child(4) {
+    border: 2px solid #6E262B !important;
+    box-shadow: 0 4px 18px rgba(110, 38, 43, 0.14) !important;
+}
+
+/* Tipografía de números y títulos de resumen */
+.stat-value,
+.kpi-value {
+    font-size: 32px !important;
+    font-weight: 900 !important;
+    color: #160B0F !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.5px !important;
+}
+
+.stat-label,
+.kpi-label {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: var(--palette-gold-hover, #B08536) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+}
+
+.stat-card-disponibles .stat-label { color: #166534 !important; }
+.stat-card-ocupadas .stat-label { color: #8A3539 !important; }
+
+/* 2. BARRAS DE FILTROS EN PÍLDORAS (MESAS, PEDIDOS, CAJA, REPORTES) */
+.mesas-filters,
+.filter-tabs,
+.catalogo-filtros,
+main > header nav,
+.filters-section {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 14px !important;
+    background: var(--palette-card, #FFFFFF) !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.32) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 14px rgba(31, 17, 22, 0.05) !important;
+    flex-wrap: wrap !important;
+}
+
+.filter-btn,
+.tab-btn,
+.catalogo-filtros button,
+main > header nav button,
+.mesas-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 7px 16px !important;
+    border-radius: 999px !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.32) !important;
+    background: #FAF7F4 !important;
+    color: #1F1116 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.filter-btn:hover,
+.tab-btn:hover,
+.catalogo-filtros button:hover,
+main > header nav button:hover,
+.mesas-action-btn:hover {
+    background: rgba(201, 155, 69, 0.16) !important;
+    border-color: var(--palette-gold, #C99B45) !important;
+    color: var(--palette-red, #8A3539) !important;
+    transform: translateY(-1px) !important;
+}
+
+.filter-btn.active,
+.tab-btn.active,
+.catalogo-filtros button.active,
+main > header nav button.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border-color: var(--palette-gold, #C99B45) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 3px 10px rgba(138, 53, 57, 0.38) !important;
+}
+
+/* 3. PLANO DE MESAS: ASPECTO DE FICHAS TÁCTILES CON SOMBRA Y SELLO */
+.mesa-card {
+    position: relative !important;
+    background: #FAF7EE !important;
+    border: 1.5px solid rgba(210, 198, 182, 0.75) !important;
+    border-radius: 12px !important;
+    padding: 16px 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    box-shadow: 0 4px 14px rgba(31, 17, 22, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.24s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.24s ease !important;
+    overflow: visible !important;
+    user-select: none !important;
+}
+
+.mesa-card::before,
+.mesa-card::after {
+    content: "";
+    position: absolute;
+    bottom: 6px;
+    width: 40%;
+    height: 14px;
+    box-shadow: 0 12px 18px rgba(0, 0, 0, 0.2);
+    z-index: -1;
+    pointer-events: none;
+    transition: transform 0.25s ease;
+}
+
+.mesa-card::before { left: 6px; transform: rotate(-3deg); }
+.mesa-card::after { right: 6px; transform: rotate(3deg); }
+
+.mesa-card:hover {
+    transform: translateY(-4px) scale(1.025) !important;
+    box-shadow: 0 12px 28px rgba(31, 17, 22, 0.14) !important;
+    border-color: var(--palette-gold, #C99B45) !important;
+}
+
+.mesa-card.libre {
+    border-left: 5px solid #16A34A !important;
+}
+
+.mesa-card.ocupada {
+    border-left: 5px solid #8A3539 !important;
+}
+
+.mesa-card.reservada {
+    border-left: 5px solid #C99B45 !important;
+}
+
+.mesa-number {
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    color: #160B0F !important;
+    letter-spacing: -0.5px !important;
+}
+
+/* Insignias de estado estilo Cocina */
+.mesa-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 3px 10px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.mesa-card.libre .mesa-status {
+    background: #DCFCE7 !important;
+    color: #166534 !important;
+    border: 1px solid #86EFAC !important;
+}
+
+.mesa-card.ocupada .mesa-status {
+    background: #FCE8E9 !important;
+    color: #9C3D42 !important;
+    border: 1px solid #F7C6C8 !important;
+}
+
+.mesa-card.reservada .mesa-status {
+    background: #FFF4DE !important;
+    color: #B58428 !important;
+    border: 1px solid #FFE4A8 !important;
+}
+
+/* 4. TABLA DE PEDIDOS Y FACTURAS: ESTILO LIBRO CONTABLE / RECIBO */
+.table-card,
+.ventas-pedidos {
+    background: #FFFFFF !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.32) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 6px 20px rgba(31, 17, 22, 0.06) !important;
+    overflow: hidden !important;
+}
+
+.orders-table,
+.tabla-inventario {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+.orders-table th,
+.tabla-inventario th {
+    background: #FAF6F4 !important;
+    color: #160B0F !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    border-bottom: 2px solid var(--palette-gold, #C99B45) !important;
+    padding: 12px 14px !important;
+}
+
+.orders-table td,
+.tabla-inventario td {
+    padding: 12px 14px !important;
+    border-bottom: 1px solid rgba(201, 155, 69, 0.15) !important;
+    font-size: 13px !important;
+    color: #1F1116 !important;
+}
+
+.orders-table tr:hover,
+.tabla-inventario tr:hover {
+    background: rgba(201, 155, 69, 0.06) !important;
+}
+
+/* Insignias de estado de pedido estilo Cocina */
+.badge-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 4px 12px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.status-nuevo,
+.badge-status:contains("cola") {
+    background: #FFF4DE !important;
+    color: #B58428 !important;
+    border: 1px solid #FFE4A8 !important;
+}
+
+.status-preparando {
+    background: #FCE8E9 !important;
+    color: #9C3D42 !important;
+    border: 1px solid #F7C6C8 !important;
+}
+
+.status-listo {
+    background: #DCFCE7 !important;
+    color: #166534 !important;
+    border: 1px solid #86EFAC !important;
+}
+
+/* 5. CAJA: TARJETAS DE RECIBO Y RESUMEN DE TOTALES */
+.card-totales,
+#pedido-resumen {
+    position: relative !important;
+    background: #FAF7EE !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.38) !important;
+    border-radius: 14px !important;
+    padding: 24px !important;
+    box-shadow: 0 8px 24px rgba(31, 17, 22, 0.08) !important;
+}
+
+.total-destacado {
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.5px !important;
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
+    background: rgba(201, 155, 69, 0.12) !important;
+    border: 1px dashed var(--palette-gold, #C99B45) !important;
+    color: #160B0F !important;
+}
+
+.total-destacado span {
+    color: #8A3539 !important;
+    font-size: 30px !important;
+}
+
+/* 6. MODO OSCURO PARA TODAS LAS INTERFACES UNIFICADAS */
+:root[data-theme="dark"] .mesas-stats .stat-card,
+:root[data-theme="dark"] .kpi-container .kpi-card,
+:root[data-theme="dark"] .resumen-cuentas > div {
+    background: var(--palette-card, #341C25) !important;
+    border-color: rgba(201, 155, 69, 0.28) !important;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35) !important;
+}
+
+:root[data-theme="dark"] .stat-card-disponibles,
+:root[data-theme="dark"] .kpi-container .kpi-card:nth-child(3) {
+    border: 2px solid #2E7D32 !important;
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.25) !important;
+}
+
+:root[data-theme="dark"] .stat-card-ocupadas,
+:root[data-theme="dark"] .kpi-container .kpi-card:nth-child(2) {
+    border: 2px solid #A8484D !important;
+    box-shadow: 0 6px 20px rgba(168, 72, 77, 0.25) !important;
+}
+
+:root[data-theme="dark"] .kpi-container .kpi-card:nth-child(1),
+:root[data-theme="dark"] .resumen-cuentas > div:first-child {
+    border: 2px solid var(--palette-gold, #E4B353) !important;
+    box-shadow: 0 6px 20px rgba(228, 179, 83, 0.25) !important;
+}
+
+:root[data-theme="dark"] .stat-value,
+:root[data-theme="dark"] .kpi-value {
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .mesas-filters,
+:root[data-theme="dark"] .filter-tabs,
+:root[data-theme="dark"] .catalogo-filtros,
+:root[data-theme="dark"] main > header nav,
+:root[data-theme="dark"] .filters-section {
+    background: var(--palette-card, #341C25) !important;
+    border-color: rgba(201, 155, 69, 0.25) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+:root[data-theme="dark"] .filter-btn,
+:root[data-theme="dark"] .tab-btn,
+:root[data-theme="dark"] .catalogo-filtros button,
+:root[data-theme="dark"] main > header nav button,
+:root[data-theme="dark"] .mesas-action-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(201, 155, 69, 0.28) !important;
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .filter-btn:hover,
+:root[data-theme="dark"] .tab-btn:hover,
+:root[data-theme="dark"] .catalogo-filtros button:hover,
+:root[data-theme="dark"] main > header nav button:hover,
+:root[data-theme="dark"] .mesas-action-btn:hover {
+    background: rgba(201, 155, 69, 0.2) !important;
+    border-color: var(--palette-gold, #E4B353) !important;
+    color: var(--palette-gold, #E4B353) !important;
+}
+
+:root[data-theme="dark"] .filter-btn.active,
+:root[data-theme="dark"] .tab-btn.active,
+:root[data-theme="dark"] .catalogo-filtros button.active,
+:root[data-theme="dark"] main > header nav button.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border-color: var(--palette-gold, #E4B353) !important;
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .mesa-card {
+    background: linear-gradient(180deg, #2E1824 0%, #221019 100%) !important;
+    border-color: rgba(201, 155, 69, 0.32) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+:root[data-theme="dark"] .mesa-number {
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .table-card,
+:root[data-theme="dark"] .ventas-pedidos {
+    background: #27141E !important;
+    border-color: rgba(201, 155, 69, 0.28) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+:root[data-theme="dark"] .orders-table th,
+:root[data-theme="dark"] .tabla-inventario th {
+    background: #1C0C14 !important;
+    color: var(--palette-gold, #E4B353) !important;
+}
+
+:root[data-theme="dark"] .orders-table td,
+:root[data-theme="dark"] .tabla-inventario td {
+    color: #F5EBEA !important;
+    border-bottom-color: rgba(201, 155, 69, 0.15) !important;
+}
+
+:root[data-theme="dark"] .card-totales,
+:root[data-theme="dark"] #pedido-resumen {
+    background: linear-gradient(180deg, #2E1824 0%, #221019 100%) !important;
+    border-color: rgba(201, 155, 69, 0.35) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+:root[data-theme="dark"] .total-destacado {
+    background: rgba(201, 155, 69, 0.15) !important;
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .total-destacado span {
+    color: var(--palette-gold, #E4B353) !important;
+}
+

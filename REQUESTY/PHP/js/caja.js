@@ -286,6 +286,15 @@ function ejecutarCierreCaja() {
 function switchTab(tabId) {
     if (modoClienteCaja) return;
     ["ventas", "facturas", "cierre"].forEach(id => { document.getElementById(id).style.display = id === tabId ? "block" : "none"; });
+    const buttons = document.querySelectorAll("main > header nav button");
+    buttons.forEach(btn => {
+        const onclickAttr = btn.getAttribute("onclick") || "";
+        if (onclickAttr.includes(tabId)) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
     if (tabId === "facturas") renderizarFacturas();
     if (tabId === "cierre") actualizarDatosCierre();
 }

@@ -143,16 +143,18 @@
 .search-box input {
   width: 100%;
   background-color: var(--bg-input);
-  border: none;
+  border: 1.5px solid rgba(201, 155, 69, 0.32);
   padding: 8px 12px 8px 34px;
   border-radius: 8px;
   font-size: 0.85rem;
   outline: none;
   color: var(--text-main);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search-box input:focus {
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  border-color: var(--palette-red, #8A3539);
+  box-shadow: 0 0 0 3px rgba(201, 155, 69, 0.28);
 }
 
 .filter-tabs {
