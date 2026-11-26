@@ -230,7 +230,7 @@
 }
 
 /* ========================================================
-   RIEL METÁLICO DE ACERO INOXIDABLE
+   RIEL METÁLICO DORADO PORTA-COMANDAS
    ======================================================== */
 .kds-riel-wrapper {
     position: relative;
@@ -245,17 +245,17 @@
     height: 38px;
     background: linear-gradient(
         180deg,
-        #E4E7EC 0%,
-        #C7CDD4 18%,
-        #F7F9FA 42%,
-        #9EA5AE 78%,
-        #6E757E 100%
+        #F7DF94 0%,
+        #D6A548 18%,
+        #FFF2C6 42%,
+        #C08E32 78%,
+        #8A611C 100%
     );
     border-radius: 5px 5px 3px 3px;
-    border: 1px solid #7C838C;
+    border: 1px solid #966B22;
     box-shadow:
-        0 6px 14px rgba(0, 0, 0, 0.28),
-        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+        0 6px 16px rgba(140, 101, 36, 0.35),
+        inset 0 1px 0 rgba(255, 250, 230, 0.9);
     display: flex;
     align-items: center;
     margin-bottom: -8px;
@@ -268,17 +268,17 @@
     height: 16px;
     background: linear-gradient(
         180deg,
-        #F8FAFC 0%,
-        #D3D8DF 38%,
-        #8D949E 85%,
-        #B8BFC7 100%
+        #FFF6D6 0%,
+        #E4B353 38%,
+        #A67725 85%,
+        #D4A346 100%
     );
     border-radius: 3px;
-    border-top: 1px solid rgba(255, 255, 255, 0.9);
-    border-bottom: 1px solid #5A6068;
+    border-top: 1px solid rgba(255, 252, 235, 0.95);
+    border-bottom: 1px solid #6E4B12;
     box-shadow:
-        0 4px 7px rgba(0, 0, 0, 0.35),
-        inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        0 4px 7px rgba(68, 45, 9, 0.4),
+        inset 0 1px 1px rgba(255, 248, 220, 0.85);
 }
 
 .cuerda-soporte {
@@ -288,11 +288,11 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #F5F7F9 0%, #B2B8C0 55%, #5E646C 100%);
-    border: 1px solid #555B62;
+    background: radial-gradient(circle at 35% 35%, #FFF7DC 0%, #D9A84A 55%, #785315 100%);
+    border: 1px solid #6B4910;
     box-shadow:
         0 1px 2px rgba(0, 0, 0, 0.45),
-        inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        inset 0 1px 1px rgba(255, 250, 230, 0.85);
     z-index: 22;
 }
 
@@ -305,7 +305,7 @@
     justify-content: center;
     font-size: 11px;
     font-weight: 900;
-    color: #464B52;
+    color: #573A0B;
     line-height: 1;
 }
 
