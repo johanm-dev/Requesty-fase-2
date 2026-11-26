@@ -176,9 +176,12 @@ function obtenerFechaRecepcion(pedido) {
 function leerPedidos() {
     try {
         let guardados = JSON.parse(localStorage.getItem(clavePedidos) || "null");
-        if (!guardados || !Array.isArray(guardados) || guardados.length === 0) {
+        if (guardados === null) {
             guardados = pedidosDemoKds;
             localStorage.setItem(clavePedidos, JSON.stringify(guardados));
+        }
+        if (!Array.isArray(guardados)) {
+            guardados = [];
         }
         mostrarError("");
         return guardados.map(pedido => ({
@@ -340,11 +343,18 @@ function renderizarPedido(pedido, ahora) {
                 </div>
             </div>
 
-            <!-- Botón / Sello KDS con cronómetro de espera -->
-            <button type="button" class="btn-completar-kds" data-completar-pedido="${escaparHTML(pedido.id)}" title="Completar pedido #${escaparHTML(pedido.id)}" aria-label="Completar pedido #${escaparHTML(pedido.id)}">
-                <i class="fa-solid fa-check" aria-hidden="true"></i>
-                <span class="timer-transcurrido" data-cronometro="${escaparHTML(pedido.id)}">${espera}m</span>
-            </button>
+            <div class="comanda-acciones-header">
+                <!-- Botón Desechar / Tirar comanda a la papelera -->
+                <button type="button" class="btn-desechar-kds" data-desechar-pedido="${escaparHTML(pedido.id)}" title="Tirar hoja a la papelera (Borrar comanda #${escaparHTML(pedido.id)})" aria-label="Borrar comanda #${escaparHTML(pedido.id)}">
+                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                </button>
+
+                <!-- Botón / Sello KDS con cronómetro de espera -->
+                <button type="button" class="btn-completar-kds" data-completar-pedido="${escaparHTML(pedido.id)}" title="Completar pedido #${escaparHTML(pedido.id)}" aria-label="Completar pedido #${escaparHTML(pedido.id)}">
+                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    <span class="timer-transcurrido" data-cronometro="${escaparHTML(pedido.id)}">${espera}m</span>
+                </button>
+            </div>
         </div>
 
         <!-- Cuerpo: Productos en hoja rayada con margen rojo de mesero -->
@@ -431,17 +441,20 @@ function mostrarPedidos() {
     if (!contenedor) return;
 
     const ahora = Date.now();
-    const pedidosActivos = leerPedidos()
-        .map(pedido => ({ ...pedido, status: normalizarEstado(pedido.status) }))
-        .filter(pedido => ![nombresEstados.entregado, nombresEstados.cancelado].includes(pedido.status));
+    const todosLosPedidos = leerPedidos()
+        .map(pedido => ({ ...pedido, status: normalizarEstado(pedido.status) }));
 
-    // Actualizar los 3 contadores icónicos globales
+    // Actualizar los 3 contadores icónicos globales con el historial de pedidos de la sesión
     const contadorPendientes = document.getElementById("contador-pendientes");
     const contadorPreparacion = document.getElementById("contador-preparacion");
     const contadorListos = document.getElementById("contador-listos");
-    if (contadorPendientes) contadorPendientes.textContent = pedidosActivos.filter(p => p.status === nombresEstados.cola).length;
-    if (contadorPreparacion) contadorPreparacion.textContent = pedidosActivos.filter(p => p.status === nombresEstados.preparacion).length;
-    if (contadorListos) contadorListos.textContent = pedidosActivos.filter(p => p.status === nombresEstados.listo).length;
+    if (contadorPendientes) contadorPendientes.textContent = todosLosPedidos.filter(p => p.status === nombresEstados.cola).length;
+    if (contadorPreparacion) contadorPreparacion.textContent = todosLosPedidos.filter(p => p.status === nombresEstados.preparacion).length;
+    if (contadorListos) contadorListos.textContent = todosLosPedidos.filter(p => p.status === nombresEstados.listo).length;
+
+    // En la cuerda activa cuelgan únicamente las comandas que NO han sido retiradas de cocina
+    const pedidosActivos = todosLosPedidos
+        .filter(pedido => !pedido.comandaRetirada && ![nombresEstados.entregado, nombresEstados.cancelado].includes(pedido.status));
 
     // Renderizar filtro de mesas (ubicado debajo de las 3 cajas)
     renderizarFiltrosMesas(pedidosActivos);
@@ -485,7 +498,7 @@ function arrugarYTirarComanda(id, nuevoEstado = nombresEstados.listo) {
         comandaEl.classList.add("animacion-arrugar");
     }
 
-    // Esperar a que la animación 3D de arrugado y lanzamiento termine (~800ms)
+    // Esperar a que termine la animación nítida (~550ms)
     window.setTimeout(() => {
         const pedidos = leerPedidos();
         const pedido = pedidos.find(actual => String(actual.id) === String(id));
@@ -498,6 +511,7 @@ function arrugarYTirarComanda(id, nuevoEstado = nombresEstados.listo) {
             ...pedido,
             status: nuevoEstado,
             statusClass: "status-listo",
+            comandaRetirada: true, // Se arruga y se retira físicamente de la cuerda
             updatedAt: new Date().toISOString()
         };
 
@@ -512,7 +526,36 @@ function arrugarYTirarComanda(id, nuevoEstado = nombresEstados.listo) {
         }
 
         mostrarPedidos();
-    }, 700);
+    }, 550);
+}
+
+// ========================================================
+// DESECHAR / BORRAR COMANDA DIRECTAMENTE A LA PAPELERA
+// ========================================================
+function desecharComanda(id) {
+    const comandaEl = document.querySelector(`.libreta-comanda[data-pedido-id="${CSS.escape(String(id))}"]`);
+
+    reproducirSonidoArrugar();
+
+    if (comandaEl) {
+        comandaEl.classList.add("animacion-arrugar");
+    }
+
+    // Esperar a que la animación de arrugado termine (~550ms)
+    window.setTimeout(() => {
+        const pedidos = leerPedidos();
+        const actualizados = pedidos.filter(actual => String(actual.id) !== String(id));
+
+        try {
+            localStorage.setItem(clavePedidos, JSON.stringify(actualizados));
+            window.dispatchEvent(new CustomEvent(eventoPedidos, { detail: actualizados }));
+            mostrarError("");
+        } catch (e) {
+            mostrarError("No se pudo eliminar la comanda.");
+        }
+
+        mostrarPedidos();
+    }, 550);
 }
 
 function cambiarEstadoSimple(id, nuevoEstado) {
@@ -550,8 +593,15 @@ document.getElementById("pildorasComandas")?.addEventListener("click", (e) => {
     }
 });
 
-// Eventos de completar (arrugar y tirar) y avanzar estado
+// Eventos de completar (arrugar y tirar), desechar (borrar) y avanzar estado
 document.getElementById("contenedor-pedidos")?.addEventListener("click", evento => {
+    const btnDesechar = evento.target.closest("[data-desechar-pedido]");
+    if (btnDesechar) {
+        evento.preventDefault();
+        desecharComanda(btnDesechar.dataset.desecharPedido);
+        return;
+    }
+
     const btnCompletar = evento.target.closest("[data-completar-pedido]");
     if (btnCompletar) {
         evento.preventDefault();

@@ -544,6 +544,38 @@
     color: #6B5B60;
 }
 
+.comanda-acciones-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Botón Desechar / Tirar Comanda */
+.btn-desechar-kds {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(138, 53, 57, 0.4);
+    background: #FFFFFF;
+    color: #8A3539;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-desechar-kds:hover {
+    background: #8A3539;
+    border-color: #8A3539;
+    color: #FFFFFF;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(138, 53, 57, 0.35);
+}
+
 /* Botón Check / Sello KDS */
 .btn-completar-kds {
     width: 46px;
@@ -827,52 +859,57 @@
 
 /* ========================================================
    ANIMACIÓN FLUIDA DE HOJA QUE SE ARRUGA (PAPER CRUMPLE & TOSS)
+   Efecto nítido de alta definición, sin desenfoques borrosos
    ======================================================== */
 .libreta-comanda.animacion-arrugar {
-    animation: arrugarHojaPapelFluida 0.72s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-    pointer-events: none;
-    z-index: 100;
-    transform-origin: center center;
+    animation: arrugarHojaPapelFluida 0.58s cubic-bezier(0.2, 0.9, 0.3, 1) forwards !important;
+    pointer-events: none !important;
+    z-index: 100 !important;
+    transform-origin: 50% 20% !important;
+    will-change: transform, opacity !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+}
+
+.libreta-comanda.animacion-arrugar::before,
+.libreta-comanda.animacion-arrugar::after {
+    display: none !important;
 }
 
 @keyframes arrugarHojaPapelFluida {
     0% {
         transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-        filter: brightness(1) contrast(1);
         opacity: 1;
     }
-    14% {
-        /* La hoja se desprende de la cuerda y se doblan las esquinas hacia el centro */
-        transform: translate3d(0, 6px, 0) scale(0.92, 0.95) rotate(-3deg);
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.25);
-        filter: brightness(0.97) contrast(1.1);
+    16% {
+        /* Se desprende de la pinza y se pliega hacia adentro en los laterales */
+        transform: translate3d(0, 10px, 0) scale(0.88, 0.94) rotate(-4deg) skewX(-4deg);
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.25);
+        opacity: 1;
     }
-    32% {
-        /* Arrugado 3D realista con pliegues diagonales y arrugas */
-        transform: translate3d(2px, 20px, 0) scale(0.7, 0.65) rotate(14deg) rotateX(24deg) rotateY(-18deg);
-        border-radius: 28% 38% 34% 42% / 38% 28% 42% 32%;
-        filter: brightness(0.88) contrast(1.35);
-        box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5), 0 14px 28px rgba(0, 0, 0, 0.35);
-    }
-    54% {
-        /* Compresión máxima en una bola de papel arrugada */
-        transform: translate3d(-4px, 45px, 0) scale(0.38, 0.35) rotate(-40deg) rotateX(50deg) rotateY(35deg);
-        border-radius: 48% 52% 46% 54% / 54% 46% 54% 46%;
-        filter: brightness(0.78) contrast(1.55);
-        box-shadow: inset 0 0 32px rgba(0, 0, 0, 0.7), 0 10px 20px rgba(0, 0, 0, 0.4);
+    38% {
+        /* Pliegue diagonal rápido y crepitación tridimensional nítida */
+        transform: translate3d(4px, 28px, 0) scale(0.58, 0.52) rotate(16deg) skewX(8deg);
+        border-radius: 16px;
+        box-shadow: 0 14px 24px rgba(0, 0, 0, 0.35);
         opacity: 0.95;
     }
-    76% {
-        /* Lanzamiento limpio y fluido hacia abajo */
-        transform: translate3d(18px, 240px, 0) scale(0.24, 0.22) rotate(100deg);
-        opacity: 0.55;
-        filter: brightness(0.65) blur(0.5px);
+    60% {
+        /* Bola de papel comprimida y compacta */
+        transform: translate3d(-3px, 60px, 0) scale(0.26, 0.24) rotate(-35deg);
+        border-radius: 50%;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        opacity: 0.9;
+    }
+    80% {
+        /* Lanzamiento fluido y acelerado hacia la papelera abajo */
+        transform: translate3d(14px, 260px, 0) scale(0.18) rotate(90deg);
+        opacity: 0.6;
     }
     100% {
-        /* Cae fuera de la pantalla a la papelera */
-        transform: translate3d(35px, 580px, 0) scale(0.08) rotate(200deg);
+        /* Cae fuera de la pantalla en la papelera */
+        transform: translate3d(28px, 620px, 0) scale(0.06) rotate(180deg);
         opacity: 0;
-        filter: brightness(0.4) blur(2px);
     }
 }
 
@@ -1055,6 +1092,18 @@
 
 :root[data-theme="dark"] .linea-desprendimiento {
     border-bottom-color: rgba(201, 155, 69, 0.25);
+}
+
+:root[data-theme="dark"] .btn-desechar-kds {
+    background: #2E1824;
+    border-color: rgba(201, 155, 69, 0.35);
+    color: #F18488;
+}
+
+:root[data-theme="dark"] .btn-desechar-kds:hover {
+    background: #8A3539;
+    border-color: #8A3539;
+    color: #FFFFFF;
 }
 
 :root[data-theme="dark"] .comanda-mesa-label {
