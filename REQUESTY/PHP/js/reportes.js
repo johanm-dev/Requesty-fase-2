@@ -847,64 +847,127 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnVolverPqrs = document.getElementById('btn-volver-reportes-pqrs');
     const btnVerCuentas = document.getElementById('btn-ver-cuentas');
     const btnVolverCuentas = document.getElementById('volver-reportes-cuentas');
+    const btnVolverCuentasTop = document.getElementById('btn-volver-cuentas-top');
     const btnAdministrarInventario = document.getElementById('btn-administrar-inventario');
     const btnVolverInventario = document.getElementById('btn-volver-inventario');
     const btnReiniciarProcesos = document.getElementById('btn-reiniciar-procesos');
 
     // Función para cambiar de vista activa
     function mostrarVista(vistaAMostrar, conTransicion = true) {
+        if (!vistaAMostrar) return;
         if (conTransicion && typeof window.mostrarTransicionModulo === 'function') {
             window.mostrarTransicionModulo(520);
         }
-        vistaReportes.classList.add('oculto');
-        vistaMenu.classList.add('oculto');
-        vistaPqrs.classList.add('oculto');
-        vistaCuentas.classList.add('oculto');
-        vistaInventario.classList.add('oculto');
+        vistaReportes?.classList.add('oculto');
+        vistaMenu?.classList.add('oculto');
+        vistaPqrs?.classList.add('oculto');
+        vistaCuentas?.classList.add('oculto');
+        vistaInventario?.classList.add('oculto');
 
         vistaAMostrar.classList.remove('oculto');
+
         if (vistaAMostrar === vistaCuentas) {
             history.replaceState(null, '', '#cuentas');
-        } else if (location.hash === '#cuentas') {
-            history.replaceState(null, '', location.pathname);
+            if (typeof renderizarCuentas === 'function') {
+                renderizarCuentas();
+            }
+        } else if (vistaAMostrar === vistaInventario) {
+            history.replaceState(null, '', '#inventario');
+            if (window.RequestyInventario?.renderizarInventario) {
+                window.RequestyInventario.renderizarInventario();
+            }
+        } else if (vistaAMostrar === vistaMenu) {
+            history.replaceState(null, '', '#menu');
+        } else if (vistaAMostrar === vistaPqrs) {
+            history.replaceState(null, '', '#pqrs');
+        } else if (vistaAMostrar === vistaReportes) {
+            history.replaceState(null, '', location.pathname + location.search);
         }
     }
 
     // Eventos para Administrar Menú
     if (btnAdministrarMenu) {
-        btnAdministrarMenu.addEventListener('click', () => mostrarVista(vistaMenu));
+        btnAdministrarMenu.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaMenu);
+        });
     }
     if (btnVolverMenu) {
-        btnVolverMenu.addEventListener('click', () => mostrarVista(vistaReportes));
+        btnVolverMenu.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaReportes);
+        });
     }
 
     // Eventos para Registro de PQRS
     if (btnVerPqrs) {
-        btnVerPqrs.addEventListener('click', () => mostrarVista(vistaPqrs));
+        btnVerPqrs.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaPqrs);
+        });
     }
     if (btnVolverPqrs) {
-        btnVolverPqrs.addEventListener('click', () => mostrarVista(vistaReportes));
+        btnVolverPqrs.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaReportes);
+        });
     }
 
-    if (btnVerCuentas && !btnVerCuentas.hidden) {
-        btnVerCuentas.addEventListener('click', () => mostrarVista(vistaCuentas));
+    // Eventos para Cuentas del Personal
+    if (btnVerCuentas) {
+        btnVerCuentas.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaCuentas);
+        });
     }
     if (btnVolverCuentas) {
-        btnVolverCuentas.addEventListener('click', () => mostrarVista(vistaReportes));
+        btnVolverCuentas.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaReportes);
+        });
     }
-    if (btnAdministrarInventario && !btnAdministrarInventario.hidden) {
-        btnAdministrarInventario.addEventListener('click', () => mostrarVista(vistaInventario));
+    if (btnVolverCuentasTop) {
+        btnVolverCuentasTop.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaReportes);
+        });
+    }
+
+    // Eventos para Administrar Inventario
+    if (btnAdministrarInventario) {
+        btnAdministrarInventario.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaInventario);
+        });
     }
     if (btnVolverInventario) {
-        btnVolverInventario.addEventListener('click', () => mostrarVista(vistaReportes));
+        btnVolverInventario.addEventListener('click', (e) => {
+            e.preventDefault();
+            mostrarVista(vistaReportes);
+        });
     }
+
+    // Evento para Reiniciar Procesos
     if (btnReiniciarProcesos) {
         btnReiniciarProcesos.addEventListener('click', reiniciarProcesosRestaurante);
     }
 
-    if (location.hash === '#cuentas' && btnVerCuentas && !btnVerCuentas.hidden) {
-        mostrarVista(vistaCuentas, false);
+    // Detección de hash en URL para navegación directa (#cuentas, #inventario, #menu, #pqrs)
+    function comprobarHash(conTransicion = false) {
+        const hash = (location.hash || '').toLowerCase();
+        if (hash === '#cuentas') {
+            mostrarVista(vistaCuentas, conTransicion);
+        } else if (hash === '#inventario') {
+            mostrarVista(vistaInventario, conTransicion);
+        } else if (hash === '#menu') {
+            mostrarVista(vistaMenu, conTransicion);
+        } else if (hash === '#pqrs') {
+            mostrarVista(vistaPqrs, conTransicion);
+        }
     }
+
+    comprobarHash(false);
+    window.addEventListener('hashchange', () => comprobarHash(true));
 });
 
 function reiniciarProcesosRestaurante() {

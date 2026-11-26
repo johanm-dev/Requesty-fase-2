@@ -21,6 +21,7 @@ class Router {
         'reportes'                   => ['controller' => 'ReporteController', 'action' => 'index'],
         'pqrs'                       => ['controller' => 'PqrsController',    'action' => 'index'],
         'cuentas'                    => ['controller' => 'ReporteController', 'action' => 'cuentas'],
+        'inventario'                 => ['controller' => 'ReporteController', 'action' => 'inventario'],
 
         // Rutas API REST endurecidas (Informe Tecnico PostgreSQL 17)
         'api/login'                  => ['controller' => 'ApiController',     'action' => 'sesion'],

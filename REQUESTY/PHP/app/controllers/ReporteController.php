@@ -21,15 +21,14 @@ class ReporteController extends Controller {
     }
 
     public function cuentas() {
-        // Redireccionar o mostrar vista de cuentas
-        $usuarioModel = $this->model('Usuario');
-        $usuarios = $usuarioModel->getAll();
+        // Redireccionar a vista de cuentas del personal en reportes
+        header("Location: " . url('reportes') . "#cuentas");
+        exit;
+    }
 
-        $this->view('cuentas/index', [
-            'pageTitle'   => 'Cuentas del Personal - Requesty',
-            'currentPage' => 'reportes',
-            'usuarios'    => $usuarios,
-            'user'        => $this->getUser()
-        ]);
+    public function inventario() {
+        // Redireccionar a vista de inventario en reportes
+        header("Location: " . url('reportes') . "#inventario");
+        exit;
     }
 }

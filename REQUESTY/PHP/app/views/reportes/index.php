@@ -25,7 +25,7 @@ require_once APPROOT . '/views/layouts/header.php';
                     <input type="date" id="endDate" class="date-input">
                     <div class="filters-actions">
                         <button class="generate-btn" onclick="generateReport()">Generar reporte</button>
-                        <button class="pqrs-btn" id="btn-ver-pqrs" type="button" onclick="document.getElementById('vista-pqrs').scrollIntoView({behavior: 'smooth'})">Ver PQRS</button>
+                        <button class="pqrs-btn" id="btn-ver-pqrs" type="button">Ver PQRS</button>
                         <button class="menu-btn" id="btn-administrar-menu" type="button" data-admin-only hidden>Administrar menú</button>
                         <button class="menu-btn" id="btn-administrar-inventario" type="button" data-admin-only hidden>Gestionar inventario</button>
                         <button class="menu-btn" id="btn-ver-cuentas" type="button" data-admin-only hidden>Cuentas del personal</button>
@@ -221,7 +221,10 @@ require_once APPROOT . '/views/layouts/header.php';
                         <p class="eyebrow">ADMINISTRACIÓN</p>
                         <h1 class="page-title">Cuentas del personal</h1>
                     </div>
-                    <button class="btn-primary" id="nuevaCuenta" type="button">＋ Nueva cuenta</button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button class="boton-secundario" id="btn-volver-cuentas-top" type="button">Volver a reportes</button>
+                        <button class="btn-primary" id="nuevaCuenta" type="button">＋ Nueva cuenta</button>
+                    </div>
                 </header>
 
                 <section class="resumen-cuentas" aria-label="Resumen de cuentas">
