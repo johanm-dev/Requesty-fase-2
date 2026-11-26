@@ -21,9 +21,9 @@
 /* ---------- Card genérica ---------- */
 .card {
     background-color: var(--color-card-bg);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 4px 16px rgba(62, 40, 52, 0.08);
-    border: 1.5px solid var(--color-highlight);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(31, 17, 22, 0.08);
+    border: 1.5px solid rgba(201, 155, 69, 0.32);
     padding: var(--space-xl);
 }
 
@@ -71,7 +71,7 @@
     padding: var(--space-sm) var(--space-md);
     border: 1.5px solid var(--color-highlight);
     border-radius: var(--radius-md);
-    background-color: #FDF8F8;
+    background-color: var(--palette-light);
     color: var(--color-sidebar);
     width: 100%;
 }
@@ -81,7 +81,7 @@
 .form-group input[type="text"]:focus {
     outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(193, 92, 36, 0.15);
+    box-shadow: 0 0 0 3px rgba(155, 60, 64, 0.15);
 }
 
 .form-group textarea {
@@ -123,7 +123,7 @@
 
 .btn-primary {
     background-color: var(--color-primary);
-    color: var(--color-text-light);
+    color: var(--palette-ink);
 }
 
 .btn-secondary {

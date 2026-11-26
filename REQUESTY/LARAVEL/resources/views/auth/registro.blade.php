@@ -6,11 +6,44 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="app-base" content="{{ rtrim(url('/'), '/') }}">
     <title>{{ $pageTitle ?? 'Registro - Requesty' }}</title>
+    <script src="{{ asset('js/theme.js') }}"></script>
+    <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/registro.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
 </head>
 <body>
-  <header>
-     <h1 class="logo">Requesty</h1>
+  <div class="luciernagas-fondo" aria-hidden="true">
+    <canvas id="luciernagasCanvas"></canvas>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+    <span class="luciernaga"></span>
+  </div>
+
+  <header class="registro-header">
+     <a href="{{ url('/login') }}" class="registro-brand">
+       <img src="{{ asset('img/logo.png') }}" alt="Logo Requesty" class="registro-brand-logo">
+       <h1 class="logo">Requesty</h1>
+     </a>
+     <button type="button" class="btn-theme-toggle auth-theme-toggle" data-theme-toggle
+             title="Cambiar a modo oscuro" aria-label="Cambiar a modo oscuro" aria-pressed="false">
+         <i class="fa-solid fa-moon theme-toggle-icon" aria-hidden="true"></i>
+     </button>
   </header>
 
   <main id="contenido">

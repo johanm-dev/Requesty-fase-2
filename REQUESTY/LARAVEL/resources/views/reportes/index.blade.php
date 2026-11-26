@@ -222,7 +222,10 @@
                         <p class="eyebrow">ADMINISTRACIÓN</p>
                         <h1 class="page-title">Cuentas del personal</h1>
                     </div>
-                    <button class="btn-primary" id="nuevaCuenta" type="button">＋ Nueva cuenta</button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button class="boton-secundario" id="btn-volver-cuentas-top" type="button">Volver a reportes</button>
+                        <button class="btn-primary" id="nuevaCuenta" type="button">＋ Nueva cuenta</button>
+                    </div>
                 </header>
 
                 <section class="resumen-cuentas" aria-label="Resumen de cuentas">

@@ -1,13 +1,16 @@
 <?php
+/**
+ * Controlador de Menú y Catálogo
+ */
 class MenuController extends Controller {
+
     public function index() {
-        $this->requireAuth();
         $productoModel = $this->model('Producto');
         $productos = $productoModel->getAll();
         $categorias = $productoModel->getCategorias();
 
         $this->view('menu/index', [
-            'pageTitle'   => 'Menu - Requesty',
+            'pageTitle'   => 'Menú - Requesty',
             'currentPage' => 'menu',
             'productos'   => $productos,
             'categorias'  => $categorias,

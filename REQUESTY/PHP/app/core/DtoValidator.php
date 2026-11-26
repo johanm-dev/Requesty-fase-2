@@ -97,27 +97,4 @@ class DtoValidator {
         }
         return $val;
     }
-
-    public static function validatePasswordStrength(string $password): ?string {
-        $len = mb_strlen($password, 'UTF-8');
-        if ($len < 8 || $len > 128) {
-            return 'La contrasena debe tener entre 8 y 128 caracteres.';
-        }
-        if (!preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/[0-9]/', $password)) {
-            return 'La contrasena debe incluir al menos una mayuscula, una minuscula y un numero.';
-        }
-        return null;
-    }
-
-    public static function requireStrongPassword(array $data, string $field = 'contrasena'): string {
-        if (!isset($data[$field]) || !is_string($data[$field])) {
-            throw new DomainValidationException("Campo obligatorio invalido: {$field}.");
-        }
-        $pass = $data[$field];
-        $err = self::validatePasswordStrength($pass);
-        if ($err !== null) {
-            throw new DomainValidationException($err);
-        }
-        return $pass;
-    }
 }

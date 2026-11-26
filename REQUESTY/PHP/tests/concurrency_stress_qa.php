@@ -25,10 +25,6 @@ function assertCond(bool $cond, string $msg): void {
     }
 }
 
-$isWin = PHP_OS_FAMILY === 'Windows';
-$curlBin = $isWin ? 'curl.exe' : 'curl';
-$nullDev = $isWin ? 'NUL' : '/dev/null';
-
 function simplePost(string $url, array $body, array $headers = []): array {
     $hdrs = array_merge(['Accept: application/json', 'Content-Type: application/json', 'Connection: close'], $headers);
     $ctx = stream_context_create([
@@ -42,11 +38,8 @@ function simplePost(string $url, array $body, array $headers = []): array {
         ],
     ]);
     $raw = (string)@file_get_contents($url, false, $ctx);
-    $respHdrs = function_exists('http_get_last_response_headers')
-        ? (http_get_last_response_headers() ?: [])
-        : ($http_response_header ?? []);
     $status = 0;
-    if (!empty($respHdrs[0]) && preg_match('/\s(\d{3})\s/', $respHdrs[0], $m)) {
+    if (!empty($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $m)) {
         $status = (int)$m[1];
     }
     return ['status' => $status, 'json' => json_decode($raw, true), 'raw' => $raw];
@@ -68,14 +61,14 @@ for ($wi = 0; $wi < 16; $wi++) {
     $warmLines[] = 'request = GET';
     $warmLines[] = 'header = "Accept: application/json"';
     $warmLines[] = 'header = "Authorization: Bearer ' . $tokAdmin . '"';
-    $warmLines[] = 'output = ' . $nullDev;
+    $warmLines[] = 'output = NUL';
     $warmLines[] = 'silent';
     if ($wi < 15) {
         $warmLines[] = 'next';
     }
 }
 file_put_contents($warmCfg, implode("\n", $warmLines));
-exec($curlBin . ' --parallel --parallel-immediate --parallel-max 16 -K ' . escapeshellarg($warmCfg) . ' 2>&1');
+exec('curl.exe --parallel --parallel-immediate --parallel-max 16 -K ' . escapeshellarg($warmCfg) . ' 2>&1');
 @unlink($warmCfg);
 
 // 2. Abrir dos cajas independientes (Cajero A = ADMIN, Cajero B = CAJERO) y crear 1 pedido de 30240.00
@@ -157,7 +150,7 @@ foreach ($specs as $idx => $s) {
         $cfgLines[] = 'data = "' . $escaped . '"';
     }
     $cfgLines[] = 'write-out = "' . $s['tag'] . ' %{http_code} %{time_total}\n"';
-    $cfgLines[] = 'output = ' . $nullDev;
+    $cfgLines[] = 'output = NUL';
     $cfgLines[] = 'silent';
     if ($idx < count($specs) - 1) {
         $cfgLines[] = 'next';
@@ -167,7 +160,7 @@ file_put_contents($cfgFile, implode("\n", $cfgLines));
 
 $out = [];
 $rc = 0;
-exec($curlBin . ' --parallel --parallel-immediate --parallel-max 16 -K ' . escapeshellarg($cfgFile) . ' 2>&1', $out, $rc);
+exec('curl.exe --parallel --parallel-immediate --parallel-max 16 -K ' . escapeshellarg($cfgFile) . ' 2>&1', $out, $rc);
 @unlink($cfgFile);
 assertCond($rc === 0 && count($out) === 16, "curl --parallel fallo rc={$rc}, salidas=" . count($out));
 

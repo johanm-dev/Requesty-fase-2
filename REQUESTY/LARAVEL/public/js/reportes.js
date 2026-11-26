@@ -401,11 +401,33 @@
         ["vista-reportes", "vista-menu", "vista-inventario", "vista-pqrs", "vista-cuentas", "vista-asistencia"].forEach((id) => {
             document.getElementById(id)?.classList.toggle("oculto", id !== vistaId);
         });
-        if (vistaId === "vista-reportes" && chart) chart.resize();
-        if (vistaId === "vista-menu") cargarMenuAdmin();
-        if (vistaId === "vista-inventario") window.RequestyInventario?.renderizarInventario();
-        if (vistaId === "vista-pqrs") cargarPqrsAdmin();
-        if (vistaId === "vista-asistencia") cargarAsistenciaYActividad();
+        if (vistaId === "vista-reportes") {
+            history.replaceState(null, "", location.pathname + location.search);
+            if (chart) chart.resize();
+        } else if (vistaId === "vista-menu") {
+            history.replaceState(null, "", "#menu");
+            cargarMenuAdmin();
+        } else if (vistaId === "vista-inventario") {
+            history.replaceState(null, "", "#inventario");
+            window.RequestyInventario?.renderizarInventario();
+        } else if (vistaId === "vista-pqrs") {
+            history.replaceState(null, "", "#pqrs");
+            cargarPqrsAdmin();
+        } else if (vistaId === "vista-cuentas") {
+            history.replaceState(null, "", "#cuentas");
+        } else if (vistaId === "vista-asistencia") {
+            history.replaceState(null, "", "#asistencia");
+            cargarAsistenciaYActividad();
+        }
+    }
+
+    function comprobarHash() {
+        const hash = (location.hash || "").toLowerCase();
+        if (hash === "#cuentas") mostrarVista("vista-cuentas");
+        else if (hash === "#inventario") mostrarVista("vista-inventario");
+        else if (hash === "#menu") mostrarVista("vista-menu");
+        else if (hash === "#pqrs") mostrarVista("vista-pqrs");
+        else if (hash === "#asistencia") mostrarVista("vista-asistencia");
     }
 
     document.getElementById("btn-generar-reporte")?.addEventListener("click", () => cargarReporte(true));
@@ -419,13 +441,15 @@
     document.getElementById("btn-volver-reportes-pqrs")?.addEventListener("click", () => mostrarVista("vista-reportes"));
     document.getElementById("btn-ver-cuentas")?.addEventListener("click", () => mostrarVista("vista-cuentas"));
     document.getElementById("volver-reportes-cuentas")?.addEventListener("click", () => mostrarVista("vista-reportes"));
+    document.getElementById("btn-volver-cuentas-top")?.addEventListener("click", () => mostrarVista("vista-reportes"));
     document.getElementById("btn-ver-asistencia")?.addEventListener("click", () => mostrarVista("vista-asistencia"));
     document.getElementById("btn-volver-asistencia")?.addEventListener("click", () => mostrarVista("vista-reportes"));
+    window.addEventListener("hashchange", comprobarHash);
 
     initializeDates();
     const iniciar = async () => {
         await cargarReporte(false);
-        if (location.hash === "#cuentas") mostrarVista("vista-cuentas");
+        comprobarHash();
     };
     if (window.RequestyAPI.leerSesion()) {
         iniciar();

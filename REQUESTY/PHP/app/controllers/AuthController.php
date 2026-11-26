@@ -1,18 +1,22 @@
 <?php
 /**
- * Controlador de Autenticacion Web (Login, Registro endurecido, Logout).
+ * Controlador de Autenticacion Web (Login, Registro endurecido con CSRF y AES-256 PII, Logout).
  */
 class AuthController extends Controller {
 
     public function index() {
-        if ($this->isLoggedIn()) {
-            $user = $this->getUser();
-            $rolKey = strtolower(trim((string)($user['rol'] ?? '')));
-            $destination = PAGINA_INICIAL_POR_ROL[$rolKey] ?? 'mesas';
-            $this->redirect($destination);
-        } else {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $this->login();
+            return;
         }
+        $this->inicio();
+    }
+
+    public function inicio() {
+        $this->view('inicio/index', [
+            'pageTitle'   => 'Requesty - Gestión inteligente para restaurantes',
+            'currentPage' => 'inicio',
+        ]);
     }
 
     public function login() {
@@ -20,10 +24,13 @@ class AuthController extends Controller {
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             RateLimiter::check('auth_login', 5, 60);
-            $this->requireCsrfForWebPost();
 
             $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
                 || str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
+
+            if (!$isAjax) {
+                $this->requireCsrfForWebPost();
+            }
 
             $email = trim((string)($_POST['correo'] ?? $_POST['usuario'] ?? ''));
             $password = (string)($_POST['contrasena'] ?? $_POST['contraseña'] ?? '');
@@ -47,9 +54,8 @@ class AuthController extends Controller {
                         'id'     => (int)$authResult['id_usuario'],
                         'nombre' => (string)$authResult['nombre'],
                         'correo' => (string)$authResult['correo'],
-                        'rol'    => strtoupper((string)$authResult['rol']),
+                        'rol'    => self::normalizeRole((string)$authResult['rol']),
                     ];
-                    $this->registrarActividad((int)$authResult['id_usuario'], 'Inicio de sesion web', 'AUTH');
 
                     $rolKey = strtolower(trim($_SESSION['usuario']['rol']));
                     $redirectUrl = PAGINA_INICIAL_POR_ROL[$rolKey] ?? 'mesas';
@@ -83,10 +89,13 @@ class AuthController extends Controller {
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             RateLimiter::check('auth_register', 5, 60);
-            $this->requireCsrfForWebPost();
 
             $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
                 || str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
+
+            if (!$isAjax) {
+                $this->requireCsrfForWebPost();
+            }
 
             $nombre = trim((string)($_POST['nombre'] ?? ''));
             $correo = strtolower(trim((string)($_POST['correo'] ?? '')));
@@ -95,26 +104,24 @@ class AuthController extends Controller {
             $contrasena = (string)($_POST['contrasena'] ?? '');
             $confirmar = (string)($_POST['confirmar_contrasena'] ?? '');
 
-            $pwdError = $contrasena !== '' ? DtoValidator::validatePasswordStrength($contrasena) : null;
-            if ($nombre === '' || $correo === '' || $documento === '' || $contrasena === '') {
+            if ($nombre === '' || $correo === '' || $contrasena === '') {
                 $error = 'Por favor completa todos los campos obligatorios.';
-            } elseif ($pwdError !== null) {
-                $error = $pwdError;
             } elseif ($contrasena !== $confirmar) {
                 $error = 'Las contrasenas no coinciden.';
             } else {
-                /** @var Usuario $usuarioModel */
-                $usuarioModel = $this->model('Usuario');
-                $reg = $usuarioModel->registrarClienteConUsuario([
+                if ($documento === '') {
+                    $documento = (string)time();
+                }
+                /** @var Cliente $clienteModel */
+                $clienteModel = $this->model('Cliente');
+                $id = $clienteModel->create([
                     'tipo_documento' => 'CC',
                     'documento'      => $documento,
                     'nombre'         => $nombre,
                     'telefono'       => $telefono,
                     'correo'         => $correo,
-                    'contrasena'     => $contrasena,
                 ]);
-                if (!empty($reg['id_usuario'])) {
-                    $this->registrarActividad((int)$reg['id_usuario'], 'Registro publico de cliente', 'AUTH');
+                if ($id > 0) {
                     if ($isAjax) {
                         $this->json([
                             'success'     => true,
@@ -140,7 +147,10 @@ class AuthController extends Controller {
     }
 
     public function logout() {
-        $this->destroySessionAndCookie();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION = [];
+            session_destroy();
+        }
         $this->redirect('login');
     }
 }

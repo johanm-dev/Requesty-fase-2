@@ -87,11 +87,11 @@ require_once APPROOT . '/views/layouts/header.php';
         <div class="form-group">
           <label for="statusSelect">Estado</label>
           <select id="statusSelect" required>
-            <option value="PENDIENTE">En cola</option>
-            <option value="EN_PREPARACION">En preparación</option>
-            <option value="LISTO">Listo para servir</option>
-            <option value="ENTREGADO">Entregado</option>
-            <option value="CANCELADO">Cancelado</option>
+            <option value="En cola">En cola</option>
+            <option value="En preparación">En preparación</option>
+            <option value="Listo para servir">Listo para servir</option>
+            <option value="Entregado">Entregado</option>
+            <option value="Cancelado">Cancelado</option>
           </select>
         </div>
       </div>
@@ -150,6 +150,7 @@ require_once APPROOT . '/views/layouts/header.php';
 </div>
 
 <script src="<?= asset('js/auth.js') ?>"></script>
+<script>protegerPagina("pedidos");</script>
 <script src="<?= asset('js/inventario.js') ?>"></script>
 <script src="<?= asset('js/pedidos.js') ?>"></script>
 </body>

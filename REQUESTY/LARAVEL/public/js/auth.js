@@ -1,14 +1,15 @@
 (function () {
     const permisosPorRol = {
-        administrador: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"],
-        admin: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"],
-        cajero: ["menu", "mesas", "pedidos", "caja"],
-        mesero: ["menu", "mesas", "pedidos"],
-        cocina: ["menu", "pedidos", "cocina"],
-        cliente: ["menu", "pqrs", "caja"]
+        administrador: ["inicio", "menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"],
+        admin: ["inicio", "menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"],
+        cajero: ["inicio", "menu", "mesas", "pedidos", "caja"],
+        mesero: ["inicio", "menu", "mesas", "pedidos"],
+        cocina: ["inicio", "menu", "pedidos", "cocina"],
+        cliente: ["inicio", "menu", "pqrs", "caja"]
     };
 
     const paginaPorEnlace = {
+        "/inicio": "inicio",
         "/menu": "menu",
         "/mesas": "mesas",
         "/pedidos": "pedidos",
@@ -161,9 +162,9 @@
             avatar.textContent = usuario.nombre.split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
         }
 
-        document.querySelectorAll(".sidebar-menu .sidebar-item").forEach((enlace) => {
+        document.querySelectorAll(".sidebar-menu .sidebar-item, .top-nav-menu .nav-btn").forEach((enlace) => {
             const href = enlace.getAttribute("href") || "";
-            if (href.includes("login") || href.includes("logout") || href === "#") return;
+            if (href.includes("login") || href.includes("logout") || href.includes("inicio") || href === "#") return;
             let destino = paginaPorEnlace[href] || null;
             if (!destino) {
                 try {

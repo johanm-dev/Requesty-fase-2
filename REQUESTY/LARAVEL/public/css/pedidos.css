@@ -1,26 +1,26 @@
 :root {
-  --bg-main: #F7EEED;
-  --bg-card: #ffffff;
-  --bg-input: #F8EDEF;
-  --text-main: #3E2834; /* PANTONE 6322 C */
-  --text-muted: #5E504F; /* PANTONE 6441 C */
-  --primary: #9D2227; /* PANTONE 6294 C */
-  --primary-hover: #7D1A1E;
-  --accent: #C15C24; /* PANTONE 6259 C */
-  --border-color: #E5C7C9; /* PANTONE 6268 C */
+  --bg-main: #F6F1F0;
+  --bg-card: #FFFCFC;
+  --bg-input: #F6F1F0;
+  --text-main: #321719;
+  --text-muted: #76696A;
+  --primary: #963C40;
+  --primary-hover: #54272B;
+  --accent: #54272B;
+  --border-color: #E3D8D7;
   --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 
-  /* Estados con armonía Pantone */
-  --badge-preparando-bg: #F4E4E6;
-  --badge-preparando-txt: #3E2834;
-  --badge-nuevo-bg: #FCEFE9;
-  --badge-nuevo-txt: #C15C24;
+  /* Estados con tonos de la paleta y neutros */
+  --badge-preparando-bg: #F6F1F0;
+  --badge-preparando-txt: #321719;
+  --badge-nuevo-bg: #F6F1F0;
+  --badge-nuevo-txt: #54272B;
   --badge-listo-bg: #E8F5E9;
   --badge-listo-txt: #2E7D32;
-  --badge-entregado-bg: #E5C7C9;
-  --badge-entregado-txt: #5E504F;
-  --badge-cancelado-bg: #FDE8E9;
-  --badge-cancelado-txt: #9D2227;
+  --badge-entregado-bg: #E3D8D7;
+  --badge-entregado-txt: #76696A;
+  --badge-cancelado-bg: #F6F1F0;
+  --badge-cancelado-txt: #54272B;
 }
 
 * { font-family: var(--font-family); }
@@ -88,7 +88,7 @@
 }
 
 .icon-btn:hover {
-  background: #e8ded4;
+  background: var(--border-color);
 }
 
 .server-status {
@@ -136,23 +136,25 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #a09388;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
 .search-box input {
   width: 100%;
   background-color: var(--bg-input);
-  border: none;
+  border: 1.5px solid rgba(201, 155, 69, 0.32);
   padding: 8px 12px 8px 34px;
   border-radius: 8px;
   font-size: 0.85rem;
   outline: none;
   color: var(--text-main);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search-box input:focus {
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  border-color: var(--palette-red, #8A3539);
+  box-shadow: 0 0 0 3px rgba(201, 155, 69, 0.28);
 }
 
 .filter-tabs {
@@ -180,7 +182,7 @@
 
 .btn-primary {
   background-color: var(--primary);
-  color: white;
+  color: var(--text-main);
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
@@ -196,11 +198,12 @@
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
+  color: #FFFFFF;
 }
 
 .btn-secondary {
-  background-color: #E5C7C9;
-  color: #3E2834;
+  background-color: var(--border-color);
+  color: var(--text-main);
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
@@ -211,7 +214,8 @@
 }
 
 .btn-secondary:hover {
-  background-color: #D3B9BB;
+  background-color: var(--primary-hover);
+  color: #FFFFFF;
 }
 
 /* Tabla */
@@ -233,15 +237,15 @@
   padding: 14px 10px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #8c827a;
-  border-bottom: 1px solid #f0e6dd;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
   background-color: var(--color-card-bg);
 }
 
 .orders-table td {
   padding: 14px 10px;
   font-size: 0.85rem;
-  border-bottom: 1px solid #f5ece3;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .id-col, .price-col {
@@ -252,12 +256,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #f8f1eb;
+  background: var(--bg-main);
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #4a4039;
+  color: var(--text-main);
 }
 
 .badge-status {
@@ -300,7 +304,7 @@
 .action-btn {
   background: none;
   border: none;
-  color: #a09388;
+  color: var(--text-muted);
   cursor: pointer;
   margin-left: 8px;
   font-size: 0.95rem;
@@ -609,7 +613,7 @@
   padding: 16px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: #fcfaf8;
+  background: var(--bg-main);
 }
 
 .order-builder > h3 {
@@ -736,7 +740,7 @@
   margin-top: 12px;
   padding: 12px;
   border-left: 3px solid var(--primary);
-  background: #fbf5f0;
+  background: var(--bg-main);
 }
 
 .order-item-options fieldset {
@@ -783,7 +787,7 @@
   border: 1px solid var(--primary);
   border-radius: 6px;
   background: var(--primary);
-  color: white;
+  color: var(--text-main);
   font: inherit;
   font-size: .75rem;
   font-weight: 700;

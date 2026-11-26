@@ -1,293 +1,1188 @@
+/* ========================================================
+   REQUESTY KDS - SISTEMA DE COCINA EN CUERDA CON LIBRETAS
+   Inspirado en KDS profesional con notas colgadas en riel
+   ======================================================== */
+
 :root {
-    --fondo-durazno: #F7EEED;
-    --tarjeta-blanca: #ffffff;
-    --borde-negro: #3E2834; /* PANTONE 6322 C */
-    --boton-oscuro: #3E2834;
-    --boton-oscuro-hover: #5E504F;
-    --texto-gris: #5E504F;
-    --color-accent: #C15C24; /* PANTONE 6259 C */
-    --color-primary: #9D2227; /* PANTONE 6294 C */
-    --color-highlight: #E5C7C9; /* PANTONE 6268 C */
+    --papel-libreta: #FFFDF9;
+    --papel-borde: #E2D7CC;
+    --papel-linea: #F1E9DF;
+    --texto-comanda: #2B1822;
+    --texto-secundario: #7A656F;
+    --cuerda-color: #555555;
+    --clip-metalico: #C99B45;
 }
 
-.logo {
-    font-size: 32px;
-    font-weight: bold;
-    letter-spacing: 1px;
-}
-
-.titulos {
+.cocina-content {
     display: flex;
     flex-direction: column;
+    min-height: calc(100vh - 62px);
+    padding-bottom: 20px;
 }
 
-.titulo-modulo {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.subtitulo {
-    font-size: 13px;
-    color: var(--texto-gris);
-}
-
-
-.resumen {
+.cocina-page-header {
     display: flex;
-    gap: 15px;
-    padding: 20px;
+    align-items: center;
+    justify-content: space-between;
     flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
-.tarjeta-resumen {
-    flex: 1;
-    min-width: 150px;
-    background-color: var(--tarjeta-blanca);
+.btn-cocina-secundario {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--palette-gold, #C99B45);
+    background: transparent;
+    color: var(--palette-gold, #C99B45);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cocina-secundario:hover {
+    background: rgba(201, 155, 69, 0.15);
+    color: var(--palette-gold-light, #E4B353);
+    border-color: var(--palette-gold-light, #E4B353);
+    transform: translateY(-1px);
+}
+
+/* ========================================================
+   3 CAJAS DE RESUMEN KDS - COLORES DESTACADOS Y DIRECTOS
+   ======================================================== */
+.cocina-resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.tarjeta-resumen.kds-caja-iconica {
+    background: var(--palette-card, #FFFFFF);
+    border-radius: 14px;
+    padding: 16px 20px;
+    box-shadow: 0 6px 20px rgba(31, 17, 22, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tarjeta-resumen.kds-caja-iconica:hover {
+    transform: translateY(-3px);
+}
+
+.tarjeta-resumen.kds-caja-iconica.pendiente {
+    border: 2px solid var(--palette-gold, #C99B45);
+    box-shadow: 0 8px 24px rgba(201, 155, 69, 0.22);
+}
+
+.tarjeta-resumen.kds-caja-iconica.pendiente:hover {
+    border-color: #E4B353;
+    box-shadow: 0 12px 28px rgba(201, 155, 69, 0.32);
+}
+
+.tarjeta-resumen.kds-caja-iconica.preparacion {
+    border: 2px solid #8A3539;
+    box-shadow: 0 8px 24px rgba(138, 53, 57, 0.25);
+}
+
+.tarjeta-resumen.kds-caja-iconica.preparacion:hover {
+    border-color: #A8484D;
+    box-shadow: 0 12px 28px rgba(138, 53, 57, 0.35);
+}
+
+.tarjeta-resumen.kds-caja-iconica.listo {
+    border: 2px solid #2E7D32;
+    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.22);
+}
+
+.tarjeta-resumen.kds-caja-iconica.listo:hover {
+    border-color: #388E3C;
+    box-shadow: 0 12px 28px rgba(46, 125, 50, 0.32);
+}
+
+.caja-icono-wrap {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
     border-radius: 12px;
-    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #FFFFFF;
+    position: relative;
+}
+
+.caja-icono-wrap.icono-pendiente {
+    background: linear-gradient(135deg, #F5CE7A 0%, #D4A346 50%, #B08536 100%);
+    box-shadow: 0 6px 18px rgba(201, 155, 69, 0.5);
+}
+
+.caja-icono-wrap.icono-preparacion {
+    background: linear-gradient(135deg, #DC2626 0%, #963C40 50%, #6E262B 100%);
+    box-shadow: 0 6px 18px rgba(185, 28, 28, 0.5);
+}
+
+.caja-icono-wrap.icono-listo {
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 50%, #15803D 100%);
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.45);
+}
+
+.caja-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.caja-info .numero-resumen {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--palette-dark, #1F1116);
+    letter-spacing: -0.5px;
+}
+
+.caja-info .texto-resumen {
+    font-size: 13px;
+    font-weight: 800;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.tarjeta-resumen.kds-caja-iconica.pendiente .texto-resumen {
+    color: var(--palette-gold-hover, #B08536);
+}
+
+.tarjeta-resumen.kds-caja-iconica.preparacion .texto-resumen {
+    color: #8A3539;
+}
+
+.tarjeta-resumen.kds-caja-iconica.listo .texto-resumen {
+    color: #2E7D32;
+}
+
+/* ========================================================
+   FILTRO DE MESAS (UBICADO DEBAJO DE LAS 3 CAJAS)
+   ======================================================== */
+.cocina-filtro-mesas-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+    padding: 12px 16px;
+    background: var(--palette-card, #FFFFFF);
+    border: 1px solid rgba(201, 155, 69, 0.28);
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    overflow-x: auto;
+}
+
+.filtro-mesas-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--palette-dark, #1F1116);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    padding-right: 8px;
+    border-right: 1.5px solid rgba(201, 155, 69, 0.25);
+}
+
+.filtro-mesas-label i {
+    color: var(--palette-gold, #C99B45);
+}
+
+.filtro-mesas-lista {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.btn-filtro-mesa {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(201, 155, 69, 0.32);
+    background: transparent;
+    color: var(--palette-text, #1F1116);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-filtro-mesa:hover {
+    background: rgba(201, 155, 69, 0.14);
+    border-color: var(--palette-gold, #C99B45);
+    color: var(--palette-dark, #1F1116);
+    transform: translateY(-1px);
+}
+
+.btn-filtro-mesa.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%);
+    border-color: var(--palette-gold, #C99B45);
+    color: #FFFFFF !important;
+    box-shadow: 0 3px 10px rgba(138, 53, 57, 0.38);
+}
+
+.btn-filtro-mesa .badge-conteo-mesa {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.08);
+    color: inherit;
+}
+
+.btn-filtro-mesa.active .badge-conteo-mesa {
+    background: rgba(255, 255, 255, 0.25);
+    color: #FFFFFF;
+}
+
+/* ========================================================
+   CUERDA Y RIEL DE COMANDAS COLGANTES
+   ======================================================== */
+.kds-riel-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+    padding-top: 18px;
+}
+
+.cuerda-cocina {
+    position: relative;
+    width: 100%;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    margin-bottom: -10px;
+    z-index: 10;
+}
+
+.cuerda-cable {
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(180deg, #999 0%, #444 35%, #222 70%, #777 100%);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35);
+    border-radius: 2px;
+}
+
+.cuerda-soporte {
+    position: absolute;
+    width: 16px;
+    height: 18px;
+    background: linear-gradient(135deg, #C99B45 0%, #8C6524 100%);
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    z-index: 12;
+}
+
+.cuerda-soporte-izq { left: 0; }
+.cuerda-soporte-der { right: 0; }
+
+/* Contenedor horizontal de libretas colgadas */
+.contenedor-libretas {
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 24px 8px 30px 8px;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--palette-gold, #C99B45) transparent;
+}
+
+.contenedor-libretas::-webkit-scrollbar {
+    height: 6px;
+}
+
+.contenedor-libretas::-webkit-scrollbar-thumb {
+    background: var(--palette-gold, #C99B45);
+    border-radius: 999px;
+}
+
+/* ========================================================
+   LIBRETA DE COMANDA (HOJA DE PAPEL FÍSICA KDS)
+   ======================================================== */
+.libreta-comanda {
+    position: relative;
+    flex: 0 0 315px;
+    width: 315px;
+    background: #FAF7EE;
+    border-radius: 2px 2px 8px 8px;
+    display: flex;
+    flex-direction: column;
+    scroll-snap-align: start;
+    transition: transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s ease;
+    transform-origin: top center;
+    border: 1px solid rgba(210, 198, 182, 0.7);
+    border-top: none;
+    user-select: none;
+    overflow: visible;
+    box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 6px 16px rgba(31, 17, 22, 0.08),
+        0 14px 28px rgba(0, 0, 0, 0.1);
+}
+
+/* Efecto 3D de esquinas de papel curvadas (Curled paper curl shadow) */
+.libreta-comanda::before,
+.libreta-comanda::after {
+    content: "";
+    position: absolute;
+    bottom: 12px;
+    width: 44%;
+    height: 22px;
+    max-width: 130px;
+    box-shadow: 0 16px 22px rgba(0, 0, 0, 0.26);
+    z-index: -1;
+    pointer-events: none;
+    transition: transform 0.25s ease;
+}
+
+.libreta-comanda::before {
+    left: 8px;
+    transform: rotate(-3.5deg);
+}
+
+.libreta-comanda::after {
+    right: 8px;
+    transform: rotate(3.5deg);
+}
+
+/* Inclinación natural y gravitacional de hojas de papel colgadas */
+.libreta-comanda:nth-child(3n+1) {
+    transform: rotate(-0.8deg);
+}
+
+.libreta-comanda:nth-child(3n+2) {
+    transform: rotate(0.9deg);
+}
+
+.libreta-comanda:nth-child(3n+3) {
+    transform: rotate(-0.4deg);
+}
+
+.libreta-comanda:hover {
+    transform: translateY(3px) rotate(0deg) scale(1.018) !important;
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.06),
+        0 10px 24px rgba(31, 17, 22, 0.14),
+        0 24px 44px rgba(0, 0, 0, 0.18) !important;
+    z-index: 25;
+}
+
+/* Pinza metálica superior de latón / bronce que sujeta la hoja a la cuerda */
+.pinza-comanda {
+    position: absolute;
+    top: -19px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 30px;
+    background: linear-gradient(135deg, #F5CE7A 0%, #D4A346 35%, #8C6524 70%, #E5BD6A 100%);
+    border-radius: 5px 5px 2px 2px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.7);
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pinza-comanda::after {
+    content: "";
+    width: 14px;
+    height: 4px;
+    background: #3B240B;
+    border-radius: 1px;
+}
+
+/* ========================================================
+   TROQUELADO Y PERFORACIÓN DE TALONARIO / HOJA ARRANCADA
+   ======================================================== */
+.papel-troquelado-superior {
+    position: relative;
+    background: #EDE6D8;
+    padding: 7px 12px 5px 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 2px solid var(--borde-negro);
-    border-left: 6px solid gray;
+    gap: 4px;
+    border-bottom: 1.5px dashed rgba(201, 155, 69, 0.45);
 }
 
-.tarjeta-resumen.pendiente {
-    border-left-color: #C15C24; 
+.agujeros-perforados {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 6px;
 }
 
-.tarjeta-resumen.preparacion {
-    border-left-color: #9D2227; 
+.agujeros-perforados span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #D8CEBE;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-.tarjeta-resumen.listo {
-    border-left-color: #2E7D32;
+.linea-desprendimiento {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dashed rgba(138, 53, 57, 0.25);
 }
 
-.numero-resumen {
-    font-size: 32px;
-    font-weight: bold;
+/* ========================================================
+   ENCABEZADO IMPRESO EN PAPEL (MESA, ID, HORA)
+   ======================================================== */
+.libreta-encabezado {
+    padding: 12px 18px 10px;
+    background: transparent;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid rgba(201, 155, 69, 0.22);
 }
 
-.texto-resumen {
+/* Sello lateral de color indicando estado sobre la hoja */
+.libreta-comanda.alerta-normal .libreta-encabezado {
+    border-left: 5px solid #C99B45;
+    background: linear-gradient(90deg, rgba(201, 155, 69, 0.12) 0%, transparent 65%);
+}
+
+.libreta-comanda.alerta-advertencia .libreta-encabezado {
+    border-left: 5px solid #D97706;
+    background: linear-gradient(90deg, rgba(217, 119, 6, 0.12) 0%, transparent 65%);
+}
+
+.libreta-comanda.alerta-critica .libreta-encabezado {
+    border-left: 5px solid #B91C1C;
+    background: linear-gradient(90deg, rgba(185, 28, 28, 0.14) 0%, transparent 65%);
+}
+
+.libreta-comanda.alerta-listo .libreta-encabezado {
+    border-left: 5px solid #16A34A;
+    background: linear-gradient(90deg, rgba(22, 163, 74, 0.12) 0%, transparent 65%);
+}
+
+.comanda-meta-izq {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.comanda-mesa {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    line-height: 1.1;
+}
+
+.comanda-mesa-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #8A3539;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.comanda-mesa-numero {
+    font-size: 28px;
+    font-weight: 900;
+    color: #160B0F;
+    letter-spacing: -0.5px;
+}
+
+.comanda-detalles-fila {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4A3A40;
+}
+
+.comanda-id {
+    background: rgba(138, 53, 57, 0.08);
+    color: #8A3539;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(138, 53, 57, 0.2);
+}
+
+.comanda-hora {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #6B5B60;
+}
+
+.comanda-acciones-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Botón Desechar / Tirar Comanda */
+.btn-desechar-kds {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(138, 53, 57, 0.4);
+    background: #FFFFFF;
+    color: #8A3539;
     font-size: 14px;
-    color: var(--texto-gris);
-    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-
-.contenedor-pedidos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 0 20px 30px 20px;
+.btn-desechar-kds:hover {
+    background: #8A3539;
+    border-color: #8A3539;
+    color: #FFFFFF;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(138, 53, 57, 0.35);
 }
 
+/* Botón Check / Sello KDS */
+.btn-completar-kds {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    border-radius: 50%;
+    border: 2px solid #8A3539;
+    background: #FFFFFF;
+    color: #8A3539;
+    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 8px rgba(138, 53, 57, 0.2);
+}
 
-.tarjeta-pedido {
-    background-color: var(--tarjeta-blanca);
-    border-radius: 12px;
-    padding: 15px;
-    border: 2px solid var(--borde-negro);
-    border-top: 6px solid gray;
+.btn-completar-kds:hover {
+    background: #8A3539;
+    color: #FFFFFF;
+    transform: scale(1.08);
+    box-shadow: 0 5px 14px rgba(138, 53, 57, 0.4);
+}
+
+.libreta-comanda.alerta-normal .btn-completar-kds {
+    border-color: #C99B45;
+    color: #C99B45;
+}
+
+.libreta-comanda.alerta-normal .btn-completar-kds:hover {
+    background: #C99B45;
+    color: #FFFFFF;
+}
+
+.libreta-comanda.alerta-listo .btn-completar-kds {
+    border-color: #16A34A;
+    color: #16A34A;
+}
+
+.libreta-comanda.alerta-listo .btn-completar-kds:hover {
+    background: #16A34A;
+    color: #FFFFFF;
+}
+
+.btn-completar-kds .timer-transcurrido {
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+.btn-completar-kds .timer-transcurrido {
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+/* Línea de perforación de libreta / ticket desprendible */
+.libreta-perforacion {
+    width: 100%;
+    height: 10px;
+    background: radial-gradient(circle, var(--papel-borde) 1.5px, transparent 1.8px);
+    background-size: 8px 10px;
+    background-repeat: repeat-x;
+    background-color: var(--papel-libreta);
+    border-bottom: 1px dashed rgba(201, 155, 69, 0.25);
+}
+
+/* ========================================================
+   CUERPO DE LA NOTA: PRODUCTOS Y ESPECIFICACIONES
+   ======================================================== */
+.libreta-cuerpo {
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    min-height: 220px;
+    background-color: transparent;
+    /* Rayado horizontal sutil tipo libreta de mesero */
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 29px,
+        rgba(201, 155, 69, 0.1) 30px
+    );
+    /* Margen rojo clásico vertical en el lado izquierdo */
+    border-left: 2px solid rgba(138, 53, 57, 0.22);
+    margin-left: 10px;
+}
+
+.libreta-seccion-titulo {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--palette-gold-hover, #C99B45);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--papel-linea);
+}
+
+.lista-productos-kds {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-
-.tarjeta-pedido.estado-pendiente {
-    border-top-color: #C15C24;
+.item-producto-kds {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--papel-linea);
 }
 
-.tarjeta-pedido.estado-preparacion {
-    border-top-color: #9D2227;
+.item-producto-kds:last-child {
+    border-bottom: none;
 }
 
-.tarjeta-pedido.estado-listo {
-    border-top-color: #2E7D32;
-}
-
-.tarjeta-pedido.alerta-normal { border-color: #d7e8dc; border-top-color: #4caf50; }
-.tarjeta-pedido.alerta-advertencia { border-color: #f2cf76; border-top-color: #e6a700; background: #fff9e8; }
-.tarjeta-pedido.alerta-critica { border-color: #efaaa5; border-top-color: #c62828; background: #fff0ef; }
-.tarjeta-pedido.alerta-listo { border-color: #b7dfc1; border-top-color: #4caf50; }
-
-.tarjeta-pedido.alerta-advertencia .pedido-espera { color: #8a5a00; }
-.tarjeta-pedido.alerta-critica .pedido-espera { color: #b91c1c; }
-.inventario-descontado { color: #166534; font-weight: 700; }
-
-.leyenda-alertas {
+.item-principal {
     display: flex;
-    flex-wrap: wrap;
+    align-items: baseline;
     gap: 8px;
-    margin: 0 0 16px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--texto-comanda);
 }
 
-.leyenda-alertas span {
-    padding: 5px 9px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.leyenda-normal { background: #e8f5e9; color: #25612b; }
-.leyenda-advertencia { background: #fff1c2; color: #805300; }
-.leyenda-critica { background: #fee2e2; color: #991b1b; }
-
-.mensaje-cocina:not(:empty) {
-    margin: 0 0 14px;
-    padding: 10px 12px;
-    border: 1px solid #efaaa5;
-    border-radius: 8px;
-    background: #fff0ef;
-    color: #991b1b;
-    font-weight: 700;
-}
-
-.cocina-vacia {
-    grid-column: 1 / -1;
-    padding: 20px;
-    border: 1px dashed #cdbeb4;
-    border-radius: 10px;
-    color: var(--texto-gris);
+.item-cantidad {
+    display: inline-block;
+    min-width: 22px;
+    padding: 1px 5px;
+    background: rgba(201, 155, 69, 0.16);
+    color: var(--palette-gold-hover, #B58428);
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 800;
     text-align: center;
 }
 
-.pedido-encabezado {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+.item-nombre {
+    flex: 1;
 }
 
-.pedido-numero {
-    font-size: 18px;
-    font-weight: bold;
-    color: #222;
-}
-
-.pedido-info {
-    font-size: 14px;
-    color: var(--texto-gris);
-}
-
-.pedido-espera {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--borde-negro);
-}
-
-.pedido-seccion-titulo {
-    font-size: 12px;
-    font-weight: bold;
-    color: #888;
-    text-transform: uppercase;
-    margin-top: 5px;
-}
-
-.lista-productos {
+/* Especificaciones y notas de preparación */
+.lista-especificaciones {
     list-style: none;
-    font-size: 14px;
+    margin: 5px 0 0 30px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 }
 
-.lista-productos li {
-    padding: 2px 0;
-}
-
-.personalizaciones {
-    margin: 3px 0 5px 18px;
-    color: #66564d;
+.especificacion-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 12px;
-}
-
-.pedido-observaciones {
-    font-size: 14px;
-    font-style: italic;
-    color: #555;
-    background-color: var(--fondo-durazno);
-    padding: 6px;
-    border-radius: 6px;
-    border: 1px solid var(--borde-negro);
-}
-
-
-.etiqueta-estado {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    color: white;
+    font-weight: 600;
+    color: #9C3D42;
+    background: rgba(156, 61, 66, 0.08);
+    padding: 2px 7px;
+    border-radius: 4px;
     width: fit-content;
 }
 
-.etiqueta-estado.estado-pendiente {
-    background-color: #ffc107;
-    color: #5a4500;
+.especificacion-tag i {
+    font-size: 10px;
 }
 
-.etiqueta-estado.estado-preparacion {
-    background-color: #2196f3;
+/* ========================================================
+   ESTADO DEL PEDIDO Y BOTÓN DE ACCIÓN
+   ======================================================== */
+.libreta-pie {
+    padding: 12px 18px 22px;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #FAF7EE;
+    border-top: 1px dashed rgba(201, 155, 69, 0.35);
+    border-radius: 0 0 6px 6px;
+    position: relative;
 }
 
-.etiqueta-estado.estado-listo {
-    background-color: #4caf50;
+/* Borde inferior rasgado / perforado de talonario con dientes triangulares */
+.libreta-pie::after {
+    content: "";
+    position: absolute;
+    bottom: -7px;
+    left: 0;
+    right: 0;
+    height: 7px;
+    background: 
+        linear-gradient(135deg, #FAF7EE 4px, transparent 0),
+        linear-gradient(-135deg, #FAF7EE 4px, transparent 0);
+    background-size: 8px 7px;
+    background-repeat: repeat-x;
+    z-index: 5;
 }
 
+.mensaje-estado-comanda {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
 
-.boton-accion {
-    padding: 10px;
-    border: 2px solid var(--borde-negro);
+.mensaje-estado-comanda.estado-cola {
+    background: #FFF4DE;
+    color: #B58428;
+    border: 1px solid #FFE4A8;
+}
+
+.mensaje-estado-comanda.estado-preparacion {
+    background: #FCE8E9;
+    color: #9C3D42;
+    border: 1px solid #F7C6C8;
+}
+
+.mensaje-estado-comanda.estado-listo {
+    background: #DCFCE7;
+    color: #166534;
+    border: 1px solid #86EFAC;
+}
+
+.btn-accion-libreta {
+    width: 100%;
+    padding: 10px 14px;
     border-radius: 8px;
-    background-color: var(--boton-oscuro);
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
+    border: none;
+    font-size: 13px;
+    font-weight: 800;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
-.boton-accion:hover {
-    background-color: var(--boton-oscuro-hover);
+.btn-accion-libreta.btn-iniciar {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%);
+    color: #FFFFFF;
 }
 
-.mensaje-listo {
-    text-align: center;
-    font-size: 14px;
-    color: #2e7d32;
-    font-weight: bold;
+.btn-accion-libreta.btn-iniciar:hover {
+    background: linear-gradient(135deg, #A03D42 0%, #8A3539 100%);
+    transform: translateY(-1px);
 }
 
+.btn-accion-libreta.btn-completar {
+    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+    color: #FFFFFF;
+}
 
+.btn-accion-libreta.btn-completar:hover {
+    background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%);
+    transform: translateY(-1px);
+}
 
-@media (max-width: 768px) {
-    .contenedor-pedidos {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+.btn-accion-libreta.btn-retirar {
+    background: #444444;
+    color: #FFFFFF;
+}
+
+.btn-accion-libreta.btn-retirar:hover {
+    background: #222222;
+}
+
+/* ========================================================
+   ANIMACIÓN FLUIDA DE HOJA QUE SE ARRUGA (PAPER CRUMPLE & TOSS)
+   Efecto nítido de alta definición, sin desenfoques borrosos
+   ======================================================== */
+.libreta-comanda.animacion-arrugar {
+    animation: arrugarHojaPapelFluida 0.58s cubic-bezier(0.2, 0.9, 0.3, 1) forwards !important;
+    pointer-events: none !important;
+    z-index: 100 !important;
+    transform-origin: 50% 20% !important;
+    will-change: transform, opacity !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+}
+
+.libreta-comanda.animacion-arrugar::before,
+.libreta-comanda.animacion-arrugar::after {
+    display: none !important;
+}
+
+@keyframes arrugarHojaPapelFluida {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+        opacity: 1;
     }
-
-    .logo {
-        font-size: 24px;
+    16% {
+        /* Se desprende de la pinza y se pliega hacia adentro en los laterales */
+        transform: translate3d(0, 10px, 0) scale(0.88, 0.94) rotate(-4deg) skewX(-4deg);
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.25);
+        opacity: 1;
+    }
+    38% {
+        /* Pliegue diagonal rápido y crepitación tridimensional nítida */
+        transform: translate3d(4px, 28px, 0) scale(0.58, 0.52) rotate(16deg) skewX(8deg);
+        border-radius: 16px;
+        box-shadow: 0 14px 24px rgba(0, 0, 0, 0.35);
+        opacity: 0.95;
+    }
+    60% {
+        /* Bola de papel comprimida y compacta */
+        transform: translate3d(-3px, 60px, 0) scale(0.26, 0.24) rotate(-35deg);
+        border-radius: 50%;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        opacity: 0.9;
+    }
+    80% {
+        /* Lanzamiento fluido y acelerado hacia la papelera abajo */
+        transform: translate3d(14px, 260px, 0) scale(0.18) rotate(90deg);
+        opacity: 0.6;
+    }
+    100% {
+        /* Cae fuera de la pantalla en la papelera */
+        transform: translate3d(28px, 620px, 0) scale(0.06) rotate(180deg);
+        opacity: 0;
     }
 }
 
-@media (max-width: 480px) {
-    .encabezado-contenido {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-    }
-
-    .resumen {
-        flex-direction: column;
-    }
-
-    .contenedor-pedidos {
-        grid-template-columns: 1fr;
-        padding: 0 10px 20px 10px;
-    }
+/* ========================================================
+   BARRA INFERIOR DE ACCESOS RÁPIDOS
+   ======================================================== */
+.barra-inferior-comandas {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding: 8px 14px;
+    background: var(--palette-dark, #24141C);
+    border: 1px solid rgba(201, 155, 69, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
+.btn-nav-riel {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(201, 155, 69, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--palette-gold, #C99B45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.16s ease;
+}
 
-/* Ajustes para vivir dentro de .content del layout base */
-.content .resumen { padding: 0 0 20px; }
-.content .contenedor-pedidos { padding: 0 0 30px; }
+.btn-nav-riel:hover {
+    background: rgba(201, 155, 69, 0.2);
+    color: #FFFFFF;
+}
+
+.pildoras-comandas {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    flex: 1;
+    scrollbar-width: none;
+}
+
+.pildoras-comandas::-webkit-scrollbar {
+    display: none;
+}
+
+.pildora-comanda-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(201, 155, 69, 0.25);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.16s ease;
+}
+
+.pildora-comanda-btn:hover {
+    background: rgba(201, 155, 69, 0.25);
+    border-color: var(--palette-gold, #C99B45);
+    color: var(--palette-gold-light, #E4B353);
+}
+
+.pildora-comanda-btn.alerta-advertencia {
+    border-color: #C2632E;
+}
+
+.pildora-comanda-btn.alerta-critica {
+    border-color: #B91C1C;
+    background: rgba(185, 28, 28, 0.18);
+}
+
+/* ========================================================
+   MODO OSCURO PARA LA COCINA
+   ======================================================== */
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica {
+    background: var(--palette-card, #341C25);
+    border-color: rgba(201, 155, 69, 0.28);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.pendiente {
+    border: 2px solid var(--palette-gold, #E4B353) !important;
+    box-shadow: 0 8px 24px rgba(228, 179, 83, 0.25) !important;
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.preparacion {
+    border: 2px solid #A8484D !important;
+    box-shadow: 0 8px 24px rgba(168, 72, 77, 0.28) !important;
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.listo {
+    border: 2px solid #2E7D32 !important;
+    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.25) !important;
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.pendiente .texto-resumen {
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.preparacion .texto-resumen {
+    color: #F18488;
+}
+
+:root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica.listo .texto-resumen {
+    color: #85E8A8;
+}
+
+:root[data-theme="dark"] .caja-info .numero-resumen {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .caja-info .texto-resumen {
+    color: var(--palette-muted, #C5B4B7);
+}
+
+:root[data-theme="dark"] .cocina-filtro-mesas-wrapper {
+    background: var(--palette-card, #341C25);
+    border-color: rgba(201, 155, 69, 0.25);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme="dark"] .filtro-mesas-label {
+    color: #FFFFFF;
+    border-right-color: rgba(201, 155, 69, 0.25);
+}
+
+:root[data-theme="dark"] .btn-filtro-mesa {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(201, 155, 69, 0.28);
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .btn-filtro-mesa:hover {
+    background: rgba(201, 155, 69, 0.2);
+    border-color: var(--palette-gold, #E4B353);
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .btn-filtro-mesa.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%);
+    border-color: var(--palette-gold, #E4B353);
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .libreta-comanda {
+    --papel-libreta: #27141E;
+    --papel-borde: rgba(201, 155, 69, 0.35);
+    --papel-linea: rgba(201, 155, 69, 0.12);
+    --texto-comanda: #FFFFFF;
+    --texto-secundario: #C5B4B7;
+    background: linear-gradient(180deg, #2E1824 0%, #221019 100%);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+:root[data-theme="dark"] .libreta-comanda::before,
+:root[data-theme="dark"] .libreta-comanda::after {
+    box-shadow: 0 16px 22px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="dark"] .papel-troquelado-superior {
+    background: #1F1018;
+    border-bottom-color: rgba(201, 155, 69, 0.35);
+}
+
+:root[data-theme="dark"] .agujeros-perforados span {
+    background: #14080F;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="dark"] .linea-desprendimiento {
+    border-bottom-color: rgba(201, 155, 69, 0.25);
+}
+
+:root[data-theme="dark"] .btn-desechar-kds {
+    background: #2E1824;
+    border-color: rgba(201, 155, 69, 0.35);
+    color: #F18488;
+}
+
+:root[data-theme="dark"] .btn-desechar-kds:hover {
+    background: #8A3539;
+    border-color: #8A3539;
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .comanda-mesa-label {
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .comanda-mesa-numero {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .comanda-detalles-fila span {
+    color: #C5B4B7;
+}
+
+:root[data-theme="dark"] .libreta-cuerpo {
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 29px,
+        rgba(201, 155, 69, 0.1) 30px
+    );
+    border-left: 2px solid rgba(201, 155, 69, 0.35);
+}
+
+:root[data-theme="dark"] .item-principal {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .especificacion-tag {
+    color: #F5CE7A;
+    background: rgba(228, 179, 83, 0.12);
+}
+
+:root[data-theme="dark"] .libreta-perforacion {
+    background-color: var(--papel-libreta);
+    border-bottom-color: rgba(201, 155, 69, 0.25);
+}
+
+:root[data-theme="dark"] .mensaje-estado-comanda.estado-cola {
+    background: rgba(201, 155, 69, 0.18);
+    color: #F5CE7A;
+    border-color: rgba(201, 155, 69, 0.35);
+}
+
+:root[data-theme="dark"] .mensaje-estado-comanda.estado-preparacion {
+    background: rgba(138, 53, 57, 0.25);
+    color: #F18488;
+    border-color: rgba(138, 53, 57, 0.45);
+}
+
+:root[data-theme="dark"] .mensaje-estado-comanda.estado-listo {
+    background: rgba(37, 78, 54, 0.3);
+    color: #85E8A8;
+    border-color: rgba(37, 78, 54, 0.5);
+}
+
+:root[data-theme="dark"] .libreta-pie {
+    background: #221019;
+    border-top-color: rgba(201, 155, 69, 0.25);
+}
+
+:root[data-theme="dark"] .libreta-pie::after {
+    background: 
+        linear-gradient(135deg, #221019 4px, transparent 0),
+        linear-gradient(-135deg, #221019 4px, transparent 0);
+    background-size: 8px 7px;
+    background-repeat: repeat-x;
+}
+
+/* ========================================================
+   RESPONSIVE
+   ======================================================== */
+@media (max-width: 680px) {
+    .libreta-comanda {
+        flex: 0 0 280px;
+        width: 280px;
+    }
+    .comanda-mesa {
+        font-size: 20px;
+    }
+}

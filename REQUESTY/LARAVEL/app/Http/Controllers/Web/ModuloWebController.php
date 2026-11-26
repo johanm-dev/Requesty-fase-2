@@ -90,6 +90,11 @@ class ModuloWebController extends Controller
         return redirect(url('/reportes') . '#cuentas');
     }
 
+    public function inventario()
+    {
+        return redirect(url('/reportes') . '#inventario');
+    }
+
     public function pqrs(Request $request)
     {
         $user = $request->attributes->get('requesty_user');

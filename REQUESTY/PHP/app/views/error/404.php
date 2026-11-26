@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Página no encontrada | Requesty</title>
+    <script src="<?= asset('js/theme.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('css/base.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/theme.css') ?>">
     <style>
         .error-container {
             display: flex;
@@ -14,30 +16,30 @@
             height: 100vh;
             text-align: center;
             padding: 20px;
-            background: #F7EEED;
+            background: var(--palette-light);
         }
         .error-code {
             font-size: 96px;
             font-weight: 800;
-            color: #9D2227; /* PANTONE 6294 C */
+            color: var(--palette-red);
             margin: 0;
             line-height: 1;
         }
         .error-title {
             font-size: 28px;
             font-weight: 700;
-            color: #3E2834; /* PANTONE 6322 C */
+            color: var(--palette-ink);
             margin: 16px 0 8px;
         }
         .error-desc {
-            color: #5E504F; /* PANTONE 6441 C */
+            color: var(--palette-muted);
             max-width: 480px;
             margin-bottom: 24px;
             line-height: 1.6;
         }
         .error-btn {
-            background: #9D2227; /* PANTONE 6294 C */
-            color: #ffffff;
+            background: var(--palette-red);
+            color: var(--palette-ink);
             padding: 12px 28px;
             border-radius: 8px;
             text-decoration: none;
@@ -45,12 +47,18 @@
             transition: background 0.2s;
         }
         .error-btn:hover {
-            background: #7D1A1E;
+            background: var(--color-primary-dark);
         }
     </style>
 </head>
 <body>
     <div class="error-container">
+        <div class="error-brand-box">
+            <img src="<?= asset('img/logo.png') ?>" alt="Logo Requesty" class="error-brand-logo">
+        </div>
+        <button type="button" class="btn-theme-toggle error-theme-toggle" data-theme-toggle aria-label="Cambiar a modo oscuro" title="Cambiar a modo oscuro" aria-pressed="false">
+            <i class="fa-solid fa-moon theme-toggle-icon" aria-hidden="true"></i>
+        </button>
         <h1 class="error-code">404</h1>
         <h2 class="error-title">Página no encontrada</h2>
         <p class="error-desc">La página o módulo que buscas no existe o ha sido movida como parte de la migración a la arquitectura MVC de Requesty.</p>

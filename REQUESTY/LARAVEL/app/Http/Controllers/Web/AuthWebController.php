@@ -22,7 +22,15 @@ class AuthWebController extends Controller
             return redirect('/' . ltrim($dest, '/'));
         }
 
-        return $this->login($request);
+        return $this->inicio();
+    }
+
+    public function inicio()
+    {
+        return response()->view('inicio.index', [
+            'pageTitle' => 'Requesty - Gestión inteligente para restaurantes',
+            'currentPage' => 'inicio',
+        ]);
     }
 
     public function login(Request $request)

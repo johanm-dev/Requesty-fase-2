@@ -25,14 +25,15 @@ require_once APPROOT . '/views/layouts/header.php';
               <label for="tipo">Tipo de Solicitud</label>
               <select id="tipo" name="tipo" required>
                 <option value="" disabled selected>Selecciona un tipo</option>
-                <option value="PETICION">Petición</option>
-                <option value="QUEJA">Queja</option>
-                <option value="RECLAMO">Reclamo</option>
-                <option value="SUGERENCIA">Sugerencia</option>
+                <option value="Petición">Petición</option>
+                <option value="Queja">Queja</option>
+                <option value="Reclamo">Reclamo</option>
+                <option value="Sugerencia">Sugerencia</option>
+                <option value="Felicitación">Felicitación</option>
               </select>
             </div>
 
-            <div class="form-group" id="grupo-cliente-pqrs">
+            <div class="form-group">
               <label for="id_cliente">Cliente</label>
               <select id="id_cliente" name="id_cliente" required>
                 <option value="" disabled selected>Selecciona un cliente</option>
@@ -48,10 +49,8 @@ require_once APPROOT . '/views/layouts/header.php';
 
             <div class="form-group grid-full">
               <label for="descripcion">Descripción</label>
-              <textarea id="descripcion" name="descripcion" rows="4" placeholder="Cuéntanos qué pasó..." required minlength="5"></textarea>
+              <textarea id="descripcion" name="descripcion" rows="4" placeholder="Cuéntanos qué pasó..." required></textarea>
             </div>
-
-            <p id="pqrs-mensaje" class="grid-full" role="status" aria-live="polite"></p>
 
             <div class="form-actions grid-full">
               <button type="reset" class="btn btn-secondary">Limpiar</button>
@@ -59,17 +58,13 @@ require_once APPROOT . '/views/layouts/header.php';
             </div>
           </form>
         </section>
-
-        <section class="card list-card" id="mis-pqrs-card">
-          <h2 class="card-title">Solicitudes registradas</h2>
-          <div id="lista-pqrs-propios"></div>
-        </section>
       </div>
     </main>
   </div>
 </div>
 
 <script src="<?= asset('js/auth.js') ?>"></script>
+<script>protegerPagina("pqrs");</script>
 <script src="<?= asset('js/pqrs.js') ?>"></script>
 </body>
 </html>

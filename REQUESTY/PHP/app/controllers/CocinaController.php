@@ -1,7 +1,10 @@
 <?php
+/**
+ * Controlador de Cocina (KDS)
+ */
 class CocinaController extends Controller {
+
     public function index() {
-        $this->requireRole(['ADMIN', 'CAJERO', 'MESERO', 'COCINA']);
         $pedidoModel = $this->model('Pedido');
         $pedidos = $pedidoModel->getAll();
 

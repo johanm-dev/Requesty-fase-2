@@ -3,15 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="<?= htmlspecialchars(CsrfService::token(), ENT_QUOTES, 'UTF-8') ?>">
-    <meta name="app-base" content="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>">
-    <title><?= htmlspecialchars($pageTitle ?? 'Requesty - Inicio de Sesión', ENT_QUOTES, 'UTF-8') ?></title>
+    <title><?= htmlspecialchars($pageTitle ?? 'Requesty - Inicio de Sesión') ?></title>
+    <script src="<?= asset('js/theme.js') ?>"></script>
+    <link rel="icon" type="image/png" href="<?= asset('img/logo.png') ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/theme.css') ?>">
 </head>
 <body>
+    <header class="auth-theme-header">
+        <button type="button" class="btn-theme-toggle auth-theme-toggle" data-theme-toggle
+                title="Cambiar a modo oscuro" aria-label="Cambiar a modo oscuro" aria-pressed="false">
+            <i class="fa-solid fa-moon theme-toggle-icon" aria-hidden="true"></i>
+        </button>
+    </header>
+    <div class="luciernagas-fondo" aria-hidden="true">
+        <canvas id="luciernagasCanvas"></canvas>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+        <span class="luciernaga"></span>
+    </div>
     <main>
         <div id="general">
             <section id="titulo">
+                <img id="mascota-login" src="<?= asset('img/mascota.gif') ?>" alt="Mascota de Requesty">
                 <h1>Requesty</h1>
                 <h2 id="eslogan">Tu restaurante, más eficiencia</h2>
                 <h3>Gestiona tu caja, controla tus pedidos <br>
@@ -35,9 +65,7 @@
 
                     <button id="boton_inicio_de_sesion" class="boton" type="submit">Iniciar sesión</button>
                     
-                    <p id="loginMensaje" aria-live="polite">
-                        <?= !empty($error) ? htmlspecialchars($error, ENT_QUOTES, 'UTF-8') : '' ?>
-                    </p>
+                    <p id="loginMensaje" aria-live="polite"><?= !empty($error) ? htmlspecialchars($error, ENT_QUOTES, 'UTF-8') : '' ?></p>
                 </form>
 
                 <p id="o"> o </p>

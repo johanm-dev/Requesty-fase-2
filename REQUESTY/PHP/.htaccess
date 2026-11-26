@@ -7,7 +7,6 @@ Options -Indexes
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /
 
     # Preservar cabecera Authorization bajo CGI / PHP-FPM / mod_fcgid
     RewriteCond %{HTTP:Authorization} .
