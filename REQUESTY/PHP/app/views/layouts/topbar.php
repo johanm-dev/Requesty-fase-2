@@ -32,7 +32,7 @@ if (empty($iniciales)) $iniciales = 'RQ';
         <!-- Indicador de navegación animado -->
         <div class="nav-wave-pill" id="navWavePill"></div>
 
-        <a class="nav-btn <?= ($currentPage === 'inicio') ? 'active' : '' ?>" href="<?= url('pedidos') ?>" title="Inicio" data-title="Inicio">
+        <a class="nav-btn <?= ($currentPage === 'inicio') ? 'active' : '' ?>" href="<?= url('inicio') ?>" title="Inicio" data-title="Inicio">
             <i class="fa-solid fa-house nav-icon"></i>
             <span class="nav-text">Inicio</span>
         </a>

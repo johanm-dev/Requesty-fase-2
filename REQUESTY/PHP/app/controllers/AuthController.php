@@ -5,14 +5,18 @@
 class AuthController extends Controller {
 
     public function index() {
-        if ($this->isLoggedIn()) {
-            $user = $this->getUser();
-            $rolKey = strtolower(trim((string)($user['rol'] ?? '')));
-            $destination = PAGINA_INICIAL_POR_ROL[$rolKey] ?? 'mesas';
-            $this->redirect($destination);
-        } else {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $this->login();
+            return;
         }
+        $this->inicio();
+    }
+
+    public function inicio() {
+        $this->view('inicio/index', [
+            'pageTitle'   => 'Requesty - Gestión inteligente para restaurantes',
+            'currentPage' => 'inicio',
+        ]);
     }
 
     public function login() {

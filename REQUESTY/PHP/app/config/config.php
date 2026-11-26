@@ -55,7 +55,7 @@ define('BASE_URL', $baseUrl);
 
 function url($route = '', array $params = []) {
     $route = trim(ltrim((string)$route, '/'));
-    if ($route === '' || $route === 'login') {
+    if ($route === '') {
         $link = BASE_URL . '/index.php';
     } else {
         $link = BASE_URL . '/index.php?page=' . urlencode($route);

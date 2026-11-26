@@ -9,6 +9,7 @@ class Router {
 
     protected array $routes = [
         ''                           => ['controller' => 'AuthController',    'action' => 'index'],
+        'inicio'                     => ['controller' => 'AuthController',    'action' => 'inicio'],
         'login'                      => ['controller' => 'AuthController',    'action' => 'login'],
         'registro'                   => ['controller' => 'AuthController',    'action' => 'registro'],
         'logout'                     => ['controller' => 'AuthController',    'action' => 'logout'],
