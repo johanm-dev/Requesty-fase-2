@@ -263,18 +263,18 @@
 
         let etiquetaEstado = "En espera";
         let botonAccion = `<button type="button" class="btn-accion-libreta btn-iniciar" data-estado-pedido="${escaparHTML(pedido.id)}" data-nuevo-estado="${nombresEstados.preparacion}">
-            Iniciar
+            <i class="fa-solid fa-play" aria-hidden="true"></i> Iniciar
         </button>`;
 
         if (estado === nombresEstados.preparacion) {
             etiquetaEstado = esPrioridad ? "Urgente · En preparación" : (espera >= minutosAlerta ? "Demorado · En preparación" : "En preparación");
-            botonAccion = `<button type="button" class="btn-accion-libreta btn-completar" data-completar-pedido="${escaparHTML(pedido.id)}">
-                <i class="fa-solid fa-check"></i> Listo
+            botonAccion = `<button type="button" class="btn-accion-libreta btn-servir" data-estado-pedido="${escaparHTML(pedido.id)}" data-nuevo-estado="${nombresEstados.listo}">
+                <i class="fa-solid fa-bell-concierge" aria-hidden="true"></i> Servir
             </button>`;
         } else if (estado === nombresEstados.listo) {
             etiquetaEstado = "Listo para servir";
-            botonAccion = `<button type="button" class="btn-accion-libreta btn-retirar" data-completar-pedido="${escaparHTML(pedido.id)}">
-                Retirar
+            botonAccion = `<button type="button" class="btn-accion-libreta btn-entregar" data-entregar-pedido="${escaparHTML(pedido.id)}">
+                <i class="fa-solid fa-check" aria-hidden="true"></i> Entregar
             </button>`;
         } else if (esPrioridad) {
             etiquetaEstado = "Urgente · En espera";
@@ -287,10 +287,6 @@
             : '<li class="item-producto-kds"><div class="item-principal"><span class="item-nombre">Sin productos</span></div></li>';
 
         return `<article class="libreta-comanda ${claseEspera} ${clasePrioridad}" data-pedido-id="${escaparHTML(pedido.id)}" id="comanda-${escaparHTML(pedido.id)}">
-            <button type="button" class="btn-desechar-kds" data-desechar-pedido="${escaparHTML(pedido.id)}" title="Arrugar y tirar comanda #${escaparHTML(pedido.id)}" aria-label="Tirar comanda #${escaparHTML(pedido.id)}">
-                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-            </button>
-
             <div class="libreta-encabezado">
                 <h2 class="comanda-titulo-simple">${escaparHTML(titulo)}</h2>
                 <span class="comanda-estado-tag">${escaparHTML(etiquetaEstado)}</span>
@@ -307,12 +303,7 @@
                     <span>Hora: ${hora}</span>
                     <span class="comanda-tiempo-badge">${espera}m · #${escaparHTML(pedido.id)}</span>
                 </div>
-                <div class="comanda-acciones-pie">
-                    ${botonAccion}
-                    <button type="button" class="btn-tirar-pie" data-desechar-pedido="${escaparHTML(pedido.id)}" title="Arrugar y tirar comanda">
-                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Tirar
-                    </button>
-                </div>
+                ${botonAccion}
             </div>
         </article>`;
     }
@@ -354,28 +345,6 @@
         contenedor.innerHTML = html;
     }
 
-    function renderizarBarraInferior(pedidos, ahora) {
-        const contenedor = document.getElementById("pildorasComandas");
-        if (!contenedor) return;
-
-        if (!pedidos.length) {
-            contenedor.innerHTML = '<span style="color: rgba(255,255,255,0.4); font-size: 12px;">Sin comandas activas</span>';
-            return;
-        }
-
-        contenedor.innerHTML = pedidos.map(p => {
-            const { titulo } = extraerEtiquetaDestino(p);
-            const espera = minutosEnEspera(p, ahora);
-            const clase = claseAlerta(p, espera);
-            const esPrioridad = esPedidoPrioritario(p, espera);
-            const iconoPrioridad = esPrioridad ? '<i class="fa-solid fa-bolt" style="color: #F87171; margin-right: 2px;"></i>' : '';
-            return `<button type="button" class="pildora-comanda-btn ${clase}" data-scroll-comanda="comanda-${escaparHTML(p.id)}">
-                ${iconoPrioridad}<span>${escaparHTML(titulo)}</span>
-                <span style="opacity: 0.7;">#${escaparHTML(p.id)}</span>
-            </button>`;
-        }).join("");
-    }
-
     function mostrarPedidos() {
         const contenedor = document.getElementById("contenedor-pedidos");
         if (!contenedor) return;
@@ -407,8 +376,6 @@
             : `<p class="cocina-vacia" style="margin: 30px auto; color: var(--palette-gold, #C99B45); font-weight: 700; text-align: center;">
                 No hay comandas activas en el riel.
               </p>`;
-
-        renderizarBarraInferior(pedidosFiltrados, ahora);
     }
 
     function normalizarPedidoApi(p) {
@@ -531,34 +498,11 @@
         mostrarPedidos();
     }
 
-    const riel = document.getElementById("contenedor-pedidos");
-    document.getElementById("btnRielPrev")?.addEventListener("click", () => {
-        if (riel) riel.scrollBy({ left: -260, behavior: "smooth" });
-    });
-    document.getElementById("btnRielNext")?.addEventListener("click", () => {
-        if (riel) riel.scrollBy({ left: 260, behavior: "smooth" });
-    });
-
-    document.getElementById("pildorasComandas")?.addEventListener("click", (e) => {
-        const boton = e.target.closest("[data-scroll-comanda]");
-        if (boton) {
-            const targetEl = document.getElementById(boton.dataset.scrollComanda);
-            if (targetEl) targetEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-        }
-    });
-
     document.getElementById("contenedor-pedidos")?.addEventListener("click", evento => {
-        const btnDesechar = evento.target.closest("[data-desechar-pedido]");
-        if (btnDesechar) {
+        const btnEntregar = evento.target.closest("[data-entregar-pedido]");
+        if (btnEntregar) {
             evento.preventDefault();
-            desecharComanda(btnDesechar.dataset.desecharPedido);
-            return;
-        }
-
-        const btnCompletar = evento.target.closest("[data-completar-pedido]");
-        if (btnCompletar) {
-            evento.preventDefault();
-            arrugarYTirarComanda(btnCompletar.dataset.completarPedido);
+            arrugarYTirarComanda(btnEntregar.dataset.entregarPedido, nombresEstados.entregado);
             return;
         }
 

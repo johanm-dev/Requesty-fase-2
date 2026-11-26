@@ -80,17 +80,6 @@
 
                 <div id="contenedor-pedidos" class="contenedor-libretas" aria-live="polite"></div>
             </div>
-
-            <!-- Barra inferior con botones rápidos de comandas -->
-            <div class="barra-inferior-comandas" id="barraInferiorComandas">
-                <button type="button" class="btn-nav-riel" id="btnRielPrev" aria-label="Desplazar a la izquierda">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <div class="pildoras-comandas" id="pildorasComandas"></div>
-                <button type="button" class="btn-nav-riel" id="btnRielNext" aria-label="Desplazar a la derecha">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-            </div>
         </div>
     </div>
 </div>
