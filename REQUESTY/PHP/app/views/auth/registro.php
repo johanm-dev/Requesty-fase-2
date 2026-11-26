@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle ?? 'Registro - Requesty') ?></title>
+    <meta name="csrf-token" content="<?= htmlspecialchars(CsrfService::token(), ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="app-base" content="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>">
+    <title><?= htmlspecialchars($pageTitle ?? 'Registro - Requesty', ENT_QUOTES, 'UTF-8') ?></title>
     <link rel="stylesheet" href="<?= asset('css/registro.css') ?>">
 </head>
 <body>
@@ -41,7 +43,7 @@
 
         <div class="campo">
           <label for="contrasena">Contraseña *</label>
-          <input type="password" id="contrasena" name="contrasena" placeholder="Mínimo 6 caracteres" required>
+          <input type="password" id="contrasena" name="contrasena" minlength="8" placeholder="Mínimo 8 caracteres (A-Z, a-z, 0-9)" required>
         </div>
 
         <div class="campo">

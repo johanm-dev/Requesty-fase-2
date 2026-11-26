@@ -1,25 +1,9 @@
 <?php
 /**
- * Cargador estricto de variables de entorno con validacion fail-fast y valores por defecto seguros en desarrollo.
+ * Cargador estricto de variables de entorno con validacion fail-fast.
  */
 class Env {
     private static bool $loaded = false;
-
-    private const DEFAULTS = [
-        'DB_HOST'                => '127.0.0.1',
-        'DB_PORT'                => '5432',
-        'DB_NAME'                => 'restaurante_db',
-        'DB_SCHEMA'              => 'restaurante',
-        'DB_USER'                => 'app_restaurante_rw',
-        'DB_PASSWORD'            => 'RequestyAppRw_2026_SecurePassword!',
-        'DB_SSL_MODE'            => 'prefer',
-        'DB_CONNECTION_TIMEOUT'  => '2',
-        'APP_ENCRYPTION_KEY'     => 'Requesty_AES256_PII_MasterKey_2026_Secure32Chars!',
-        'JWT_SECRET'             => 'Requesty_JWT_HS256_SigningSecret_2026_Secure32Chars!',
-        'JWT_EXPIRATION_SECONDS' => '900',
-        'CORS_ALLOWED_ORIGINS'   => 'http://127.0.0.1,http://localhost,http://127.0.0.1:8080,http://localhost:8080,http://127.0.0.1:8088,http://localhost:8088',
-        'SESSION_SECURE'         => 'false',
-    ];
 
     public static function load(?string $envFile = null): void {
         if (self::$loaded) {
@@ -54,7 +38,7 @@ class Env {
     public static function get(string $key, ?string $default = null): ?string {
         $val = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
         if ($val === false || $val === null || trim((string)$val) === '') {
-            return $default ?? (self::DEFAULTS[$key] ?? null);
+            return $default;
         }
         return (string)$val;
     }

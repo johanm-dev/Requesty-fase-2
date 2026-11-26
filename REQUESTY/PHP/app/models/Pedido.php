@@ -1,475 +1,464 @@
 <?php
 /**
- * Modelo de Pedidos (PostgreSQL 17: maquina de estados estricta + calculo automatico fiscal + 1FN personalizacion_ingrediente + pedido_descuento).
+ * Modelo de Pedidos (PostgreSQL 17: detalle, personalizacion 1FN, descuentos, inventario y notificaciones).
  */
 class Pedido extends Model {
-    public function getAll(?int $idMesero = null): array {
-        if ($this->isDbConnected()) {
-            $sql = "SELECT p.id_pedido, p.fecha_hora, p.estado, p.observaciones,
-                           p.subtotal, p.descuento_total, p.impuesto_total, p.total,
-                           p.id_cliente, p.id_mesa, p.id_mesero,
-                           m.numero_mesa, c.nombre AS cliente_nombre, u.nombre AS mesero_nombre,
-                           vc.total_pagado, vc.saldo_pendiente, vc.numero_factura, vc.estado_dian
-                    FROM pedido p
-                    LEFT JOIN mesa m ON p.id_mesa = m.id_mesa
-                    LEFT JOIN vw_clientes_publico c ON p.id_cliente = c.id_cliente
-                    LEFT JOIN vw_usuarios_publico u ON p.id_mesero = u.id_usuario
-                    LEFT JOIN vw_conciliacion_pedidos vc ON vc.id_pedido = p.id_pedido";
+    public function getAll(?int $idMesero = null, ?int $idCliente = null, int $limit = 100, int $offset = 0): array {
+        $limit = max(1, min($limit, 200));
+        $offset = max(0, $offset);
+        $sql = "SELECT p.id_pedido, p.fecha_hora, p.estado, p.observaciones,
+                       p.subtotal, p.descuento_total, p.impuesto_total, p.total,
+                       p.id_cliente, p.id_mesa, p.id_mesero,
+                       m.numero_mesa, c.nombre AS cliente_nombre, c.correo AS cliente_correo,
+                       u.nombre AS mesero_nombre, u.correo AS mesero_correo,
+                       vc.total_pagado, vc.saldo_pendiente, vc.total_propinas,
+                       vc.id_factura_activa, vc.numero_factura, vc.estado_dian
+                FROM pedido p
+                LEFT JOIN mesa m ON p.id_mesa = m.id_mesa
+                LEFT JOIN vw_clientes_publico c ON p.id_cliente = c.id_cliente
+                LEFT JOIN vw_usuarios_publico u ON p.id_mesero = u.id_usuario
+                LEFT JOIN vw_conciliacion_pedidos vc ON vc.id_pedido = p.id_pedido";
 
-            $params = [];
-            if ($idMesero !== null) {
-                $sql .= " WHERE p.id_mesero = :id_mesero";
-                $params[':id_mesero'] = $idMesero;
-            }
-            $sql .= " ORDER BY p.id_pedido DESC";
-
-            return $this->fetchAll($sql, $params);
+        $conds = [];
+        $params = [];
+        if ($idMesero !== null) {
+            $conds[] = 'p.id_mesero = :id_mesero';
+            $params[':id_mesero'] = $idMesero;
         }
+        if ($idCliente !== null) {
+            $conds[] = 'p.id_cliente = :id_cliente';
+            $params[':id_cliente'] = $idCliente;
+        }
+        if (!empty($conds)) {
+            $sql .= ' WHERE ' . implode(' AND ', $conds);
+        }
+        $sql .= ' ORDER BY p.id_pedido DESC LIMIT :limit OFFSET :offset';
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
 
-        return NormalizedStore::withTransaction(static function (array &$state) use ($idMesero): array {
-            $conc = NormalizedStore::viewConciliacionPedidos($state);
-            $mesas = [];
-            foreach ($state['mesa'] as $m) {
-                $mesas[(int)$m['id_mesa']] = $m['numero_mesa'];
-            }
-            $clientes = [];
-            foreach ($state['cliente'] as $c) {
-                $clientes[(int)$c['id_cliente']] = $c['nombre'];
-            }
-            $usuarios = [];
-            foreach ($state['usuario'] as $u) {
-                $usuarios[(int)$u['id_usuario']] = $u['nombre'];
-            }
-
-            $out = [];
-            foreach ($state['pedido'] as $p) {
-                if ($idMesero !== null && (int)$p['id_mesero'] !== $idMesero) {
-                    continue;
-                }
-                $idPed = (int)$p['id_pedido'];
-                $vc = $conc[$idPed] ?? [];
-                $out[] = array_merge($p, [
-                    'numero_mesa'     => $mesas[(int)($p['id_mesa'] ?? 0)] ?? null,
-                    'cliente_nombre'  => $clientes[(int)($p['id_cliente'] ?? 0)] ?? null,
-                    'mesero_nombre'   => $usuarios[(int)($p['id_mesero'] ?? 0)] ?? null,
-                    'total_pagado'    => $vc['total_pagado'] ?? 0.0,
-                    'saldo_pendiente' => $vc['saldo_pendiente'] ?? (float)$p['total'],
-                    'numero_factura'  => $vc['numero_factura'] ?? null,
-                    'estado_dian'     => $vc['estado_dian'] ?? null,
-                ]);
-            }
-            usort($out, static fn($a, $b) => $b['id_pedido'] <=> $a['id_pedido']);
-            return $out;
-        }, false);
+        $pedidos = $this->fetchAll($sql, $params);
+        return $this->hydrateDetailsAndDiscounts($pedidos);
     }
 
     public function getById(int $id): ?array {
-        if ($this->isDbConnected()) {
-            $sql = "SELECT p.*, m.numero_mesa, c.nombre AS cliente_nombre,
-                           vc.total_pagado, vc.saldo_pendiente, vc.numero_factura, vc.estado_dian
-                    FROM pedido p
-                    LEFT JOIN mesa m ON p.id_mesa = m.id_mesa
-                    LEFT JOIN vw_clientes_publico c ON p.id_cliente = c.id_cliente
-                    LEFT JOIN vw_conciliacion_pedidos vc ON vc.id_pedido = p.id_pedido
-                    WHERE p.id_pedido = :id
-                    LIMIT 1";
-            return $this->fetchOne($sql, [':id' => $id]);
+        $sql = "SELECT p.*, m.numero_mesa, c.nombre AS cliente_nombre, c.correo AS cliente_correo,
+                       u.nombre AS mesero_nombre, u.correo AS mesero_correo,
+                       vc.total_pagado, vc.saldo_pendiente, vc.total_propinas,
+                       vc.id_factura_activa, vc.numero_factura, vc.estado_dian
+                FROM pedido p
+                LEFT JOIN mesa m ON p.id_mesa = m.id_mesa
+                LEFT JOIN vw_clientes_publico c ON p.id_cliente = c.id_cliente
+                LEFT JOIN vw_usuarios_publico u ON p.id_mesero = u.id_usuario
+                LEFT JOIN vw_conciliacion_pedidos vc ON vc.id_pedido = p.id_pedido
+                WHERE p.id_pedido = :id
+                LIMIT 1";
+        $row = $this->fetchOne($sql, [':id' => $id]);
+        if (!$row) {
+            return null;
         }
-
-        foreach ($this->getAll() as $p) {
-            if ((int)$p['id_pedido'] === $id) {
-                return $p;
-            }
-        }
-        return null;
+        $hydrated = $this->hydrateDetailsAndDiscounts([$row]);
+        return $hydrated[0] ?? $row;
     }
 
     public function createWithItems(int $idMesero, ?int $idCliente, ?int $idMesa, array $items, ?string $observaciones = null): array {
-        if ($this->isDbConnected()) {
-            $this->beginTransaction();
-            try {
-                $row = $this->fetchOne(
-                    "INSERT INTO pedido (estado, observaciones, id_cliente, id_mesa, id_mesero)
-                     VALUES ('PENDIENTE', :obs, :id_cliente, :id_mesa, :id_mesero)
-                     RETURNING id_pedido",
-                    [
-                        ':obs'        => $observaciones,
-                        ':id_cliente' => $idCliente,
-                        ':id_mesa'    => $idMesa,
-                        ':id_mesero'  => $idMesero,
-                    ]
-                );
-                $idPedido = (int)$row['id_pedido'];
-
-                $stmtProd = $this->db->prepare(
-                    'SELECT precio, impuesto_porcentaje, disponible FROM producto WHERE id_producto = :id LIMIT 1'
-                );
-                $stmtDet = $this->db->prepare(
-                    'INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio_unitario, impuesto_porcentaje, observaciones)
-                     VALUES (:id_pedido, :id_producto, :cantidad, :precio, :impuesto, :obs)'
-                );
-
-                foreach ($items as $item) {
-                    $idProd = (int)($item['id_producto'] ?? 0);
-                    $cant   = (int)($item['cantidad'] ?? 0);
-                    if ($idProd <= 0 || $cant <= 0) {
-                        throw new DomainValidationException('Cada item requiere id_producto y cantidad positivos.');
-                    }
-                    $stmtProd->execute([':id' => $idProd]);
-                    $prod = $stmtProd->fetch();
-                    if (!$prod) {
-                        throw new DomainValidationException("Producto {$idProd} no existe.");
-                    }
-                    $stmtDet->execute([
-                        ':id_pedido'   => $idPedido,
-                        ':id_producto' => $idProd,
-                        ':cantidad'    => $cant,
-                        ':precio'      => $prod['precio'],
-                        ':impuesto'    => $prod['impuesto_porcentaje'],
-                        ':obs'         => $item['observaciones'] ?? null,
-                    ]);
-                }
-
-                $this->commit();
-                return $this->getById($idPedido) ?? ['id_pedido' => $idPedido];
-            } catch (Throwable $e) {
-                $this->rollBack();
-                throw $e;
-            }
+        $this->beginTransaction();
+        try {
+            $row = $this->fetchOne(
+                "INSERT INTO pedido (estado, observaciones, id_cliente, id_mesa, id_mesero)
+                 VALUES ('PENDIENTE', :obs, :id_cliente, :id_mesa, :id_mesero)
+                 RETURNING id_pedido",
+                [
+                    ':obs'        => $observaciones,
+                    ':id_cliente' => $idCliente,
+                    ':id_mesa'    => $idMesa,
+                    ':id_mesero'  => $idMesero,
+                ]
+            );
+            $idPedido = (int)$row['id_pedido'];
+            $this->insertItemsBatch($idPedido, $items);
+            $this->commit();
+            return $this->getById($idPedido) ?? ['id_pedido' => $idPedido];
+        } catch (Throwable $e) {
+            $this->rollBack();
+            throw $e;
         }
-
-        $idPedido = NormalizedStore::withTransaction(static function (array &$state) use ($idMesero, $idCliente, $idMesa, $items, $observaciones): int {
-            $prods = [];
-            foreach ($state['producto'] as $pr) {
-                $prods[(int)$pr['id_producto']] = $pr;
-            }
-
-            $maxPedId = 0;
-            foreach ($state['pedido'] as $p) {
-                $maxPedId = max($maxPedId, (int)$p['id_pedido']);
-            }
-            $newPedId = $maxPedId + 1;
-
-            $maxDetId = 0;
-            foreach ($state['detalle_pedido'] as $d) {
-                $maxDetId = max($maxDetId, (int)$d['id_detalle']);
-            }
-
-            $subtotal = 0.0;
-            $impuestoTotal = 0.0;
-
-            foreach ($items as $item) {
-                $idProd = (int)($item['id_producto'] ?? 0);
-                $cant   = (int)($item['cantidad'] ?? 0);
-                if ($idProd <= 0 || $cant <= 0) {
-                    throw new DomainValidationException('Cada item requiere id_producto y cantidad positivos.');
-                }
-                if (!isset($prods[$idProd])) {
-                    throw new DomainValidationException("Producto {$idProd} no existe.");
-                }
-                $pr = $prods[$idProd];
-                $precio = (float)$pr['precio'];
-                $impPct = (float)$pr['impuesto_porcentaje'];
-                $lineaSub = round($precio * $cant, 2);
-                $lineaImp = round($lineaSub * ($impPct / 100.0), 2);
-                $subtotal += $lineaSub;
-                $impuestoTotal += $lineaImp;
-
-                $maxDetId++;
-                $state['detalle_pedido'][] = [
-                    'id_detalle'          => $maxDetId,
-                    'id_pedido'           => $newPedId,
-                    'id_producto'         => $idProd,
-                    'cantidad'            => $cant,
-                    'precio_unitario'     => $precio,
-                    'impuesto_porcentaje' => $impPct,
-                    'observaciones'       => $item['observaciones'] ?? null,
-                ];
-            }
-
-            $subtotal = round($subtotal, 2);
-            $impuestoTotal = round($impuestoTotal, 2);
-            $total = round($subtotal + $impuestoTotal, 2);
-
-            $state['pedido'][] = [
-                'id_pedido'       => $newPedId,
-                'fecha_hora'      => date('c'),
-                'estado'          => 'PENDIENTE',
-                'observaciones'   => $observaciones,
-                'subtotal'        => $subtotal,
-                'descuento_total' => 0.00,
-                'impuesto_total'  => $impuestoTotal,
-                'total'           => $total,
-                'id_cliente'      => $idCliente,
-                'id_mesa'         => $idMesa,
-                'id_mesero'       => $idMesero,
-            ];
-
-            return $newPedId;
-        }, true);
-
-        return $this->getById($idPedido) ?? ['id_pedido' => $idPedido];
     }
 
-    public function updateStatus(int $id, string $estado): array {
-        $nuevoEstado = strtoupper(trim($estado));
-        if ($this->isDbConnected()) {
+    public function updateItems(int $idPedido, array $items, ?string $observaciones = null, ?int $idMesa = null, ?int $idCliente = null): array {
+        $this->beginTransaction();
+        try {
+            $this->execute('DELETE FROM detalle_pedido WHERE id_pedido = :id', [':id' => $idPedido]);
+            $this->insertItemsBatch($idPedido, $items);
             $this->execute(
-                'UPDATE pedido SET estado = :estado WHERE id_pedido = :id',
-                [':estado' => $nuevoEstado, ':id' => $id]
+                'UPDATE pedido
+                    SET observaciones = COALESCE(:obs, observaciones),
+                        id_mesa = COALESCE(:mesa, id_mesa),
+                        id_cliente = COALESCE(:cli, id_cliente)
+                  WHERE id_pedido = :id',
+                [
+                    ':obs'  => $observaciones,
+                    ':mesa' => $idMesa,
+                    ':cli'  => $idCliente,
+                    ':id'   => $idPedido,
+                ]
             );
-            return $this->getById($id) ?? ['id_pedido' => $id, 'estado' => $nuevoEstado];
+            $this->commit();
+            return $this->getById($idPedido) ?? ['id_pedido' => $idPedido];
+        } catch (Throwable $e) {
+            $this->rollBack();
+            throw $e;
         }
+    }
 
-        NormalizedStore::withTransaction(static function (array &$state) use ($id, $nuevoEstado): void {
-            $foundIdx = null;
-            foreach ($state['pedido'] as $idx => $p) {
-                if ((int)$p['id_pedido'] === $id) {
-                    $foundIdx = $idx;
-                    break;
-                }
-            }
-            if ($foundIdx === null) {
+    public function updateStatus(int $id, string $estado, ?int $actorUserId = null): array {
+        $estadoNorm = strtoupper(trim($estado));
+        $this->beginTransaction();
+        try {
+            $pedido = $this->fetchOne('SELECT * FROM pedido WHERE id_pedido = :id FOR UPDATE', [':id' => $id]);
+            if (!$pedido) {
                 throw new DomainValidationException('Pedido no encontrado.');
             }
 
-            $actual = $state['pedido'][$foundIdx]['estado'];
-            if ($actual === $nuevoEstado) {
-                return;
-            }
-
-            if (in_array($actual, ['PAGADO', 'CANCELADO'], true)) {
-                throw new DomainConflictException("El pedido se encuentra en estado terminal ({$actual}).");
-            }
-
-            $validTransitions = [
-                'PENDIENTE'      => ['EN_PREPARACION', 'CANCELADO'],
-                'EN_PREPARACION' => ['LISTO', 'CANCELADO'],
-                'LISTO'          => ['ENTREGADO', 'CANCELADO'],
-                'ENTREGADO'      => ['PAGADO', 'CANCELADO'],
-            ];
-
-            $allowed = $validTransitions[$actual] ?? [];
-            if (!in_array($nuevoEstado, $allowed, true)) {
-                throw new DomainConflictException("Transicion de estado invalida: {$actual} -> {$nuevoEstado}.");
-            }
-
-            $conc = NormalizedStore::viewConciliacionPedidos($state)[$id] ?? null;
-
-            if ($nuevoEstado === 'CANCELADO') {
-                if ($conc && ($conc['total_pagado'] > 0 || $conc['estado_dian'] !== null)) {
-                    throw new DomainConflictException('No se puede cancelar un pedido con pagos o factura activa.');
-                }
-            }
-
-            if ($nuevoEstado === 'PAGADO') {
-                if (!$conc || $conc['saldo_pendiente'] > 0.009) {
-                    throw new DomainConflictException('El pedido aun tiene saldo pendiente por pagar.');
-                }
-            }
-
-            $state['pedido'][$foundIdx]['estado'] = $nuevoEstado;
-        }, true);
-
-        return $this->getById($id) ?? ['id_pedido' => $id, 'estado' => $nuevoEstado];
-    }
-
-    /**
-     * Registra personalizacion_pedido y personalizacion_ingrediente (1FN) recalculando totales.
-     */
-    public function agregarPersonalizacion(array $data): array {
-        $idDetalle = (int)$data['id_detalle'];
-        $cantidad = (int)($data['cantidad'] ?? 1);
-        $termino = $data['termino_coccion'] ?? null;
-        $obs = $data['observaciones'] ?? null;
-        $ajustes = is_array($data['ingredientes'] ?? null) ? $data['ingredientes'] : [];
-
-        if ($this->isDbConnected()) {
-            $this->beginTransaction();
-            try {
-                $row = $this->fetchOne(
-                    "INSERT INTO personalizacion_pedido (id_detalle, cantidad, termino_coccion, observaciones)
-                     VALUES (:det, :cant, :term, :obs) RETURNING id_personalizacion",
-                    [':det' => $idDetalle, ':cant' => $cantidad, ':term' => $termino, ':obs' => $obs]
-                );
-                $idPers = (int)$row['id_personalizacion'];
-                foreach ($ajustes as $aj) {
-                    $this->execute(
-                        "INSERT INTO personalizacion_ingrediente (id_personalizacion, id_ingrediente, tipo_ajuste, cantidad, costo_extra)
-                         VALUES (:id_p, :id_i, :tipo, :cant, :costo)",
-                        [
-                            ':id_p'  => $idPers,
-                            ':id_i'  => (int)$aj['id_ingrediente'],
-                            ':tipo'  => strtoupper((string)$aj['tipo_ajuste']),
-                            ':cant'  => (float)($aj['cantidad'] ?? 1),
-                            ':costo' => (float)($aj['costo_extra'] ?? 0),
-                        ]
-                    );
-                }
-                $this->commit();
-                return ['id_personalizacion' => $idPers];
-            } catch (Throwable $e) {
-                $this->rollBack();
-                throw $e;
-            }
-        }
-
-        return NormalizedStore::withTransaction(static function (array &$state) use ($idDetalle, $cantidad, $termino, $obs, $ajustes): array {
-            $detalle = null;
-            foreach ($state['detalle_pedido'] as $d) {
-                if ((int)$d['id_detalle'] === $idDetalle) {
-                    $detalle = $d;
-                    break;
-                }
-            }
-            if (!$detalle) {
-                throw new DomainValidationException('Detalle de pedido no existe.');
-            }
-
-            $yaPersonalizadas = 0;
-            foreach ($state['personalizacion_pedido'] as $pp) {
-                if ((int)$pp['id_detalle'] === $idDetalle) {
-                    $yaPersonalizadas += (int)$pp['cantidad'];
-                }
-            }
-            if (($yaPersonalizadas + $cantidad) > (int)$detalle['cantidad']) {
-                throw new DomainConflictException('La cantidad personalizada excede las unidades del detalle de pedido.');
-            }
-
-            $maxPersId = 0;
-            foreach ($state['personalizacion_pedido'] as $pp) {
-                $maxPersId = max($maxPersId, (int)$pp['id_personalizacion']);
-            }
-            $newPersId = $maxPersId + 1;
-
-            $state['personalizacion_pedido'][] = [
-                'id_personalizacion' => $newPersId,
-                'id_detalle'         => $idDetalle,
-                'cantidad'           => $cantidad,
-                'termino_coccion'    => $termino,
-                'observaciones'      => $obs,
-            ];
-
-            $costoExtraTotal = 0.0;
-            foreach ($ajustes as $aj) {
-                $tipo = strtoupper((string)$aj['tipo_ajuste']);
-                $costo = ($tipo === 'ELIMINAR') ? 0.0 : round((float)($aj['costo_extra'] ?? 0), 2);
-                $cantIng = round((float)($aj['cantidad'] ?? 1), 2);
-                $state['personalizacion_ingrediente'][] = [
-                    'id_personalizacion' => $newPersId,
-                    'id_ingrediente'     => (int)$aj['id_ingrediente'],
-                    'tipo_ajuste'        => $tipo,
-                    'cantidad'           => $cantIng,
-                    'costo_extra'        => $costo,
-                ];
-                $costoExtraTotal += ($costo * $cantIng);
-            }
-
-            self::recalculateOrderTotalsInState($state, (int)$detalle['id_pedido']);
-            return ['id_personalizacion' => $newPersId, 'costo_extra_agregado' => $costoExtraTotal];
-        }, true);
-    }
-
-    /**
-     * Aplica un descuento en pedido_descuento y recalcula subtotal, descuento_total, impuesto_total y total.
-     */
-    public function aplicarDescuento(int $idPedido, int $idDescuento, int $autorizadoPor, ?float $porcentajeAplicado = null): array {
-        if ($this->isDbConnected()) {
-            $desc = $this->fetchOne('SELECT porcentaje FROM descuento WHERE id_descuento = :id LIMIT 1', [':id' => $idDescuento]);
-            if (!$desc) {
-                throw new DomainValidationException('Descuento no existe.');
-            }
-            $pct = $porcentajeAplicado ?? (float)$desc['porcentaje'];
+            $estadoPrevio = (string)$pedido['estado'];
             $this->execute(
-                "INSERT INTO pedido_descuento (id_pedido, id_descuento, autorizado_por, porcentaje_aplicado)
-                 VALUES (:ped, :desc, :aut, :pct)",
-                [':ped' => $idPedido, ':desc' => $idDescuento, ':aut' => $autorizadoPor, ':pct' => $pct]
+                'UPDATE pedido SET estado = :estado WHERE id_pedido = :id',
+                [':estado' => $estadoNorm, ':id' => $id]
             );
-            return $this->getById($idPedido) ?? ['id_pedido' => $idPedido];
+
+            if ($estadoPrevio === 'PENDIENTE' && $estadoNorm === 'EN_PREPARACION') {
+                $this->deductInventoryForOrder($id, $actorUserId ?? (int)$pedido['id_mesero']);
+            }
+
+            if ($estadoNorm === 'LISTO') {
+                $mesaTxt = $pedido['id_mesa'] ? " (Mesa #{$pedido['id_mesa']})" : '';
+                $this->execute(
+                    "INSERT INTO notificacion (mensaje, tipo, id_usuario, id_pedido)
+                     VALUES (:msg, 'PEDIDO', :usr, :ped)",
+                    [
+                        ':msg' => "Pedido #{$id} listo para entregar{$mesaTxt}",
+                        ':usr' => (int)$pedido['id_mesero'],
+                        ':ped' => $id,
+                    ]
+                );
+            }
+
+            $this->commit();
+            return $this->getById($id) ?? ['id_pedido' => $id, 'estado' => $estadoNorm];
+        } catch (Throwable $e) {
+            $this->rollBack();
+            throw $e;
         }
+    }
 
-        NormalizedStore::withTransaction(static function (array &$state) use ($idPedido, $idDescuento, $autorizadoPor, $porcentajeAplicado): void {
-            $desc = null;
-            foreach ($state['descuento'] as $d) {
-                if ((int)$d['id_descuento'] === $idDescuento) {
-                    $desc = $d;
-                    break;
-                }
-            }
-            if (!$desc) {
-                throw new DomainValidationException('Descuento no existe.');
-            }
-            $pct = $porcentajeAplicado ?? (float)$desc['porcentaje'];
-            $state['pedido_descuento'][] = [
-                'id_pedido'           => $idPedido,
-                'id_descuento'        => $idDescuento,
-                'autorizado_por'      => $autorizadoPor,
-                'porcentaje_aplicado' => $pct,
-                'monto_descontado'    => 0.0,
-            ];
-            self::recalculateOrderTotalsInState($state, $idPedido);
-        }, true);
-
+    public function applyDiscount(int $idPedido, int $idDescuento, int $autorizadoPor): array {
+        $desc = $this->fetchOne('SELECT id_descuento, porcentaje, activo FROM descuento WHERE id_descuento = :id', [':id' => $idDescuento]);
+        if (!$desc || !$desc['activo']) {
+            throw new DomainValidationException('El descuento seleccionado no existe o esta inactivo.');
+        }
+        $this->execute(
+            'INSERT INTO pedido_descuento (id_pedido, id_descuento, autorizado_por, porcentaje_aplicado)
+             VALUES (:ped, :desc, :aut, :pct)',
+            [
+                ':ped'  => $idPedido,
+                ':desc' => $idDescuento,
+                ':aut'  => $autorizadoPor,
+                ':pct'  => $desc['porcentaje'],
+            ]
+        );
         return $this->getById($idPedido) ?? ['id_pedido' => $idPedido];
     }
 
-    public static function recalculateOrderTotalsInState(array &$state, int $idPedido): void {
-        $detalles = [];
-        $subtotal = 0.0;
-        $impPctPromedio = 8.0;
+    public function removeDiscount(int $idPedido, int $idDescuento): array {
+        $this->execute(
+            'DELETE FROM pedido_descuento WHERE id_pedido = :ped AND id_descuento = :desc',
+            [':ped' => $idPedido, ':desc' => $idDescuento]
+        );
+        return $this->getById($idPedido) ?? ['id_pedido' => $idPedido];
+    }
 
-        foreach ($state['detalle_pedido'] as $d) {
-            if ((int)$d['id_pedido'] === $idPedido) {
-                $detalles[(int)$d['id_detalle']] = $d;
-                $subtotal += ((float)$d['precio_unitario'] * (int)$d['cantidad']);
-                $impPctPromedio = (float)$d['impuesto_porcentaje'];
+    private function insertItemsBatch(int $idPedido, array $items): void {
+        $stmtProd = $this->db->prepare(
+            'SELECT id_producto, precio, impuesto_porcentaje, disponible FROM producto WHERE id_producto = :id LIMIT 1'
+        );
+        $stmtDet = $this->db->prepare(
+            'INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio_unitario, impuesto_porcentaje, observaciones)
+             VALUES (:id_pedido, :id_producto, :cantidad, :precio, :impuesto, :obs)
+             RETURNING id_detalle'
+        );
+        $stmtPers = $this->db->prepare(
+            'INSERT INTO personalizacion_pedido (id_detalle, cantidad, termino_coccion, observaciones)
+             VALUES (:id_det, :cant, :termino, :obs) RETURNING id_personalizacion'
+        );
+        $stmtPersIng = $this->db->prepare(
+            'INSERT INTO personalizacion_ingrediente (id_personalizacion, id_ingrediente, tipo_ajuste, cantidad, costo_extra)
+             VALUES (:id_pers, :id_ing, :tipo, :cant, :costo)
+             ON CONFLICT (id_personalizacion, id_ingrediente, tipo_ajuste) DO UPDATE
+                SET cantidad = EXCLUDED.cantidad, costo_extra = EXCLUDED.costo_extra'
+        );
+        $stmtFindIng = $this->db->prepare('SELECT id_ingrediente FROM ingrediente WHERE lower(nombre) = lower(:n) LIMIT 1');
+
+        foreach ($items as $item) {
+            $idProd = (int)($item['id_producto'] ?? 0);
+            $cant = (int)($item['cantidad'] ?? 0);
+            if ($idProd <= 0 || $cant <= 0) {
+                throw new DomainValidationException('Cada item requiere id_producto y cantidad positivos.');
             }
-        }
-
-        $persIds = [];
-        foreach ($state['personalizacion_pedido'] as $pp) {
-            if (isset($detalles[(int)$pp['id_detalle']])) {
-                $persIds[(int)$pp['id_personalizacion']] = true;
+            $stmtProd->execute([':id' => $idProd]);
+            $prod = $stmtProd->fetch();
+            if (!$prod) {
+                throw new DomainValidationException("Producto {$idProd} no existe.");
             }
-        }
+            $stmtDet->execute([
+                ':id_pedido'   => $idPedido,
+                ':id_producto' => $idProd,
+                ':cantidad'    => $cant,
+                ':precio'      => $prod['precio'],
+                ':impuesto'    => $prod['impuesto_porcentaje'],
+                ':obs'         => $item['observaciones'] ?? null,
+            ]);
+            $detRow = $stmtDet->fetch();
+            $idDetalle = (int)$detRow['id_detalle'];
 
-        foreach ($state['personalizacion_ingrediente'] as $pi) {
-            if (isset($persIds[(int)$pi['id_personalizacion']]) && $pi['tipo_ajuste'] === 'EXTRA') {
-                $subtotal += ((float)$pi['costo_extra'] * (float)$pi['cantidad']);
-            }
-        }
+            $termino = isset($item['termino_coccion']) ? trim((string)$item['termino_coccion']) : '';
+            $persObs = isset($item['observaciones']) ? trim((string)$item['observaciones']) : '';
+            $excluidos = is_array($item['ingredientes_excluidos'] ?? null) ? $item['ingredientes_excluidos'] : [];
+            $extras = is_array($item['extras'] ?? null) ? $item['extras'] : [];
 
-        $subtotal = round($subtotal, 2);
-        $descuentoTotal = 0.0;
-        foreach ($state['pedido_descuento'] as &$pd) {
-            if ((int)$pd['id_pedido'] === $idPedido) {
-                $monto = round($subtotal * ((float)$pd['porcentaje_aplicado'] / 100.0), 2);
-                $pd['monto_descontado'] = $monto;
-                $descuentoTotal += $monto;
-            }
-        }
-        $descuentoTotal = min($subtotal, round($descuentoTotal, 2));
-        $baseGravable = max(0.0, $subtotal - $descuentoTotal);
-        $impuestoTotal = round($baseGravable * ($impPctPromedio / 100.0), 2);
-        $total = round($baseGravable + $impuestoTotal, 2);
+            if ($termino !== '' || $persObs !== '' || !empty($excluidos) || !empty($extras)) {
+                $stmtPers->execute([
+                    ':id_det'  => $idDetalle,
+                    ':cant'    => $cant,
+                    ':termino' => $termino !== '' ? $termino : null,
+                    ':obs'     => $persObs !== '' ? $persObs : null,
+                ]);
+                $persRow = $stmtPers->fetch();
+                $idPers = (int)$persRow['id_personalizacion'];
 
-        foreach ($state['pedido'] as &$p) {
-            if ((int)$p['id_pedido'] === $idPedido) {
-                $p['subtotal']        = $subtotal;
-                $p['descuento_total'] = $descuentoTotal;
-                $p['impuesto_total']  = $impuestoTotal;
-                $p['total']           = $total;
-                break;
+                foreach ($excluidos as $excl) {
+                    $idIng = $this->resolveIngredienteId($excl, $stmtFindIng);
+                    if ($idIng > 0) {
+                        $stmtPersIng->execute([
+                            ':id_pers' => $idPers,
+                            ':id_ing'  => $idIng,
+                            ':tipo'    => 'ELIMINAR',
+                            ':cant'    => 1,
+                            ':costo'   => 0,
+                        ]);
+                    }
+                }
+                foreach ($extras as $ext) {
+                    $idIng = $this->resolveIngredienteId($ext['id_ingrediente'] ?? ($ext['nombre'] ?? ''), $stmtFindIng);
+                    $extCant = max(1, (float)($ext['cantidad'] ?? 1));
+                    $costoExtra = max(0, (float)($ext['costo_extra'] ?? ($ext['precio'] ?? 0)));
+                    if ($idIng > 0) {
+                        $stmtPersIng->execute([
+                            ':id_pers' => $idPers,
+                            ':id_ing'  => $idIng,
+                            ':tipo'    => 'EXTRA',
+                            ':cant'    => $extCant,
+                            ':costo'   => $costoExtra,
+                        ]);
+                    }
+                }
             }
         }
     }
 
-    public function getConciliacion(): array {
-        if ($this->isDbConnected()) {
-            return $this->fetchAll('SELECT * FROM vw_conciliacion_pedidos ORDER BY id_pedido DESC');
+    private function resolveIngredienteId($val, PDOStatement $stmtFind): int {
+        if (is_int($val) || (is_string($val) && ctype_digit($val))) {
+            return (int)$val;
         }
-        return NormalizedStore::withTransaction(static function (array &$state): array {
-            return array_values(NormalizedStore::viewConciliacionPedidos($state));
-        }, false);
+        $nombre = trim((string)$val);
+        if ($nombre === '') {
+            return 0;
+        }
+        $stmtFind->execute([':n' => $nombre]);
+        $row = $stmtFind->fetch();
+        return $row ? (int)$row['id_ingrediente'] : 0;
+    }
+
+    private function deductInventoryForOrder(int $idPedido, int $idUsuario): void {
+        $yaDescontado = $this->fetchOne(
+            "SELECT COUNT(*) AS cnt
+             FROM inventario inv
+             JOIN detalle_pedido dp ON dp.id_detalle = inv.id_detalle
+             WHERE dp.id_pedido = :id AND inv.tipo_movimiento = 'SALIDA'",
+            [':id' => $idPedido]
+        );
+        if ((int)($yaDescontado['cnt'] ?? 0) > 0) {
+            return;
+        }
+
+        $detalles = $this->fetchAll('SELECT id_detalle, id_producto, cantidad FROM detalle_pedido WHERE id_pedido = :id', [':id' => $idPedido]);
+        if (empty($detalles)) {
+            return;
+        }
+
+        $stmtReceta = $this->db->prepare(
+            'SELECT pi.id_ingrediente, pi.cantidad
+             FROM producto_ingrediente pi
+             WHERE pi.id_producto = :prod'
+        );
+        $stmtPers = $this->db->prepare(
+            "SELECT pin.id_ingrediente, pin.tipo_ajuste, pin.cantidad, pp.cantidad AS cant_pers
+             FROM personalizacion_pedido pp
+             JOIN personalizacion_ingrediente pin ON pin.id_personalizacion = pp.id_personalizacion
+             WHERE pp.id_detalle = :det"
+        );
+        $stmtInsMov = $this->db->prepare(
+            "INSERT INTO inventario (id_ingrediente, tipo_movimiento, cantidad, motivo, id_usuario, id_detalle)
+             VALUES (:ing, 'SALIDA', :cant, :motivo, :usr, :det)"
+        );
+        $stmtCheckIng = $this->db->prepare(
+            'SELECT id_ingrediente, nombre, stock_actual, stock_minimo, unidad_medida FROM ingrediente WHERE id_ingrediente = :id'
+        );
+        $stmtAdmins = $this->db->query("SELECT id_usuario FROM vw_usuarios_publico WHERE upper(rol_nombre) = 'ADMIN' AND estado = 'ACTIVO'");
+        $adminIds = array_column($stmtAdmins->fetchAll(), 'id_usuario');
+        $stmtNotif = $this->db->prepare(
+            "INSERT INTO notificacion (mensaje, tipo, id_usuario, id_ingrediente) VALUES (:m, 'INVENTARIO', :u, :i)"
+        );
+
+        foreach ($detalles as $det) {
+            $idDet = (int)$det['id_detalle'];
+            $porciones = (float)$det['cantidad'];
+
+            $stmtReceta->execute([':prod' => (int)$det['id_producto']]);
+            $consumos = [];
+            foreach ($stmtReceta->fetchAll() as $r) {
+                $consumos[(int)$r['id_ingrediente']] = (float)$r['cantidad'] * $porciones;
+            }
+
+            $stmtPers->execute([':det' => $idDet]);
+            foreach ($stmtPers->fetchAll() as $aj) {
+                $idIng = (int)$aj['id_ingrediente'];
+                if ($aj['tipo_ajuste'] === 'ELIMINAR') {
+                    unset($consumos[$idIng]);
+                } elseif ($aj['tipo_ajuste'] === 'EXTRA') {
+                    $consumos[$idIng] = ($consumos[$idIng] ?? 0) + ((float)$aj['cantidad'] * (float)$aj['cant_pers']);
+                }
+            }
+
+            foreach ($consumos as $idIng => $cant) {
+                if ($cant <= 0) {
+                    continue;
+                }
+                $stmtInsMov->execute([
+                    ':ing'    => $idIng,
+                    ':cant'   => round($cant, 3),
+                    ':motivo' => "Consumo pedido #{$idPedido}",
+                    ':usr'    => $idUsuario,
+                    ':det'    => $idDet,
+                ]);
+
+                $stmtCheckIng->execute([':id' => $idIng]);
+                $ingRow = $stmtCheckIng->fetch();
+                if ($ingRow && (float)$ingRow['stock_actual'] <= (float)$ingRow['stock_minimo']) {
+                    foreach ($adminIds as $aid) {
+                        $stmtNotif->execute([
+                            ':m' => "Stock bajo de {$ingRow['nombre']}: {$ingRow['stock_actual']} {$ingRow['unidad_medida']}",
+                            ':u' => (int)$aid,
+                            ':i' => $idIng,
+                        ]);
+                    }
+                }
+            }
+        }
+    }
+
+    private function hydrateDetailsAndDiscounts(array $pedidos): array {
+        if (empty($pedidos)) {
+            return [];
+        }
+        $ids = array_values(array_unique(array_map(static fn($p) => (int)$p['id_pedido'], $pedidos)));
+        $params = [];
+        $placeholders = [];
+        foreach ($ids as $idx => $idPedido) {
+            $ph = ':pid' . $idx;
+            $placeholders[] = $ph;
+            $params[$ph] = $idPedido;
+        }
+        $inClause = implode(', ', $placeholders);
+
+        $detRows = $this->fetchAll(
+            "SELECT dp.id_detalle, dp.id_pedido, dp.id_producto, dp.cantidad,
+                    dp.precio_unitario, dp.impuesto_porcentaje, dp.subtotal, dp.observaciones,
+                    pr.nombre AS producto_nombre, c.nombre AS categoria
+             FROM detalle_pedido dp
+             JOIN producto pr ON pr.id_producto = dp.id_producto
+             LEFT JOIN categoria c ON c.id_categoria = pr.id_categoria
+             WHERE dp.id_pedido IN ({$inClause})
+             ORDER BY dp.id_detalle ASC",
+            $params
+        );
+
+        $persRows = $this->fetchAll(
+            "SELECT pp.id_personalizacion, pp.id_detalle, pp.termino_coccion, pp.observaciones,
+                    pin.id_ingrediente, i.nombre AS ingrediente_nombre, pin.tipo_ajuste, pin.cantidad, pin.costo_extra
+             FROM personalizacion_pedido pp
+             LEFT JOIN personalizacion_ingrediente pin ON pin.id_personalizacion = pp.id_personalizacion
+             LEFT JOIN ingrediente i ON i.id_ingrediente = pin.id_ingrediente
+             JOIN detalle_pedido dp ON dp.id_detalle = pp.id_detalle
+             WHERE dp.id_pedido IN ({$inClause})",
+            $params
+        );
+
+        $persPorDet = [];
+        foreach ($persRows as $pr) {
+            $idDet = (int)$pr['id_detalle'];
+            if (!isset($persPorDet[$idDet])) {
+                $persPorDet[$idDet] = [
+                    'termino_coccion'        => $pr['termino_coccion'],
+                    'observaciones'          => $pr['observaciones'],
+                    'ingredientes_excluidos' => [],
+                    'extras'                 => [],
+                ];
+            }
+            if ($pr['tipo_ajuste'] === 'ELIMINAR' && $pr['ingrediente_nombre']) {
+                $persPorDet[$idDet]['ingredientes_excluidos'][] = $pr['ingrediente_nombre'];
+            } elseif ($pr['tipo_ajuste'] === 'EXTRA' && $pr['ingrediente_nombre']) {
+                $persPorDet[$idDet]['extras'][] = [
+                    'id_ingrediente' => (int)$pr['id_ingrediente'],
+                    'nombre'         => $pr['ingrediente_nombre'],
+                    'cantidad'       => (float)$pr['cantidad'],
+                    'costo_extra'    => (float)$pr['costo_extra'],
+                ];
+            }
+        }
+
+        $itemsPorPed = [];
+        foreach ($detRows as $d) {
+            $idDet = (int)$d['id_detalle'];
+            $pers = $persPorDet[$idDet] ?? [
+                'termino_coccion'        => null,
+                'observaciones'          => null,
+                'ingredientes_excluidos' => [],
+                'extras'                 => [],
+            ];
+            $d['termino_coccion'] = $pers['termino_coccion'];
+            $d['ingredientes_excluidos'] = $pers['ingredientes_excluidos'];
+            $d['extras'] = $pers['extras'];
+            $itemsPorPed[(int)$d['id_pedido']][] = $d;
+        }
+
+        $descRows = $this->fetchAll(
+            "SELECT pd.id_pedido_descuento, pd.id_pedido, pd.id_descuento, pd.porcentaje_aplicado,
+                    pd.monto_descontado, d.nombre AS descuento_nombre
+             FROM pedido_descuento pd
+             JOIN descuento d ON d.id_descuento = pd.id_descuento
+             WHERE pd.id_pedido IN ({$inClause})",
+            $params
+        );
+        $descPorPed = [];
+        foreach ($descRows as $dr) {
+            $descPorPed[(int)$dr['id_pedido']][] = $dr;
+        }
+
+        foreach ($pedidos as &$ped) {
+            $pid = (int)$ped['id_pedido'];
+            $ped['items'] = $itemsPorPed[$pid] ?? [];
+            $ped['descuentos'] = $descPorPed[$pid] ?? [];
+        }
+
+        return $pedidos;
     }
 }

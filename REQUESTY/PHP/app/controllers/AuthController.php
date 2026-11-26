@@ -1,6 +1,6 @@
 <?php
 /**
- * Controlador de Autenticacion Web (Login, Registro endurecido con CSRF y AES-256 PII, Logout).
+ * Controlador de Autenticacion Web (Login, Registro endurecido, Logout).
  */
 class AuthController extends Controller {
 
@@ -20,13 +20,10 @@ class AuthController extends Controller {
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             RateLimiter::check('auth_login', 5, 60);
+            $this->requireCsrfForWebPost();
 
             $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
                 || str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
-
-            if (!$isAjax) {
-                $this->requireCsrfForWebPost();
-            }
 
             $email = trim((string)($_POST['correo'] ?? $_POST['usuario'] ?? ''));
             $password = (string)($_POST['contrasena'] ?? $_POST['contraseña'] ?? '');
@@ -50,8 +47,9 @@ class AuthController extends Controller {
                         'id'     => (int)$authResult['id_usuario'],
                         'nombre' => (string)$authResult['nombre'],
                         'correo' => (string)$authResult['correo'],
-                        'rol'    => self::normalizeRole((string)$authResult['rol']),
+                        'rol'    => strtoupper((string)$authResult['rol']),
                     ];
+                    $this->registrarActividad((int)$authResult['id_usuario'], 'Inicio de sesion web', 'AUTH');
 
                     $rolKey = strtolower(trim($_SESSION['usuario']['rol']));
                     $redirectUrl = PAGINA_INICIAL_POR_ROL[$rolKey] ?? 'mesas';
@@ -85,13 +83,10 @@ class AuthController extends Controller {
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             RateLimiter::check('auth_register', 5, 60);
+            $this->requireCsrfForWebPost();
 
             $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
                 || str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
-
-            if (!$isAjax) {
-                $this->requireCsrfForWebPost();
-            }
 
             $nombre = trim((string)($_POST['nombre'] ?? ''));
             $correo = strtolower(trim((string)($_POST['correo'] ?? '')));
@@ -100,24 +95,26 @@ class AuthController extends Controller {
             $contrasena = (string)($_POST['contrasena'] ?? '');
             $confirmar = (string)($_POST['confirmar_contrasena'] ?? '');
 
-            if ($nombre === '' || $correo === '' || $contrasena === '') {
+            $pwdError = $contrasena !== '' ? DtoValidator::validatePasswordStrength($contrasena) : null;
+            if ($nombre === '' || $correo === '' || $documento === '' || $contrasena === '') {
                 $error = 'Por favor completa todos los campos obligatorios.';
+            } elseif ($pwdError !== null) {
+                $error = $pwdError;
             } elseif ($contrasena !== $confirmar) {
                 $error = 'Las contrasenas no coinciden.';
             } else {
-                if ($documento === '') {
-                    $documento = (string)time();
-                }
-                /** @var Cliente $clienteModel */
-                $clienteModel = $this->model('Cliente');
-                $id = $clienteModel->create([
+                /** @var Usuario $usuarioModel */
+                $usuarioModel = $this->model('Usuario');
+                $reg = $usuarioModel->registrarClienteConUsuario([
                     'tipo_documento' => 'CC',
                     'documento'      => $documento,
                     'nombre'         => $nombre,
                     'telefono'       => $telefono,
                     'correo'         => $correo,
+                    'contrasena'     => $contrasena,
                 ]);
-                if ($id > 0) {
+                if (!empty($reg['id_usuario'])) {
+                    $this->registrarActividad((int)$reg['id_usuario'], 'Registro publico de cliente', 'AUTH');
                     if ($isAjax) {
                         $this->json([
                             'success'     => true,
@@ -143,10 +140,7 @@ class AuthController extends Controller {
     }
 
     public function logout() {
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            $_SESSION = [];
-            session_destroy();
-        }
+        $this->destroySessionAndCookie();
         $this->redirect('login');
     }
 }

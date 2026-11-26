@@ -2,7 +2,7 @@
 $pageTitle = $pageTitle ?? 'Requesty - Reportes';
 $currentPage = 'reportes';
 $extraCss = ['css/reportes.css', 'css/cuentas.css'];
-$extraHead = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>';
+$extraHeadScripts = ['https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js'];
 require_once APPROOT . '/views/layouts/header.php';
 ?>
 <div class="container">
@@ -24,12 +24,13 @@ require_once APPROOT . '/views/layouts/header.php';
                     <input type="date" id="startDate" class="date-input">
                     <input type="date" id="endDate" class="date-input">
                     <div class="filters-actions">
-                        <button class="generate-btn" onclick="generateReport()">Generar reporte</button>
-                        <button class="pqrs-btn" id="btn-ver-pqrs" type="button" onclick="document.getElementById('vista-pqrs').scrollIntoView({behavior: 'smooth'})">Ver PQRS</button>
+                        <button type="button" class="generate-btn" id="btn-generar-reporte">Generar y guardar reporte</button>
+                        <button type="button" class="menu-btn" id="btn-exportar-csv">Exportar CSV</button>
+                        <button class="pqrs-btn" id="btn-ver-pqrs" type="button">Ver PQRS</button>
                         <button class="menu-btn" id="btn-administrar-menu" type="button" data-admin-only hidden>Administrar menú</button>
                         <button class="menu-btn" id="btn-administrar-inventario" type="button" data-admin-only hidden>Gestionar inventario</button>
                         <button class="menu-btn" id="btn-ver-cuentas" type="button" data-admin-only hidden>Cuentas del personal</button>
-                        <button class="menu-btn btn-reiniciar-procesos" id="btn-reiniciar-procesos" type="button" data-admin-only hidden>Reiniciar procesos</button>
+                        <button class="menu-btn" id="btn-ver-asistencia" type="button" data-admin-only hidden>Asistencia y Auditoría</button>
                     </div>
                 </div>
 
@@ -60,7 +61,7 @@ require_once APPROOT . '/views/layouts/header.php';
                 <div class="chart-section">
                     <div class="chart-header">
                         <h2 class="chart-title">Gráfica de ventas</h2>
-                        <select class="chart-range-select" id="chartRange" onchange="updateChart()">
+                        <select class="chart-range-select" id="chartRange">
                             <option value="7">Últimos 7 días</option>
                             <option value="14">Últimos 14 días</option>
                             <option value="30">Últimos 30 días</option>
@@ -134,12 +135,12 @@ require_once APPROOT . '/views/layouts/header.php';
                     <h1 class="page-title">Control de existencias e insumos</h1>
                     <button type="button" id="btn-volver-inventario" class="boton-secundario">Volver a reportes</button>
                 </div>
-                <p class="descripcion-inventario">El inventario predeterminado cubre 45 porciones de cada plato y fija mínimos para 15 porciones, sumando los insumos compartidos. Los sólidos se registran en gramos (g), los líquidos en litros (L) y las piezas en unidades. Para el jugo, el pedido permite elegir agua o leche.</p>
+                <p class="descripcion-inventario">Los movimientos del Kardex son inmutables (entradas, salidas, mermas y ajustes). Los sólidos se registran en gramos (g), los líquidos en litros (L) y las piezas en unidades.</p>
                 <form id="formulario-inventario" class="panel formulario-inventario">
                     <div class="campo"><label for="nombre-insumo">Nombre del insumo</label><input id="nombre-insumo" required maxlength="100" placeholder="Ej. Arroz"></div>
-                    <div class="campo"><label for="unidad-insumo">Unidad de medida</label><select id="unidad-insumo" required><option value="g">Gramos (g)</option><option value="L">Litros (L)</option><option value="unidad">Unidad</option></select></div>
-                    <div class="campo"><label for="stock-insumo">Cantidad disponible</label><input id="stock-insumo" type="number" min="0" step="0.001" required value="45"></div>
-                    <div class="campo"><label for="minimo-insumo">Nivel mínimo</label><input id="minimo-insumo" type="number" min="0" step="0.001" required value="15"></div>
+                    <div class="campo"><label for="unidad-insumo">Unidad de medida</label><select id="unidad-insumo" required><option value="g">Gramos (g)</option><option value="L">Litros (L)</option><option value="unidad">Unidad</option><option value="kg">Kilogramos (kg)</option><option value="ml">Mililitros (ml)</option></select></div>
+                    <div class="campo"><label for="stock-insumo">Cantidad disponible / movimiento</label><input id="stock-insumo" type="number" min="0" step="0.001" required value="100"></div>
+                    <div class="campo"><label for="minimo-insumo">Nivel mínimo</label><input id="minimo-insumo" type="number" min="0" step="0.001" required value="20"></div>
                     <div class="acciones-formulario">
                         <button type="submit" id="guardar-insumo">Registrar insumo</button>
                         <button type="button" id="cancelar-edicion-insumo" class="boton-secundario" hidden>Cancelar</button>
@@ -152,6 +153,13 @@ require_once APPROOT . '/views/layouts/header.php';
                         <table class="tabla-inventario">
                             <thead><tr><th>Insumo</th><th>Stock</th><th>Nivel mínimo</th><th>Estado</th><th>Consumo por porción</th><th>Platos relacionados</th><th>Acciones</th></tr></thead>
                             <tbody id="tabla-inventario"></tbody>
+                        </table>
+                    </div>
+                    <h3 style="margin-top:20px;">Últimos movimientos Kardex</h3>
+                    <div class="tabla-inventario-scroll">
+                        <table class="tabla-inventario">
+                            <thead><tr><th>Fecha</th><th>Insumo</th><th>Movimiento</th><th>Cantidad</th><th>Motivo</th><th>Usuario</th></tr></thead>
+                            <tbody id="tabla-kardex"></tbody>
                         </table>
                     </div>
                 </section>
@@ -171,19 +179,18 @@ require_once APPROOT . '/views/layouts/header.php';
 
                             <select id="filtro-tipo">
                                 <option value="">Todos los tipos</option>
-                                <option value="Petición">Petición</option>
-                                <option value="Queja">Queja</option>
-                                <option value="Reclamo">Reclamo</option>
-                                <option value="Sugerencia">Sugerencia</option>
-                                <option value="Felicitación">Felicitación</option>
+                                <option value="PETICION">Petición</option>
+                                <option value="QUEJA">Queja</option>
+                                <option value="RECLAMO">Reclamo</option>
+                                <option value="SUGERENCIA">Sugerencia</option>
                             </select>
 
                             <select id="filtro-estado">
                                 <option value="">Todos los estados</option>
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="En revisión">En revisión</option>
-                                <option value="Resuelta">Resuelta</option>
-                                <option value="Cerrada">Cerrada</option>
+                                <option value="ABIERTA">Abierta</option>
+                                <option value="EN_PROCESO">En proceso</option>
+                                <option value="RESUELTA">Resuelta</option>
+                                <option value="CERRADA">Cerrada</option>
                             </select>
                         </div>
                     </div>
@@ -246,6 +253,32 @@ require_once APPROOT . '/views/layouts/header.php';
                 <button type="button" id="volver-reportes-cuentas" class="btn-secundario">Volver a reportes</button>
             </section>
 
+            <!-- ========== VISTA 6: ASISTENCIA Y AUDITORÍA ========== -->
+            <section id="vista-asistencia" class="oculto cuentas-content">
+                <div class="page-header encabezado-menu">
+                    <h1 class="page-title">Control de Asistencia y Auditoría</h1>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" id="btn-marcar-entrada" class="btn-primary">Marcar entrada</button>
+                        <button type="button" id="btn-volver-asistencia" class="boton-secundario">Volver a reportes</button>
+                    </div>
+                </div>
+                <p id="mensaje-asistencia" class="mensaje-menu" aria-live="polite"></p>
+                <div class="tabla-inventario-scroll" style="margin-bottom:24px;">
+                    <h3>Turnos de Asistencia</h3>
+                    <table class="tabla-inventario">
+                        <thead><tr><th>Empleado</th><th>Rol</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Horas</th><th>Extra</th><th>Acción</th></tr></thead>
+                        <tbody id="tabla-asistencia"></tbody>
+                    </table>
+                </div>
+                <div class="tabla-inventario-scroll">
+                    <h3>Bitácora Inmutable de Actividad</h3>
+                    <table class="tabla-inventario">
+                        <thead><tr><th>Fecha</th><th>Usuario</th><th>Módulo</th><th>Acción</th><th>IP</th></tr></thead>
+                        <tbody id="tabla-actividad"></tbody>
+                    </table>
+                </div>
+            </section>
+
         </div>
     </div>
 </div>
@@ -269,10 +302,10 @@ require_once APPROOT . '/views/layouts/header.php';
             <div class="form-group">
                 <label for="modal-estado">Actualizar estado</label>
                 <select id="modal-estado">
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="En revisión">En revisión</option>
-                    <option value="Resuelta">Resuelta</option>
-                    <option value="Cerrada">Cerrada</option>
+                    <option value="ABIERTA">Abierta</option>
+                    <option value="EN_PROCESO">En proceso</option>
+                    <option value="RESUELTA">Resuelta</option>
+                    <option value="CERRADA">Cerrada</option>
                 </select>
             </div>
         </div>
@@ -292,21 +325,23 @@ require_once APPROOT . '/views/layouts/header.php';
         </header>
         <input id="idCuenta" type="hidden">
         <div class="campos-cuenta">
-            <label>Nombre completo<input id="nombreCuenta" name="nombre" required maxlength="100" autocomplete="name"></label>
+            <label>Nombre<input id="nombreCuenta" name="nombre" required maxlength="100" autocomplete="given-name"></label>
+            <label>Apellido<input id="apellidoCuenta" name="apellido" required maxlength="100" autocomplete="family-name"></label>
+            <label id="campoDocumentoWrap">Documento<input id="documentoCuenta" name="documento" maxlength="30" placeholder="Ej. 1005005005"></label>
             <label>Correo electrónico<input id="correoCuenta" name="correo" type="email" required maxlength="150" autocomplete="email"></label>
             <label>Teléfono<input id="telefonoCuenta" name="telefono" type="tel" maxlength="20" autocomplete="tel"></label>
-            <label id="etiquetaContrasena">Contraseña<input id="contrasenaCuenta" name="contrasena" type="password" minlength="6" autocomplete="new-password"></label>
+            <label id="etiquetaContrasena">Contraseña<input id="contrasenaCuenta" name="contrasena" type="password" minlength="8" autocomplete="new-password"></label>
             <label>Rol<select id="rolCuenta" name="rol" required>
-                <option value="Administrador">Administrador</option>
-                <option value="Cajero">Cajero</option>
-                <option value="Mesero">Mesero</option>
-                <option value="Cocina">Cocina</option>
-                <option value="Cliente">Cliente</option>
+                <option value="ADMIN">Administrador</option>
+                <option value="CAJERO">Cajero</option>
+                <option value="MESERO">Mesero</option>
+                <option value="COCINA">Cocina</option>
+                <option value="CLIENTE">Cliente</option>
             </select></label>
         </div>
         <fieldset class="permisos-cuenta">
-            <legend>Permisos de interfaz</legend>
-            <p>Los permisos iniciales dependen del rol y se pueden ajustar para esta cuenta.</p>
+            <legend>Permisos asignados por rol en servidor</legend>
+            <p>Los permisos efectivos se aplican automáticamente por el rol seleccionado en la base de datos.</p>
             <div id="listaPermisos" class="lista-permisos"></div>
         </fieldset>
         <p id="mensajeCuenta" class="mensaje-cuenta" aria-live="polite"></p>
@@ -318,7 +353,6 @@ require_once APPROOT . '/views/layouts/header.php';
 </dialog>
 
 <script src="<?= asset('js/auth.js') ?>"></script>
-<script>protegerPagina("reportes");</script>
 <script src="<?= asset('js/inventario.js') ?>"></script>
 <script src="<?= asset('js/reportes.js') ?>"></script>
 <script src="<?= asset('js/cuentas.js') ?>"></script>

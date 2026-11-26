@@ -1,180 +1,65 @@
 /**
- * Requesty - Modal de Confirmación de Cerrar Sesión & Ola Fluida del Nav (Estilo Pinterest/Dock)
+ * Requesty - Navegación Lateral (Sidebar) & Modal de Confirmación de Cierre de Sesión
  */
 (function () {
-    function initNavWave() {
-        const navMenu = document.getElementById("topNavMenu");
-        const wavePill = document.getElementById("navWavePill");
-        if (!navMenu || !wavePill) return;
-
-        const navBtns = navMenu.querySelectorAll(".nav-btn");
-        let pointerButton = null;
-        let pendingPointerButton = null;
-        let pointerChangeTimer = 0;
-        let currentTop = null;
-        let currentHeight = null;
-        let lastFrameTime = 0;
-        let waveFrame = 0;
-        const transitioningLabels = new Set();
-        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const pointerSettleDelay = 60;
-
-        function getActiveButton() {
-            return navMenu.querySelector(".nav-btn.active") || navBtns[0];
-        }
-
-        function getWaveTarget() {
-            const target = pointerButton
-                || navMenu.querySelector(".nav-btn:focus-visible")
-                || getActiveButton();
-            return target && navMenu.contains(target) ? target : getActiveButton();
-        }
-
-        function getWavePosition(targetBtn) {
-            if (!targetBtn) {
-                return null;
-            }
-            const menuRect = navMenu.getBoundingClientRect();
-            const btnRect = targetBtn.getBoundingClientRect();
-            return {
-                top: btnRect.top - menuRect.top,
-                height: btnRect.height
-            };
-        }
-
-        function renderWave(top, height) {
-            currentTop = top;
-            currentHeight = height;
-            wavePill.style.height = height + "px";
-            wavePill.style.transform = "translate3d(0, " + top + "px, 0)";
-            wavePill.style.opacity = "1";
-        }
-
-        function syncWaveCurrent(target, position) {
-            const aligned = currentTop !== null
-                && currentHeight !== null
-                && Math.abs(position.top - currentTop) < 2
-                && Math.abs(position.height - currentHeight) < 2;
-            navBtns.forEach(function (btn) {
-                btn.classList.toggle("is-wave-current", aligned && btn === target);
-            });
-        }
-
-        function animateWave(timestamp) {
-            waveFrame = 0;
-            const target = getWaveTarget();
-            const position = getWavePosition(target);
-            if (!position) {
-                wavePill.style.opacity = "0";
-                return;
-            }
-
-            if (currentTop === null || currentHeight === null || reduceMotion) {
-                renderWave(position.top, position.height);
-            } else {
-                const elapsed = lastFrameTime ? Math.min(timestamp - lastFrameTime, 32) : 16;
-                const progress = 1 - Math.exp(-elapsed / 20);
-                const top = currentTop + (position.top - currentTop) * progress;
-                const height = currentHeight + (position.height - currentHeight) * progress;
-                renderWave(top, height);
-            }
-            syncWaveCurrent(target, position);
-            lastFrameTime = timestamp;
-
-            const settled = Math.abs(position.top - currentTop) < 0.25
-                && Math.abs(position.height - currentHeight) < 0.25;
-            if (!settled || transitioningLabels.size > 0) {
-                waveFrame = window.requestAnimationFrame(animateWave);
-            } else {
-                renderWave(position.top, position.height);
-                syncWaveCurrent(target, position);
-                lastFrameTime = 0;
-            }
-        }
-
-        function startWaveAnimation() {
-            if (!waveFrame) waveFrame = window.requestAnimationFrame(animateWave);
-        }
-
-        window.requestAnimationFrame(function () {
-            const initialPosition = getWavePosition(getWaveTarget());
-            if (initialPosition) renderWave(initialPosition.top, initialPosition.height);
-            window.requestAnimationFrame(function () {
-                startWaveAnimation();
-            });
-        });
-
-        navBtns.forEach(function (btn) {
-            btn.addEventListener("focus", startWaveAnimation);
-            btn.addEventListener("blur", startWaveAnimation);
-        });
-
-        document.addEventListener("pointermove", function (event) {
-            if (event.pointerType === "touch") return;
-
-            const targetBtn = navMenu.contains(event.target)
-                ? event.target.closest(".nav-btn")
-                : null;
-            if (targetBtn === pointerButton) {
-                if (pointerChangeTimer) {
-                    window.clearTimeout(pointerChangeTimer);
-                    pointerChangeTimer = 0;
-                    pendingPointerButton = null;
-                }
-                return;
-            }
-            if (targetBtn === pendingPointerButton && pointerChangeTimer) return;
-
-            pendingPointerButton = targetBtn;
-            if (pointerChangeTimer) window.clearTimeout(pointerChangeTimer);
-            pointerChangeTimer = window.setTimeout(function () {
-                pointerChangeTimer = 0;
-                pointerButton = pendingPointerButton;
-                pendingPointerButton = null;
-                navBtns.forEach(function (btn) {
-                    btn.classList.toggle("is-expanded", btn === pointerButton);
-                });
-                startWaveAnimation();
-            }, pointerSettleDelay);
-        }, { passive: true });
-
-        navMenu.addEventListener("transitionrun", function (event) {
-            if (event.target.matches(".nav-text") && event.propertyName === "max-width") {
-                transitioningLabels.add(event.target);
-                startWaveAnimation();
-            }
-        });
-
-        function finishLabelTransition(event) {
-            if (event.target.matches(".nav-text") && event.propertyName === "max-width") {
-                transitioningLabels.delete(event.target);
-                startWaveAnimation();
-            }
-        }
-        navMenu.addEventListener("transitionend", finishLabelTransition);
-        navMenu.addEventListener("transitioncancel", finishLabelTransition);
-
-        window.addEventListener("blur", function () {
-            if (pointerChangeTimer) window.clearTimeout(pointerChangeTimer);
-            pointerChangeTimer = 0;
-            pendingPointerButton = null;
-            pointerButton = null;
-            navBtns.forEach(function (btn) {
-                btn.classList.remove("is-expanded");
-            });
-            startWaveAnimation();
-        });
-
-        window.addEventListener("resize", function () {
-            startWaveAnimation();
-        });
-    }
-
-    function initLogoutModal() {
-        const logoutBtn = document.getElementById("btnTopbarLogout") || document.getElementById("btnSidebarLogout");
+    function initSidebar() {
+        const sidebar = document.getElementById("appSidebar");
+        const collapseBtn = document.getElementById("sidebarCollapseBtn");
+        const topbarToggle = document.getElementById("topbarSidebarToggle");
+        const sidebarLogo = document.getElementById("sidebarLogo");
+        const logoutBtn = document.getElementById("btnSidebarLogout");
         const logoutModal = document.getElementById("modalLogoutConfirm");
         const cancelLogoutBtn = document.getElementById("btnCancelLogout");
         const confirmLogoutBtn = document.getElementById("btnConfirmLogout");
+
+        if (!sidebar) return;
+
+        function setCollapsed(collapsed) {
+            if (collapsed) {
+                sidebar.classList.add("collapsed");
+                document.body.classList.add("sidebar-collapsed");
+                document.documentElement.classList.add("sidebar-collapsed");
+                if (collapseBtn) {
+                    collapseBtn.setAttribute("title", "Desplegar menú lateral");
+                    collapseBtn.setAttribute("aria-expanded", "false");
+                }
+            } else {
+                sidebar.classList.remove("collapsed");
+                document.body.classList.remove("sidebar-collapsed");
+                document.documentElement.classList.remove("sidebar-collapsed");
+                if (collapseBtn) {
+                    collapseBtn.setAttribute("title", "Plegar menú lateral");
+                    collapseBtn.setAttribute("aria-expanded", "true");
+                }
+            }
+        }
+
+        function toggleSidebar() {
+            const isCollapsed = sidebar.classList.contains("collapsed") || document.body.classList.contains("sidebar-collapsed");
+            setCollapsed(!isCollapsed);
+        }
+
+        if (collapseBtn) {
+            collapseBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+
+        if (topbarToggle) {
+            topbarToggle.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+
+        if (sidebarLogo) {
+            sidebarLogo.addEventListener("click", () => {
+                if (sidebar.classList.contains("collapsed")) setCollapsed(false);
+            });
+        }
 
         function abrirModalLogout() {
             if (!logoutModal) return;
@@ -189,7 +74,7 @@
         function cerrarModalLogout() {
             if (!logoutModal) return;
             logoutModal.classList.remove("show");
-            setTimeout(function () {
+            setTimeout(() => {
                 logoutModal.style.display = "none";
                 logoutModal.setAttribute("aria-hidden", "true");
                 document.body.style.overflow = "";
@@ -197,88 +82,56 @@
         }
 
         if (logoutBtn) {
-            logoutBtn.addEventListener("click", function (e) {
+            logoutBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 abrirModalLogout();
             });
         }
 
-        document.querySelectorAll('[data-action="logout"], .btn-cerrar-sesion-js, #btnTopbarLogout, #btnSidebarLogout').forEach(function (btn) {
-            btn.addEventListener("click", function (e) {
+        document.querySelectorAll('[data-action="logout"], .btn-cerrar-sesion-js').forEach((btn) => {
+            btn.addEventListener("click", (e) => {
                 e.preventDefault();
                 abrirModalLogout();
             });
         });
 
         if (cancelLogoutBtn) {
-            cancelLogoutBtn.addEventListener("click", function (e) {
+            cancelLogoutBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 cerrarModalLogout();
             });
         }
 
         if (confirmLogoutBtn) {
-            confirmLogoutBtn.addEventListener("click", function () {
-                try {
-                    sessionStorage.removeItem("requestySesion");
-                    localStorage.removeItem("requestySesion");
-                } catch (e) {}
-            });
-        }
-
-        if (logoutModal) {
-            logoutModal.addEventListener("click", function (e) {
-                if (e.target === logoutModal) {
-                    cerrarModalLogout();
+            confirmLogoutBtn.addEventListener("click", async (e) => {
+                if (window.RequestyAPI) {
+                    e.preventDefault();
+                    try {
+                        await window.RequestyAPI.post("api/logout", {});
+                    } catch {
+                        // Fallback to standard server logout route
+                    }
+                    window.location.href = "index.php?page=logout";
                 }
             });
         }
 
-        document.addEventListener("keydown", function (e) {
+        if (logoutModal) {
+            logoutModal.addEventListener("click", (e) => {
+                if (e.target === logoutModal) cerrarModalLogout();
+            });
+        }
+
+        document.addEventListener("keydown", (e) => {
             if (e.key === "Escape" && logoutModal && logoutModal.classList.contains("show")) {
                 cerrarModalLogout();
             }
         });
     }
 
-    function initNavToggle() {
-        const toggle = document.getElementById("btnNavToggle");
-        if (!toggle) return;
-
-        const root = document.documentElement;
-
-        function setExpanded(expanded, persist) {
-            root.classList.toggle("nav-expanded", expanded);
-            root.classList.toggle("sidebar-collapsed", !expanded);
-            toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-            toggle.setAttribute("aria-label", expanded ? "Ocultar menú" : "Expandir menú");
-            toggle.title = expanded ? "Ocultar menú" : "Expandir menú";
-            toggle.querySelector(".nav-toggle-text").textContent = expanded ? "Ocultar menú" : "Expandir menú";
-
-            if (persist) {
-                try {
-                    localStorage.setItem("rq_sidebar_collapsed", expanded ? "0" : "1");
-                } catch (error) {
-                    console.warn("No se pudo guardar la preferencia del menú lateral.", error);
-                }
-            }
-        }
-
-        setExpanded(root.classList.contains("nav-expanded"), false);
-        toggle.addEventListener("click", function () {
-            setExpanded(!root.classList.contains("nav-expanded"), true);
-        });
-    }
-
-    function initAll() {
-        initNavWave();
-        initNavToggle();
-        initLogoutModal();
-    }
-
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initAll);
+        document.addEventListener("DOMContentLoaded", initSidebar);
     } else {
-        initAll();
+        initSidebar();
     }
 })();

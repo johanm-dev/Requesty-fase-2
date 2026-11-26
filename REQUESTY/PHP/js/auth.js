@@ -1,307 +1,239 @@
-const permisosPorRol = {
-    administrador: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"],
-    admin: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"],
-    cajero: ["menu", "mesas", "pedidos", "caja"],
-    mesero: ["menu", "mesas", "pedidos"],
-    cocina: ["menu", "pedidos", "cocina"],
-    cliente: ["menu", "pqrs"]
-};
+(function () {
+    const permisosPorRol = {
+        administrador: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"],
+        admin: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"],
+        cajero: ["menu", "mesas", "pedidos", "caja"],
+        mesero: ["menu", "mesas", "pedidos"],
+        cocina: ["menu", "pedidos", "cocina"],
+        cliente: ["menu", "pqrs", "caja"]
+    };
 
-const paginaPorEnlace = {
-    "index.php?page=menu": "menu",
-    "index.php?page=mesas": "mesas",
-    "index.php?page=pedidos": "pedidos",
-    "index.php?page=cocina": "cocina",
-    "index.php?page=caja": "caja",
-    "index.php?page=pqrs": "pqrs",
-    "index.php?page=reportes": "reportes"
-};
+    const paginaPorEnlace = {
+        "index.php?page=menu": "menu",
+        "index.php?page=mesas": "mesas",
+        "index.php?page=pedidos": "pedidos",
+        "index.php?page=cocina": "cocina",
+        "index.php?page=caja": "caja",
+        "index.php?page=pqrs": "pqrs",
+        "index.php?page=reportes": "reportes"
+    };
 
-const loginUrl = "index.php";
+    const paginaInicialPorRol = {
+        administrador: "index.php?page=mesas",
+        admin: "index.php?page=mesas",
+        cajero: "index.php?page=caja",
+        mesero: "index.php?page=mesas",
+        cocina: "index.php?page=cocina",
+        cliente: "index.php?page=menu"
+    };
 
-const paginaInicialPorRol = {
-    administrador: "index.php?page=mesas",
-    admin: "index.php?page=mesas",
-    cajero: "index.php?page=caja",
-    mesero: "index.php?page=mesas",
-    cocina: "index.php?page=cocina",
-    cliente: "index.php?page=menu"
-};
+    const loginUrl = "index.php";
+    let sesionMemoria = null;
+    let csrfTokenActual = "";
 
-const archivoPorPermiso = {
-    menu: "index.php?page=menu",
-    mesas: "index.php?page=mesas",
-    pedidos: "index.php?page=pedidos",
-    cocina: "index.php?page=cocina",
-    caja: "index.php?page=caja",
-    pqrs: "index.php?page=pqrs",
-    reportes: "index.php?page=reportes"
-};
-
-function claveRol(rol) {
-    return String(rol || "").trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
-
-function leerSesion() {
-    const datos = sessionStorage.getItem("requestySesion") || localStorage.getItem("requestySesion");
-    if (!datos) return null;
-
-    try {
-        return JSON.parse(datos);
-    } catch {
-        return null;
-    }
-}
-
-function leerUsuariosAuth() {
-    try {
-        // Cuentas por defecto (incluye usuarios semilla PostgreSQL 17 y cuentas demo)
-        const cuentasPorDefecto = [
-            {
-                nombre: "Carlos Gomez",
-                correo: "admin@restaurante.local",
-                contrasena: "AdminRest2026*",
-                rol: "Administrador",
-                activo: true,
-                permisos: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"]
-            },
-            {
-                nombre: "Laura Martinez",
-                correo: "cajero@restaurante.local",
-                contrasena: "CajeroRest2026*",
-                rol: "Cajero",
-                activo: true,
-                permisos: ["menu", "mesas", "pedidos", "caja"]
-            },
-            {
-                nombre: "Mateo Ruiz",
-                correo: "mesero@restaurante.local",
-                contrasena: "MeseroRest2026*",
-                rol: "Mesero",
-                activo: true,
-                permisos: ["menu", "mesas", "pedidos"]
-            },
-            {
-                nombre: "Juan Pérez",
-                correo: "admin@requesty.com",
-                contrasena: "admin123",
-                rol: "Administrador",
-                activo: true,
-                permisos: ["menu", "mesas", "pedidos", "cocina", "caja", "pqrs", "reportes"]
-            },
-            {
-                nombre: "Carlos Cajero",
-                correo: "cajero@requesty.com",
-                contrasena: "caja123",
-                rol: "Cajero",
-                activo: true,
-                permisos: ["menu", "mesas", "pedidos", "caja"]
-            },
-            {
-                nombre: "Mateo Mesero",
-                correo: "mesero@requesty.com",
-                contrasena: "mesero123",
-                rol: "Mesero",
-                activo: true,
-                permisos: ["menu", "mesas", "pedidos"]
-            },
-            {
-                nombre: "Claudia Cocina",
-                correo: "cocina@requesty.com",
-                contrasena: "cocina123",
-                rol: "Cocina",
-                activo: true,
-                permisos: ["menu", "pedidos", "cocina"]
-            },
-            {
-                nombre: "Cliente Demo",
-                correo: "cliente@gmail.com",
-                contrasena: "cliente123",
-                rol: "Cliente",
-                activo: true,
-                permisos: ["menu", "pqrs"]
-            }
-        ];
-
-        const guardados = localStorage.getItem("requestyUsuarios");
-        if (guardados) {
-            const usuarios = JSON.parse(guardados);
-            if (Array.isArray(usuarios) && usuarios.length > 0) {
-                const correosExistentes = new Set(usuarios.map(u => String(u.correo || "").toLowerCase()));
-                for (const base of cuentasPorDefecto) {
-                    if (!correosExistentes.has(base.correo.toLowerCase())) {
-                        usuarios.push(base);
-                    }
-                }
-                return usuarios;
-            }
-        }
-        localStorage.setItem("requestyUsuarios", JSON.stringify(cuentasPorDefecto));
-        return cuentasPorDefecto;
-    } catch {
-        return [];
-    }
-}
-
-function paginaInicialUsuario(usuario) {
-    const rol = claveRol(usuario.rol);
-    const permisos = Array.isArray(usuario.permisos) ? usuario.permisos : permisosPorRol[rol] || [];
-    const predeterminada = paginaInicialPorRol[rol];
-    if (predeterminada && permisos.includes(predeterminada.replace(/\.(html|php)/, ""))) return predeterminada;
-    return archivoPorPermiso[permisos[0]] || ((rol === "admin" || rol === "administrador") ? "index.php?page=reportes#cuentas" : loginUrl);
-}
-
-function iniciarSesion() {
-    const correoInput = document.getElementById("usuario");
-    const contrasenaInput = document.getElementById("contraseña");
-    const mensaje = document.getElementById("loginMensaje");
-
-    if (!correoInput || !contrasenaInput) return;
-
-    const correo = correoInput.value.trim().toLowerCase();
-    const contrasena = contrasenaInput.value;
-
-    const usuario = leerUsuariosAuth().find((cuenta) =>
-        cuenta.correo.toLowerCase() === correo && cuenta.contrasena === contrasena
-    );
-
-    if (!usuario || usuario.activo === false) {
-        if (mensaje) mensaje.textContent = usuario ? "La cuenta está inactiva. Contacta al administrador." : "Correo o contraseña incorrectos.";
-        return;
+    function metaContent(name) {
+        return document.querySelector(`meta[name="${name}"]`)?.getAttribute("content") || "";
     }
 
-    const sesion = JSON.stringify({ nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol });
-    sessionStorage.removeItem("requestySesion");
-    localStorage.removeItem("requestySesion");
-    const recuerdameCheckbox = document.getElementById("checkbox_recuerdame");
-    (recuerdameCheckbox && recuerdameCheckbox.checked ? localStorage : sessionStorage)
-        .setItem("requestySesion", sesion);
+    function obtenerCsrfToken() {
+        return csrfTokenActual || metaContent("csrf-token") || document.querySelector('input[name="_csrf"]')?.value || "";
+    }
 
-    window.location.href = paginaInicialUsuario(usuario);
-}
-
-async function protegerPagina(pagina) {
-    let sesion = leerSesion();
-    let cuentaServidor = null;
-    try {
-        const respuesta = await fetch("index.php?page=api/sesion", {
-            headers: { "Accept": "application/json" },
-            cache: "no-store"
+    function buildApiUrl(route, params) {
+        const cleanRoute = String(route || "").replace(/^\/+/, "");
+        const base = metaContent("app-base").replace(/\/$/, "");
+        const prefix = base ? `${base}/index.php?page=${encodeURIComponent(cleanRoute)}` : `index.php?page=${encodeURIComponent(cleanRoute)}`;
+        if (!params || typeof params !== "object") return prefix;
+        const qs = new URLSearchParams();
+        Object.entries(params).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
         });
-        if (!respuesta.ok) throw new Error(`Validación de sesión respondió ${respuesta.status}`);
-        const datos = await respuesta.json();
-        if (datos.autenticado && datos.usuario?.correo) {
-            sesion = {
-                nombre: datos.usuario.nombre,
-                correo: datos.usuario.correo,
-                rol: datos.usuario.rol
-            };
-            const rolServidor = claveRol(sesion.rol);
-            cuentaServidor = {
-                ...sesion,
-                activo: true,
-                permisos: permisosPorRol[rolServidor] || []
-            };
-            sessionStorage.setItem("requestySesion", JSON.stringify(sesion));
-            if (localStorage.getItem("requestySesion")) {
-                localStorage.setItem("requestySesion", JSON.stringify(sesion));
-            }
-        }
-    } catch (error) {
-        console.error("No se pudo validar la sesión con el servidor.", error);
+        const tail = qs.toString();
+        return tail ? `${prefix}&${tail}` : prefix;
     }
 
-    if (!sesion?.correo) {
-        window.location.replace(loginUrl);
-        return;
-    }
-
-    let cuenta = cuentaServidor || leerUsuariosAuth().find((usuario) => usuario.correo.toLowerCase() === sesion.correo.toLowerCase());
-    if (!cuenta) {
-        const rolSesion = claveRol(sesion.rol);
-        cuenta = {
-            nombre: sesion.nombre,
-            correo: sesion.correo,
-            rol: sesion.rol,
-            activo: true,
-            permisos: permisosPorRol[rolSesion] || []
+    async function apiRequest(route, options = {}) {
+        const method = String(options.method || "GET").toUpperCase();
+        const url = buildApiUrl(route, options.params);
+        const headers = {
+            "Accept": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            ...(options.headers || {})
         };
-    }
-    if (cuenta.activo === false) {
-        sessionStorage.removeItem("requestySesion");
-        localStorage.removeItem("requestySesion");
-        window.location.replace(loginUrl);
-        return;
-    }
+        if (method !== "GET" && method !== "HEAD") {
+            const csrf = obtenerCsrfToken();
+            if (csrf) headers["X-CSRF-Token"] = csrf;
+        }
+        let body = options.body;
+        if (body !== undefined && body !== null && !(body instanceof FormData) && typeof body !== "string") {
+            headers["Content-Type"] = "application/json";
+            body = JSON.stringify(body);
+        }
 
-    const rol = claveRol(cuenta.rol);
-    const permisosBase = permisosPorRol[rol] || [];
-    const esAdministrador = rol === "admin" || rol === "administrador";
-    const paginasPermitidas = esAdministrador
-        ? permisosPorRol.administrador
-        : (Array.isArray(cuenta.permisos) ? cuenta.permisos : permisosBase);
-    const puedeVerMenu = ["mesero", "cliente", "admin", "administrador"].includes(rol);
-    const accesoCajaCliente = pagina === "caja" && rol === "cliente";
-    const puedeAbrirPagina = (pagina === "reportes" && esAdministrador || accesoCajaCliente || paginasPermitidas.includes(pagina))
-        && (pagina !== "menu" || puedeVerMenu);
-    if (!puedeAbrirPagina) {
-        window.location.replace(paginaInicialUsuario(cuenta));
-        return;
-    }
-
-    sesion.nombre = cuenta.nombre;
-    sesion.rol = cuenta.rol;
-    sessionStorage.setItem("requestySesion", JSON.stringify(sesion));
-    if (localStorage.getItem("requestySesion")) localStorage.setItem("requestySesion", JSON.stringify(sesion));
-
-    const perfil = document.querySelector(".profile-info");
-    if (perfil) {
-        const nombreH4 = perfil.querySelector("h4");
-        const rolP = perfil.querySelector("p");
-        if (nombreH4) nombreH4.textContent = sesion.nombre;
-        if (rolP) rolP.textContent = sesion.rol;
-    }
-
-    const avatar = document.querySelector(".profile-avatar");
-    if (avatar) {
-        avatar.textContent = sesion.nombre.split(/\s+/).slice(0, 2).map((parte) => parte[0]).join("").toUpperCase();
-    }
-
-    document.querySelectorAll(".sidebar-menu .sidebar-item, .top-nav-menu .nav-btn").forEach((enlace) => {
-        const href = enlace.getAttribute("href") || "";
-        const destino = paginaPorEnlace[href] || (href.includes("page=") ? href.split("page=")[1] : null);
-        if (href.includes("login") || href.includes("logout") || href.includes("index") || href === "#") return;
-        if (!destino || !paginasPermitidas.includes(destino) || (destino === "menu" && !puedeVerMenu)) enlace.remove();
-    });
-
-    document.querySelectorAll("[data-admin-only]").forEach((elemento) => {
-        if (esAdministrador) elemento.hidden = false;
-        else elemento.remove();
-    });
-
-    // Si no existe el botón de logout estilizado en el sidebar, proveer fallback
-    const sidebarMenu = document.querySelector(".sidebar-menu");
-    const logoutBtnExistente = document.getElementById("btnSidebarLogout");
-    if (sidebarMenu && !logoutBtnExistente && !sidebarMenu.querySelector(".btn-cerrar-sesion-js")) {
-        const cerrarSesion = document.createElement("a");
-        cerrarSesion.className = "sidebar-item btn-cerrar-sesion-js";
-        cerrarSesion.href = "#";
-        cerrarSesion.textContent = "Cerrar sesión";
-        cerrarSesion.addEventListener("click", (evento) => {
-            evento.preventDefault();
-            sessionStorage.removeItem("requestySesion");
-            localStorage.removeItem("requestySesion");
-            window.location.href = loginUrl;
+        const resp = await fetch(url, {
+            method,
+            headers,
+            body,
+            credentials: "same-origin"
         });
-        sidebarMenu.append(cerrarSesion);
+        let data = null;
+        try {
+            data = await resp.json();
+        } catch {
+            data = null;
+        }
+        if (resp.status === 401 && route !== "api/login" && route !== "api/sesion") {
+            window.location.replace(loginUrl);
+        }
+        if (!resp.ok || (data && data.success === false)) {
+            const err = new Error(data?.message || `Error HTTP ${resp.status}`);
+            err.status = resp.status;
+            err.payload = data;
+            throw err;
+        }
+        if (data?.csrf_token) csrfTokenActual = data.csrf_token;
+        return data;
     }
-}
 
-const botonInicio = document.getElementById("boton_inicio_de_sesion");
-if (botonInicio) botonInicio.addEventListener("click", (e) => {
-    // Si no está dentro de un submit normal o si es button normal
-    if (botonInicio.type !== "submit") {
-        e.preventDefault();
-        iniciarSesion();
+    function claveRol(rol) {
+        return String(rol || "").trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     }
-});
+
+    function leerSesion() {
+        return sesionMemoria;
+    }
+
+    async function cargarSesionServidor() {
+        try {
+            const data = await apiRequest("api/sesion");
+            if (data?.autenticado && data.usuario) {
+                sesionMemoria = {
+                    id: Number(data.usuario.id || data.usuario.id_usuario || 0),
+                    nombre: String(data.usuario.nombre || ""),
+                    correo: String(data.usuario.correo || ""),
+                    rol: String(data.usuario.rol || ""),
+                    permisos: Array.isArray(data.permisos) ? data.permisos : []
+                };
+                if (data.csrf_token) csrfTokenActual = data.csrf_token;
+                window.dispatchEvent(new CustomEvent("requesty-sesion-lista", { detail: sesionMemoria }));
+                return sesionMemoria;
+            }
+        } catch (err) {
+            if (err.status === 401) {
+                sesionMemoria = null;
+            }
+        }
+        return sesionMemoria;
+    }
+
+    function paginaInicialUsuario(usuario) {
+        const rol = claveRol(usuario?.rol);
+        return paginaInicialPorRol[rol] || "index.php?page=mesas";
+    }
+
+    function aplicarPermisosEnInterfaz(usuario, pagina) {
+        if (!usuario) return;
+        const rol = claveRol(usuario.rol);
+        const esAdministrador = rol === "admin" || rol === "administrador";
+        const paginasPermitidas = esAdministrador
+            ? permisosPorRol.administrador
+            : (Array.isArray(usuario.permisos) && usuario.permisos.length ? usuario.permisos : permisosPorRol[rol] || []);
+
+        const puedeAbrirPagina = esAdministrador
+            || (pagina === "caja" && rol === "cliente")
+            || paginasPermitidas.includes(pagina);
+
+        if (pagina && !puedeAbrirPagina) {
+            window.location.replace(paginaInicialUsuario(usuario));
+            return;
+        }
+
+        const perfil = document.querySelector(".profile-info");
+        if (perfil) {
+            const nombreH4 = perfil.querySelector("h4");
+            const rolP = perfil.querySelector("p");
+            if (nombreH4 && usuario.nombre) nombreH4.textContent = usuario.nombre;
+            if (rolP && usuario.rol) rolP.textContent = usuario.rol;
+        }
+
+        const avatar = document.querySelector(".profile-avatar");
+        if (avatar && usuario.nombre) {
+            avatar.textContent = usuario.nombre.split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+        }
+
+        document.querySelectorAll(".sidebar-menu .sidebar-item").forEach((enlace) => {
+            const href = enlace.getAttribute("href") || "";
+            const match = href.match(/[?&]page=([^&#]+)/);
+            const destino = paginaPorEnlace[href] || (match ? decodeURIComponent(match[1]) : null);
+            if (href.includes("login") || href.includes("logout") || href === "#" || !destino) return;
+            if (!paginasPermitidas.includes(destino)) enlace.remove();
+        });
+
+        document.querySelectorAll("[data-admin-only]").forEach((el) => {
+            if (esAdministrador) el.hidden = false;
+            else el.remove();
+        });
+    }
+
+    async function protegerPagina(pagina) {
+        const sesion = await cargarSesionServidor();
+        if (!sesion) {
+            window.location.replace(loginUrl);
+            return null;
+        }
+        aplicarPermisosEnInterfaz(sesion, pagina);
+        return sesion;
+    }
+
+    function escaparHTML(valor) {
+        return String(valor ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[c]);
+    }
+
+    window.RequestyAPI = Object.freeze({
+        get: (route, params) => apiRequest(route, { method: "GET", params }),
+        post: (route, body, params) => apiRequest(route, { method: "POST", body, params }),
+        put: (route, body, params) => apiRequest(route, { method: "PUT", body, params }),
+        del: (route, body, params) => apiRequest(route, { method: "DELETE", body, params }),
+        cargarSesion: cargarSesionServidor,
+        leerSesion,
+        escaparHTML,
+        obtenerCsrfToken,
+        buildApiUrl
+    });
+
+    window.claveRol = claveRol;
+    window.leerSesion = leerSesion;
+    window.protegerPagina = protegerPagina;
+
+    const formLogin = document.getElementById("formLogin");
+    if (formLogin) {
+        formLogin.addEventListener("submit", async (evento) => {
+            evento.preventDefault();
+            const correoInput = document.getElementById("usuario");
+            const passInput = document.getElementById("contraseña");
+            const mensaje = document.getElementById("loginMensaje");
+            const correo = correoInput?.value.trim().toLowerCase() || "";
+            const contrasena = passInput?.value || "";
+            if (!correo || !contrasena) {
+                if (mensaje) mensaje.textContent = "Por favor ingresa tu correo y contraseña.";
+                return;
+            }
+            try {
+                const res = await apiRequest("api/login", {
+                    method: "POST",
+                    body: { correo, contrasena }
+                });
+                window.location.href = res.redirectUrl || paginaInicialUsuario(res.usuario);
+            } catch (err) {
+                if (mensaje) mensaje.textContent = err.message || "Correo o contraseña incorrectos.";
+            }
+        });
+    }
+
+    const paginaActual = document.body?.dataset?.page;
+    if (paginaActual) {
+        protegerPagina(paginaActual);
+    }
+})();

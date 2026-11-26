@@ -15,8 +15,6 @@ class App {
         require_once $coreDir . '/RateLimiter.php';
         require_once $coreDir . '/XmlSecurity.php';
         require_once $coreDir . '/DtoValidator.php';
-        require_once $coreDir . '/CryptoService.php';
-        require_once $coreDir . '/NormalizedStore.php';
 
         ExceptionHandler::register();
 

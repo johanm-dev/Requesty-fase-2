@@ -1,18 +1,17 @@
 <?php
-/**
- * Controlador de Pedidos
- */
 class PedidoController extends Controller {
-
     public function index() {
+        $this->requireRole(['ADMIN', 'CAJERO', 'MESERO', 'COCINA']);
+        $user = $this->getUser();
         $pedidoModel = $this->model('Pedido');
-        $pedidos = $pedidoModel->getAll();
+        $filterMesero = (strtoupper((string)$user['rol']) === 'MESERO') ? (int)$user['id'] : null;
+        $pedidos = $pedidoModel->getAll($filterMesero);
 
         $this->view('pedidos/index', [
-            'pageTitle'   => 'Gestión de Pedidos - Requesty',
+            'pageTitle'   => 'Gestion de Pedidos - Requesty',
             'currentPage' => 'pedidos',
             'pedidos'     => $pedidos,
-            'user'        => $this->getUser()
+            'user'        => $user
         ]);
     }
 }

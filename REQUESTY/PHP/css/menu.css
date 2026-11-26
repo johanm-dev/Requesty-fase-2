@@ -194,13 +194,13 @@
     border: 1.5px solid var(--color-highlight);
     border-radius: var(--radius-md);
     background: #FFFFFF;
-    box-shadow: 0 4px 14px rgba(21, 21, 21, 0.06);
+    box-shadow: 0 4px 14px rgba(62, 40, 52, 0.06);
     transition: all 160ms ease;
 }
 
 .plato:hover {
     border-color: var(--color-accent);
-    box-shadow: 0 8px 24px rgba(21, 21, 21, 0.12);
+    box-shadow: 0 8px 24px rgba(62, 40, 52, 0.12);
 }
 
 .plato-info {

@@ -3,12 +3,8 @@
  * Configuracion general de la aplicacion Requesty MVC (PostgreSQL 17 + AppSec)
  */
 
-if (!defined('APPROOT')) {
-    define('APPROOT', dirname(__DIR__));
-}
-if (!defined('ROOTPATH')) {
-    define('ROOTPATH', dirname(APPROOT));
-}
+define('APPROOT', dirname(__DIR__));
+define('ROOTPATH', dirname(APPROOT));
 
 require_once APPROOT . '/core/Env.php';
 Env::load(ROOTPATH . '/.env');
@@ -22,7 +18,7 @@ if (!$hasBearer && session_status() === PHP_SESSION_NONE && php_sapi_name() !== 
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',
-        'secure'   => $secureCookie && $isHttps,
+        'secure'   => $secureCookie,
         'httponly' => true,
         'samesite' => 'Strict',
     ]);
@@ -36,26 +32,29 @@ define('DB_PASS', Env::requireNonEmpty('DB_PASSWORD'));
 define('DB_NAME', Env::requireNonEmpty('DB_NAME'));
 define('DB_SCHEMA', Env::requireNonEmpty('DB_SCHEMA'));
 define('DB_SSL_MODE', Env::get('DB_SSL_MODE', 'prefer'));
-define('DB_CONNECTION_TIMEOUT', (int)Env::get('DB_CONNECTION_TIMEOUT', '2'));
+define('DB_CONNECTION_TIMEOUT', (int)Env::get('DB_CONNECTION_TIMEOUT', '5'));
 
 define('SITENAME', 'Requesty');
 
 $isCli = (php_sapi_name() === 'cli' || empty($_SERVER['HTTP_HOST']));
 if ($isCli) {
-    $folderName = basename(ROOTPATH);
-    $baseUrl = 'http://localhost/' . rawurlencode($folderName);
+    $baseUrl = 'http://127.0.0.1';
 } else {
     $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)) ? 'https://' : 'http://';
     $host = $_SERVER['HTTP_HOST'];
-    $scriptDir = trim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/.');
+    $scriptName = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    $scriptDir = '';
+    if (php_sapi_name() !== 'cli-server' && str_ends_with($scriptName, '/index.php')) {
+        $scriptDir = trim(dirname($scriptName), '/.');
+    }
     $baseUrl = rtrim($protocol . $host . ($scriptDir !== '' ? '/' . $scriptDir : ''), '/');
 }
 
 define('BASE_URL', $baseUrl);
 
 function url($route = '', array $params = []) {
-    $route = trim(ltrim((string)$route, '/'));
-    if ($route === '' || $route === 'login') {
+    $route = trim(ltrim($route, '/'));
+    if (empty($route) || $route === 'login') {
         $link = BASE_URL . '/index.php';
     } else {
         $link = BASE_URL . '/index.php?page=' . urlencode($route);
@@ -69,22 +68,15 @@ function url($route = '', array $params = []) {
 }
 
 function asset($path = '') {
-    $path = ltrim((string)$path, '/');
-    $assetUrl = BASE_URL . '/' . $path;
-    $filePath = ROOTPATH . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-    if (is_file($filePath)) {
-        $assetUrl .= (strpos($assetUrl, '?') === false ? '?' : '&') . 'v=' . filemtime($filePath);
-    }
-    return $assetUrl;
+    return BASE_URL . '/' . ltrim($path, '/');
 }
 
 const ROLES = [
-    'ADMIN'         => 'Administrador',
-    'ADMINISTRADOR' => 'Administrador',
-    'CAJERO'        => 'Cajero',
-    'MESERO'        => 'Mesero',
-    'COCINA'        => 'Cocina',
-    'CLIENTE'       => 'Cliente',
+    'ADMIN'   => 'Administrador',
+    'CAJERO'  => 'Cajero',
+    'MESERO'  => 'Mesero',
+    'COCINA'  => 'Cocina',
+    'CLIENTE' => 'Cliente',
 ];
 
 const PERMISOS_POR_ROL = [
@@ -93,7 +85,7 @@ const PERMISOS_POR_ROL = [
     'cajero'        => ['menu', 'mesas', 'pedidos', 'caja'],
     'mesero'        => ['menu', 'mesas', 'pedidos'],
     'cocina'        => ['menu', 'pedidos', 'cocina'],
-    'cliente'       => ['menu', 'pqrs'],
+    'cliente'       => ['menu', 'pqrs', 'caja'],
 ];
 
 const PAGINA_INICIAL_POR_ROL = [

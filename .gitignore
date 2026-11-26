@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+*.log
+*.bak
+REQUESTY/PHP/storage/ratelimit/*
+REQUESTY/PHP/storage/security/*
+.DS_Store

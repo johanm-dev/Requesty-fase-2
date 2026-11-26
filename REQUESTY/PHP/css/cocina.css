@@ -1,13 +1,13 @@
 :root {
-    --fondo-durazno: #F8F9FA;
+    --fondo-durazno: #F7EEED;
     --tarjeta-blanca: #ffffff;
-    --borde-negro: #333333;
-    --boton-oscuro: #333333;
-    --boton-oscuro-hover: #777777;
-    --texto-gris: #777777;
-    --color-accent: #C99B45;
-    --color-primary: #E4B353;
-    --color-highlight: #EAEAEA;
+    --borde-negro: #3E2834; /* PANTONE 6322 C */
+    --boton-oscuro: #3E2834;
+    --boton-oscuro-hover: #5E504F;
+    --texto-gris: #5E504F;
+    --color-accent: #C15C24; /* PANTONE 6259 C */
+    --color-primary: #9D2227; /* PANTONE 6294 C */
+    --color-highlight: #E5C7C9; /* PANTONE 6268 C */
 }
 
 .logo {
@@ -53,11 +53,11 @@
 }
 
 .tarjeta-resumen.pendiente {
-    border-left-color: #C99B45; 
+    border-left-color: #C15C24; 
 }
 
 .tarjeta-resumen.preparacion {
-    border-left-color: #E4B353; 
+    border-left-color: #9D2227; 
 }
 
 .tarjeta-resumen.listo {
@@ -97,11 +97,11 @@
 
 
 .tarjeta-pedido.estado-pendiente {
-    border-top-color: #C99B45;
+    border-top-color: #C15C24;
 }
 
 .tarjeta-pedido.estado-preparacion {
-    border-top-color: #E4B353;
+    border-top-color: #9D2227;
 }
 
 .tarjeta-pedido.estado-listo {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Controlador Base MVC con soporte JWT + RBAC + Anti-IDOR + CSRF.
+ * Controlador Base MVC con soporte JWT + RBAC + Anti-IDOR.
  */
 abstract class Controller {
     protected ?array $jwtUser = null;
@@ -75,15 +75,8 @@ abstract class Controller {
         }
     }
 
-    protected static function normalizeRole(string $role): string {
-        $r = strtoupper(trim($role));
-        if ($r === 'ADMINISTRADOR') {
-            return 'ADMIN';
-        }
-        return $r;
-    }
-
     public function requireApiAuth(): array {
+        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
         $token = $this->extractBearerToken();
         if ($token !== null) {
             $claims = JwtService::verify($token);
@@ -94,26 +87,79 @@ abstract class Controller {
                 'id'     => (int)$claims['sub'],
                 'nombre' => (string)$claims['nombre'],
                 'correo' => (string)$claims['correo'],
-                'rol'    => self::normalizeRole((string)$claims['rol']),
+                'rol'    => strtoupper((string)$claims['rol']),
                 'jti'    => (string)$claims['jti'],
                 'exp'    => (int)$claims['exp'],
             ];
+            if ($method === 'GET' || $method === 'HEAD') {
+                RateLimiter::check('api_read:' . (int)$this->jwtUser['id'], 300, 60);
+            }
             return $this->jwtUser;
         }
 
         if (isset($_SESSION['usuario'])) {
-            $u = $_SESSION['usuario'];
-            $u['rol'] = self::normalizeRole((string)($u['rol'] ?? ''));
-            return $u;
+            if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+                $csrfHeader = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf'] ?? null;
+                if (!CsrfService::verify(is_string($csrfHeader) ? $csrfHeader : null)) {
+                    throw new ForbiddenException('Token CSRF invalido o ausente para sesion web.');
+                }
+            } elseif ($method === 'GET' || $method === 'HEAD') {
+                RateLimiter::check('api_read:' . (int)($_SESSION['usuario']['id'] ?? 0), 300, 60);
+            }
+            return $_SESSION['usuario'];
         }
 
         throw new AuthException('Autenticacion requerida (JWT Bearer o sesion activa).');
     }
 
+    protected function destroySessionAndCookie(): void {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                [
+                    'expires'  => time() - 42000,
+                    'path'     => $params['path'] ?: '/',
+                    'domain'   => $params['domain'] ?? '',
+                    'secure'   => (bool)$params['secure'],
+                    'httponly' => (bool)$params['httponly'],
+                    'samesite' => $params['samesite'] ?? 'Lax',
+                ]
+            );
+        }
+        session_destroy();
+    }
+
+    protected function registrarActividad(int $idUsuario, string $accion, string $modulo): void {
+        try {
+            $db = Database::getConnection();
+            $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            if ($ip && filter_var($ip, FILTER_VALIDATE_IP) === false) {
+                $ip = null;
+            }
+            $stmt = $db->prepare(
+                'INSERT INTO actividad (id_usuario, accion, modulo, direccion_ip) VALUES (:u, :a, :m, :ip)'
+            );
+            $stmt->execute([
+                ':u'  => $idUsuario,
+                ':a'  => mb_substr($accion, 0, 255, 'UTF-8'),
+                ':m'  => mb_substr(strtoupper($modulo), 0, 100, 'UTF-8'),
+                ':ip' => $ip,
+            ]);
+        } catch (Throwable $e) {
+            error_log('[Requesty][AuditWarn] ' . $e->getMessage());
+        }
+    }
+
     public function requireApiRole(array $allowedRoles): array {
         $user = $this->requireApiAuth();
-        $userRole = self::normalizeRole((string)($user['rol'] ?? ''));
-        $normalized = array_map(static fn($r) => self::normalizeRole((string)$r), $allowedRoles);
+        $userRole = strtoupper(trim((string)($user['rol'] ?? '')));
+        $normalized = array_map(static fn($r) => strtoupper(trim($r)), $allowedRoles);
         if (!in_array($userRole, $normalized, true)) {
             throw new ForbiddenException('Acceso denegado: privilegios insuficientes.');
         }
@@ -125,8 +171,8 @@ abstract class Controller {
         if (!$user) {
             return false;
         }
-        $userRole = self::normalizeRole((string)($user['rol'] ?? ''));
-        $rolesNormalized = array_map(static fn($r) => self::normalizeRole((string)$r), (array)$roles);
+        $userRole = strtoupper(trim((string)($user['rol'] ?? '')));
+        $rolesNormalized = array_map(static fn($r) => strtoupper(trim($r)), (array)$roles);
         return in_array($userRole, $rolesNormalized, true);
     }
 }

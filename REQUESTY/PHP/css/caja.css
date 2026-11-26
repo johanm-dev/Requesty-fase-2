@@ -201,7 +201,7 @@ select {
     padding: 12px 15px;
     border: 1.5px solid var(--color-highlight);
     border-radius: 12px;
-    background-color: #F8F9FA;
+    background-color: #FDF8F8;
     color: var(--color-sidebar);
     font-weight: 500;
     box-sizing: border-box;
@@ -233,7 +233,7 @@ input:focus,
 select:focus {
     outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(201, 155, 69, 0.15);
+    box-shadow: 0 0 0 3px rgba(193, 92, 36, 0.15);
 }
 
 /* BOTONES */

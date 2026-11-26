@@ -130,11 +130,15 @@ CREATE TABLE cliente (
 );
 
 CREATE TABLE mesa (
-    id_mesa     INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    numero_mesa INTEGER NOT NULL UNIQUE CHECK (numero_mesa > 0),
-    capacidad   INTEGER NOT NULL CHECK (capacidad > 0),
-    codigo_qr   VARCHAR(255) NOT NULL UNIQUE,
-    estado      estado_mesa NOT NULL DEFAULT 'DISPONIBLE'
+    id_mesa            INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    numero_mesa        INTEGER NOT NULL UNIQUE CHECK (numero_mesa > 0),
+    capacidad          INTEGER NOT NULL CHECK (capacidad > 0),
+    codigo_qr          VARCHAR(255) NOT NULL UNIQUE,
+    estado             estado_mesa NOT NULL DEFAULT 'DISPONIBLE',
+    ocupantes_actuales INTEGER NOT NULL DEFAULT 0 CHECK (ocupantes_actuales >= 0),
+    hora_ocupacion     TIMESTAMPTZ,
+    id_cliente_actual  INTEGER REFERENCES cliente(id_cliente)
+                       ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE categoria (
@@ -406,6 +410,7 @@ CREATE INDEX idx_asistencia_usuario     ON asistencia(id_usuario, fecha DESC);
 
 -- Clientes, catalogo y recetas
 CREATE INDEX idx_cliente_activos_nombre ON cliente(nombre) WHERE activo = TRUE;
+CREATE INDEX idx_mesa_id_cliente_actual ON mesa(id_cliente_actual);
 CREATE INDEX idx_producto_categoria     ON producto(id_categoria);
 CREATE INDEX idx_producto_disp_cat      ON producto(id_categoria, nombre) WHERE disponible = TRUE;
 CREATE INDEX idx_prod_ing_ingrediente   ON producto_ingrediente(id_ingrediente);
