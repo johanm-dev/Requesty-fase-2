@@ -401,6 +401,39 @@
         0 3px 6px rgba(0, 0, 0, 0.08);
 }
 
+/* Botón único para desechar comanda (esquina superior derecha) */
+.btn-desechar-kds {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.88);
+    color: #8E8E93;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    z-index: 12;
+}
+
+.btn-desechar-kds:hover {
+    background: #DC2626;
+    color: #FFFFFF;
+    border-color: #B91C1C;
+    transform: scale(1.12);
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.35);
+}
+
+.btn-desechar-kds:active {
+    transform: scale(0.95);
+}
+
 .libreta-comanda::after {
     content: "";
     position: absolute;

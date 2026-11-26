@@ -287,6 +287,10 @@
             : '<li class="item-producto-kds"><div class="item-principal"><span class="item-nombre">Sin productos</span></div></li>';
 
         return `<article class="libreta-comanda ${claseEspera} ${clasePrioridad}" data-pedido-id="${escaparHTML(pedido.id)}" id="comanda-${escaparHTML(pedido.id)}">
+            <button type="button" class="btn-desechar-kds" data-desechar-pedido="${escaparHTML(pedido.id)}" title="Desechar comanda #${escaparHTML(pedido.id)}" aria-label="Desechar comanda #${escaparHTML(pedido.id)}">
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+            </button>
+
             <div class="libreta-encabezado">
                 <h2 class="comanda-titulo-simple">${escaparHTML(titulo)}</h2>
                 <span class="comanda-estado-tag">${escaparHTML(etiquetaEstado)}</span>
@@ -467,7 +471,7 @@
                 try {
                     await window.RequestyAPI.post("api/pedidos", {
                         id_pedido: Number(id),
-                        estado: "LISTO"
+                        estado: "CANCELADO"
                     });
                 } catch (e) {}
             }
@@ -499,6 +503,13 @@
     }
 
     document.getElementById("contenedor-pedidos")?.addEventListener("click", evento => {
+        const btnDesechar = evento.target.closest("[data-desechar-pedido]");
+        if (btnDesechar) {
+            evento.preventDefault();
+            desecharComanda(btnDesechar.dataset.desecharPedido);
+            return;
+        }
+
         const btnEntregar = evento.target.closest("[data-entregar-pedido]");
         if (btnEntregar) {
             evento.preventDefault();
