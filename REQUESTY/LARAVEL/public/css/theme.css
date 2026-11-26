@@ -1,0 +1,1150 @@
+:root {
+    /* Paleta Oficial Requesty: Rojo Actual, Negro y Dorado */
+    --palette-red: #8A3539;
+    --palette-red-actual: #963C40;
+    --palette-red-light: #A8484D;
+    --palette-red-dark: #6E262B;
+    --palette-dark: #1F1116;
+    --palette-black: #160B0F;
+    --palette-gold: #C99B45;
+    --palette-gold-light: #E4B353;
+    --palette-gold-hover: #B08536;
+    --palette-gold-subtle: rgba(201, 155, 69, 0.28);
+    --palette-light: #F7F3F1;
+    --palette-card: #FFFFFF;
+    --palette-text: #1F1116;
+    --palette-ink: #160B0F;
+    --palette-muted: #6B5B60;
+    --palette-border: rgba(201, 155, 69, 0.28);
+    --palette-nav-text: #FFFFFF;
+    --color-accent: var(--palette-gold);
+    --color-accent-dark: var(--palette-gold-hover);
+    --color-primary: var(--palette-red);
+    --color-primary-dark: var(--palette-red-dark);
+}
+
+.theme-toggle {
+    display: inline-flex;
+    width: 46px;
+    height: 46px;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    padding: 3px;
+    border: 1px solid rgba(193,118,121,.38);
+    border-radius: 14px;
+    background: rgba(255,255,255,.06);
+    color: inherit;
+    cursor: pointer;
+    transition: background-color .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-1px) scale(1.04);
+    border-color: var(--palette-red);
+    background: rgba(193,118,121,.12);
+    box-shadow: 0 5px 16px rgba(21,21,21,.2);
+}
+
+.theme-toggle-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    object-fit: contain;
+}
+
+.theme-toggle:focus-visible {
+    outline: 3px solid rgba(193,118,121,.65);
+    outline-offset: 3px;
+}
+
+.app-page-header .theme-toggle {
+    flex: 0 0 auto;
+    margin-left: auto;
+    border-color: rgba(255,255,255,.2);
+    background: rgba(255,255,255,.05);
+}
+
+.app-page-header .theme-toggle:hover {
+    border-color: var(--palette-red-light);
+    background: rgba(193,118,121,.14);
+}
+
+.auth-theme-header,
+.registro-theme-header {
+    display: flex;
+    min-height: 64px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px clamp(16px, 4vw, 40px);
+    border-bottom: 1px solid var(--palette-border);
+    background: var(--palette-card);
+}
+
+.auth-theme-header .theme-toggle,
+.registro-theme-header .theme-toggle {
+    flex: 0 0 auto;
+}
+
+.auth-theme-header {
+    position: absolute;
+    top: 18px;
+    right: clamp(18px, 3vw, 40px);
+    z-index: 50;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+}
+
+.auth-theme-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #321719;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+}
+
+.auth-theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--palette-red-dark, #54272B);
+    transform: translateY(-1px);
+}
+
+:root[data-theme="dark"] .auth-theme-toggle {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #F5EBEA;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme="dark"] .auth-theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #FFFFFF;
+}
+
+.error-brand-box {
+    margin-bottom: 12px;
+}
+
+.error-brand-logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    object-fit: contain;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.auth-theme-header + main #general {
+    min-height: 100vh;
+}
+
+.error-container {
+    position: relative;
+}
+
+.error-theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+/* ========================================================
+   MODO CLARO: DETALLES EN ROJO ACTUAL, NEGRO Y DORADO (EN TODAS LAS VISTAS)
+   ======================================================== */
+:root:not([data-theme="dark"]),
+:root[data-theme="light"] {
+    --bg-main: #F7F3F1;
+    --bg-card: #FFFFFF;
+    --text-main: #1F1116;
+    --text-muted: #6B5B60;
+}
+
+/* Tarjetas y Contenedores con sutil borde dorado y profundidad elegante */
+:root:not([data-theme="dark"]) .card,
+:root:not([data-theme="dark"]) .panel,
+:root:not([data-theme="dark"]) .table-card,
+:root:not([data-theme="dark"]) .order-builder,
+:root:not([data-theme="dark"]) .stat-card,
+:root:not([data-theme="dark"]) .kpi-card,
+:root:not([data-theme="dark"]) .chart-section,
+:root:not([data-theme="dark"]) .mesa-card,
+:root:not([data-theme="dark"]) .modal-content,
+:root:not([data-theme="dark"]) .rq-modal-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(201, 155, 69, 0.3);
+    box-shadow: 0 4px 18px rgba(31, 17, 22, 0.06);
+    color: #1F1116;
+}
+
+/* Títulos y Encabezados en Negro Intenso con detalles */
+:root:not([data-theme="dark"]) h1,
+:root:not([data-theme="dark"]) h2,
+:root:not([data-theme="dark"]) h3,
+:root:not([data-theme="dark"]) .page-title,
+:root:not([data-theme="dark"]) .sidebar-logo,
+:root:not([data-theme="dark"]) .app-page-header-brand span {
+    color: #1F1116;
+}
+
+/* Botones Principales: Rojo Actual con Borde Dorado y Sombra Reducida */
+:root:not([data-theme="dark"]) .btn-primary,
+:root:not([data-theme="dark"]) .btn-primario,
+:root:not([data-theme="dark"]) .btn-cobrar,
+:root:not([data-theme="dark"]) .generate-btn,
+:root:not([data-theme="dark"]) .mesas-action-primary,
+:root:not([data-theme="dark"]) #boton_inicio_de_sesion,
+:root:not([data-theme="dark"]) #boton_crear_cuenta,
+:root:not([data-theme="dark"]) .seguimiento-ir-caja {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.5) !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(138, 53, 57, 0.32) !important;
+    transition: all 0.2s ease !important;
+}
+
+:root:not([data-theme="dark"]) .btn-primary:hover,
+:root:not([data-theme="dark"]) .btn-primario:hover,
+:root:not([data-theme="dark"]) .btn-cobrar:hover,
+:root:not([data-theme="dark"]) .generate-btn:hover,
+:root:not([data-theme="dark"]) .mesas-action-primary:hover,
+:root:not([data-theme="dark"]) #boton_inicio_de_sesion:hover,
+:root:not([data-theme="dark"]) #boton_crear_cuenta:hover {
+    background: linear-gradient(135deg, #9E3D42 0%, #8A3539 100%) !important;
+    border-color: #C99B45 !important;
+    box-shadow: 0 6px 18px rgba(201, 155, 69, 0.35) !important;
+    transform: translateY(-1px);
+}
+
+/* Botones Secundarios y Píldoras de Filtro: Borde Dorado y Texto Negro/Rojo */
+:root:not([data-theme="dark"]) .btn-secondary,
+:root:not([data-theme="dark"]) .btn-secundario,
+:root:not([data-theme="dark"]) .filter-btn,
+:root:not([data-theme="dark"]) .filter-tabs .tab-btn,
+:root:not([data-theme="dark"]) .mesas-action-btn,
+:root:not([data-theme="dark"]) .mesa-page .filter-btn,
+:root:not([data-theme="dark"]) .mesas-page .filter-btn {
+    border: 1.5px solid var(--palette-gold, #C99B45) !important;
+    background: #FFFFFF !important;
+    color: #1F1116 !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease;
+}
+
+:root:not([data-theme="dark"]) .filter-btn:hover,
+:root:not([data-theme="dark"]) .filter-tabs .tab-btn:hover,
+:root:not([data-theme="dark"]) .btn-secondary:hover,
+:root:not([data-theme="dark"]) .btn-secundario:hover,
+:root:not([data-theme="dark"]) .mesas-action-btn:hover {
+    background: rgba(201, 155, 69, 0.14) !important;
+    border-color: var(--palette-gold-light, #E4B353) !important;
+    color: #8A3539 !important;
+    transform: translateY(-1px);
+}
+
+/* Filtro Activo: Fondo Rojo Actual con Borde Dorado */
+:root:not([data-theme="dark"]) .filter-btn.active,
+:root:not([data-theme="dark"]) .filter-tabs .tab-btn.active,
+:root:not([data-theme="dark"]) .mesa-page .filter-btn.active,
+:root:not([data-theme="dark"]) .mesas-page .filter-btn.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border-color: var(--palette-gold, #C99B45) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 14px rgba(138, 53, 57, 0.35) !important;
+}
+
+/* Tablas en Modo Claro: Encabezados con Detalle Dorado y Texto Negro */
+:root:not([data-theme="dark"]) table th,
+:root:not([data-theme="dark"]) .orders-table th {
+    background-color: #FAF6F4;
+    color: #1F1116;
+    font-weight: 800;
+    border-bottom: 2px solid var(--palette-gold, #C99B45);
+}
+
+:root:not([data-theme="dark"]) table td,
+:root:not([data-theme="dark"]) .orders-table td {
+    border-color: rgba(201, 155, 69, 0.2);
+    color: #1F1116;
+}
+
+/* Inputs y Selects: Detalle de Borde Dorado sutil y foco en Rojo */
+:root:not([data-theme="dark"]) input:not([type="checkbox"]):not([type="radio"]),
+:root:not([data-theme="dark"]) select,
+:root:not([data-theme="dark"]) textarea {
+    border: 1px solid rgba(201, 155, 69, 0.38);
+    background-color: #FFFFFF;
+    color: #1F1116;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+:root:not([data-theme="dark"]) input:focus,
+:root:not([data-theme="dark"]) select:focus,
+:root:not([data-theme="dark"]) textarea:focus {
+    border-color: #8A3539 !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(201, 155, 69, 0.28) !important;
+}
+
+/* Insignias de Mesas */
+:root:not([data-theme="dark"]) .mesas-page .mesa-number {
+    color: #8A3539 !important;
+    font-weight: 900;
+}
+
+:root:not([data-theme="dark"]) .mesas-page .mesa-card.ocupada {
+    border-color: #8A3539;
+    background: rgba(138, 53, 57, 0.06);
+}
+
+:root:not([data-theme="dark"]) .mesas-page .mesa-card.ocupada .mesa-status {
+    color: #8A3539;
+    font-weight: 800;
+}
+
+:root[data-theme="dark"] {
+    --palette-red: #8A3539;
+    --palette-red-light: #A8484D;
+    --palette-red-dark: #6E262B;
+    --palette-dark: #1E0F16;
+    --palette-light: #24141C;
+    --palette-card: #341C25;
+    --palette-card-hover: #3E212D;
+    --palette-text: #F5EBEA;
+    --palette-ink: #FFFFFF;
+    --palette-muted: #C5B4B7;
+    --palette-border: rgba(201, 155, 69, 0.22);
+    --palette-nav-text: #FFFFFF;
+    --palette-gold: #E4B353;
+    --palette-gold-light: #F5CE7A;
+    --palette-gold-hover: #D4A346;
+    --color-success: #74C18A;
+    --color-danger: #F18488;
+
+    --red: #8A3539;
+    --red-dark: #6E262B;
+    --red-light: #A8484D;
+    --creamstone: #F5EBEA;
+    --cream: #24141C;
+    --surface: #341C25;
+    --muted: #C5B4B7;
+    --border: rgba(201, 155, 69, 0.22);
+
+    --fondo: #24141C;
+    --c1: #341C25;
+    --c2: #C5B4B7;
+    --c3: #FFFFFF;
+    --c4: #3E212D;
+    --c5: rgba(201, 155, 69, 0.22);
+    --c6: #E4B353;
+    --c7: #8A3539;
+
+    --fondo-durazno: #24141C;
+    --tarjeta-blanca: #341C25;
+    --borde-negro: rgba(201, 155, 69, 0.22);
+    --boton-oscuro: #1E0F16;
+    --boton-oscuro-hover: #3E212D;
+    --texto-gris: #C5B4B7;
+    --color-accent: var(--palette-gold);
+    --color-accent-dark: var(--palette-gold-hover);
+    --color-primary: #8A3539;
+    --color-primary-dark: #6E262B;
+    --color-highlight: rgba(201, 155, 69, 0.25);
+
+    --bg-main: #24141C;
+    --bg-card: #341C25;
+    --bg-input: #2D1720;
+    --text-main: #F5EBEA;
+    --text-muted: #C5B4B7;
+    --primary: #8A3539;
+    --primary-hover: #6E262B;
+    --accent: var(--palette-gold);
+    --border-color: rgba(201, 155, 69, 0.22);
+    --color-bg-primary: #24141C;
+    --color-card-bg: #341C25;
+    --color-sidebar: #FFFFFF;
+    --badge-preparando-bg: #3E212D;
+    --badge-preparando-txt: #F5EBEA;
+    --badge-nuevo-bg: #3E212D;
+    --badge-nuevo-txt: #F5EBEA;
+    --badge-listo-bg: rgba(37, 78, 54, 0.85);
+    --badge-listo-txt: #85E8A8;
+    --badge-entregado-bg: #453337;
+    --badge-entregado-txt: #C5B4B7;
+    --badge-cancelado-bg: #48292B;
+    --badge-cancelado-txt: #F18488;
+}
+
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] .main-content,
+:root[data-theme="dark"] .content,
+:root[data-theme="dark"] .content-wrapper,
+:root[data-theme="dark"] main {
+    background-color: var(--palette-light);
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .table-card,
+:root[data-theme="dark"] .toolbar,
+:root[data-theme="dark"] .order-builder,
+:root[data-theme="dark"] .order-item-options,
+:root[data-theme="dark"] .modal,
+:root[data-theme="dark"] .modal-content,
+:root[data-theme="dark"] .modal-box,
+:root[data-theme="dark"] .modal-body,
+:root[data-theme="dark"] .rq-modal-card,
+:root[data-theme="dark"] .seccion-formulario,
+:root[data-theme="dark"] .stat-card,
+:root[data-theme="dark"] .kpi-card,
+:root[data-theme="dark"] .chart-section,
+:root[data-theme="dark"] .mesa-card,
+:root[data-theme="dark"] .info-item,
+:root[data-theme="dark"] .tarjeta-resumen,
+:root[data-theme="dark"] .tarjeta-pedido,
+:root[data-theme="dark"] .catalogo-controles,
+:root[data-theme="dark"] .detalle-producto-contenido {
+    border-color: var(--palette-border);
+    background-color: var(--palette-card);
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+    border-color: var(--palette-border);
+    background-color: #38282B;
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder {
+    color: var(--palette-muted);
+}
+
+:root[data-theme="dark"] input[type="checkbox"],
+:root[data-theme="dark"] input[type="radio"] {
+    accent-color: var(--palette-red-light);
+}
+
+:root[data-theme="dark"] table,
+:root[data-theme="dark"] th,
+:root[data-theme="dark"] td {
+    border-color: rgba(201, 155, 69, 0.18);
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] .orders-table th,
+:root[data-theme="dark"] th {
+    background-color: #2D1720;
+    color: var(--palette-gold, #E4B353);
+    font-weight: 700;
+}
+
+:root[data-theme="dark"] .orders-table td,
+:root[data-theme="dark"] td {
+    background-color: var(--palette-card);
+}
+
+:root[data-theme="dark"] .server-status,
+:root[data-theme="dark"] .badge-channel,
+:root[data-theme="dark"] .btn-secondary,
+:root[data-theme="dark"] .filter-btn,
+:root[data-theme="dark"] .filter-tabs .tab-btn,
+:root[data-theme="dark"] .mesas-action-btn,
+:root[data-theme="dark"] .mesa-page .filter-btn {
+    border-color: var(--palette-gold, #C99B45);
+    background-color: #2D1720;
+    color: #FFFFFF;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+:root[data-theme="dark"] .filter-btn:hover,
+:root[data-theme="dark"] .filter-tabs .tab-btn:hover,
+:root[data-theme="dark"] .mesa-page .filter-btn:hover {
+    background-color: rgba(201, 155, 69, 0.18);
+    border-color: var(--palette-gold-light, #E4B353);
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .filter-btn.active,
+:root[data-theme="dark"] .filter-tabs .tab-btn.active,
+:root[data-theme="dark"] .mesa-page .filter-btn.active,
+:root[data-theme="dark"] .mesas-page .filter-btn.active {
+    background-color: #8A3539 !important;
+    border-color: #963C40 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 10px rgba(138, 53, 57, 0.5);
+}
+
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .btn-cobrar,
+:root[data-theme="dark"] .seguimiento-ir-caja,
+:root[data-theme="dark"] .generate-btn,
+:root[data-theme="dark"] .btn-primario,
+:root[data-theme="dark"] .rq-btn-danger,
+:root[data-theme="dark"] .mesas-page .mesas-action-primary {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border: 1px solid rgba(201, 155, 69, 0.25) !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+}
+
+:root[data-theme="dark"] .btn-primary:hover,
+:root[data-theme="dark"] .btn-cobrar:hover,
+:root[data-theme="dark"] .seguimiento-ir-caja:hover,
+:root[data-theme="dark"] .generate-btn:hover,
+:root[data-theme="dark"] .btn-primario:hover,
+:root[data-theme="dark"] .rq-btn-danger:hover {
+    background: linear-gradient(135deg, #A03D42 0%, #8A3539 100%) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 14px rgba(138, 53, 57, 0.45);
+}
+
+:root[data-theme="dark"] .mesas-page .mesas-grid {
+    border-color: var(--palette-border);
+    background-color: #24141C;
+    background-image:
+        linear-gradient(rgba(201, 155, 69, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201, 155, 69, 0.08) 1px, transparent 1px);
+}
+
+:root[data-theme="dark"] .mesas-page .mesa-card.libre,
+:root[data-theme="dark"] .mesas-page .mesa-card.reservada {
+    border-color: rgba(201, 155, 69, 0.22);
+    background: var(--palette-card);
+}
+
+:root[data-theme="dark"] .mesas-page .mesa-card.ocupada,
+:root[data-theme="dark"] .mesas-page .stat-card-ocupadas {
+    border-color: rgba(138, 53, 57, 0.8);
+    background: rgba(138, 53, 57, 0.25);
+}
+
+:root[data-theme="dark"] .mesas-page .mesa-status,
+:root[data-theme="dark"] .mesas-page .mesa-number,
+:root[data-theme="dark"] .mesas-page .mesa-card-main {
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] .mesas-page .mesa-number {
+    color: var(--palette-gold, #E4B353) !important;
+}
+
+:root[data-theme="dark"] .mesas-page .mesa-card.ocupada .mesa-status {
+    color: #F18488;
+}
+
+:root[data-theme="dark"] .mesas-ocupacion-nota {
+    background: linear-gradient(100deg, var(--palette-red-dark), var(--palette-red));
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] #modalMesa .modal-header,
+:root[data-theme="dark"] #modalNuevaMesa .modal-header {
+    border-color: var(--palette-border);
+    background: linear-gradient(120deg, #38282B, var(--palette-card) 78%);
+}
+
+:root[data-theme="dark"] #modalMesa .mesa-asignacion:not([hidden]) {
+    border-color: var(--palette-border);
+    background: #38282B;
+}
+
+:root[data-theme="dark"] .auth-theme-header,
+:root[data-theme="dark"] .registro-theme-header {
+    border-color: var(--palette-border);
+    background: var(--palette-card);
+}
+
+:root[data-theme="dark"] .top-nav-menu .nav-btn.is-wave-current,
+:root[data-theme="dark"] .nav-wave-pill::after {
+    color: #321719;
+    background-color: #321719;
+}
+
+:root[data-theme="dark"] .error-btn {
+    color: #321719;
+}
+
+:root[data-theme="dark"] .error-btn:hover {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] .seguimiento-estado {
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .seguimiento-estado.estado-listo {
+    color: #74C18A;
+}
+
+:root[data-theme="dark"] .seguimiento-estado.estado-cancelado {
+    color: var(--color-danger);
+}
+
+:root[data-theme="dark"] .order-extra-form button,
+:root[data-theme="dark"] .order-extras li button {
+    background: #8A3539;
+    border: 1px solid #963C40;
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] #eslogan,
+:root[data-theme="dark"] #a1,
+:root[data-theme="dark"] #loginMensaje,
+:root[data-theme="dark"] .enlace-login a {
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .tarjeta-pedido.alerta-advertencia,
+:root[data-theme="dark"] .leyenda-advertencia {
+    border-color: var(--palette-gold, #E4B353);
+    background: #453337;
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] .tarjeta-pedido.alerta-critica,
+:root[data-theme="dark"] .leyenda-critica {
+    border-color: var(--color-danger);
+    background: #48292B;
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] .tarjeta-pedido.alerta-advertencia .pedido-espera {
+    color: var(--palette-gold, #E4B353);
+}
+
+:root[data-theme="dark"] .btn-primary:hover,
+:root[data-theme="dark"] .btn-cobrar:hover,
+:root[data-theme="dark"] .seguimiento-ir-caja:hover,
+:root[data-theme="dark"] .btn-primario:hover,
+:root[data-theme="dark"] .rq-btn-danger:hover {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] #boton_inicio_de_sesion,
+:root[data-theme="dark"] #boton_crear_cuenta {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%);
+    border: 1px solid rgba(201, 155, 69, 0.35);
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+:root[data-theme="dark"] #boton_inicio_de_sesion:hover,
+:root[data-theme="dark"] #boton_crear_cuenta:hover {
+    background: linear-gradient(135deg, #A03D42 0%, #8A3539 100%);
+    color: #FFFFFF;
+    box-shadow: 0 4px 16px rgba(138, 53, 57, 0.45);
+}
+
+:root[data-theme="dark"] .rq-btn-secondary,
+:root[data-theme="dark"] .btn-secundario,
+:root[data-theme="dark"] .btn-secondary,
+:root[data-theme="dark"] .modal-cuenta,
+:root[data-theme="dark"] dialog {
+    border-color: var(--palette-border);
+    background-color: var(--palette-card);
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] body {
+    background: radial-gradient(circle at 25% 30%, #351C26 0%, #22121A 60%, #160B11 100%);
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] #general h1 {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] #general h3 {
+    color: var(--palette-muted);
+}
+
+:root[data-theme="dark"] #registro {
+    background-color: rgba(48, 33, 36, 0.94);
+    border: 1px solid rgba(84, 56, 59, 0.6);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] #titulo2 {
+    color: #FFFFFF;
+}
+
+:root[data-theme="dark"] #subtitulo {
+    color: var(--palette-muted);
+}
+
+:root[data-theme="dark"] #formLogin input[type="text"],
+:root[data-theme="dark"] #formLogin input[type="password"],
+:root[data-theme="dark"] #formAprendiz input {
+    background-color: #38282B;
+    border: 1px solid var(--palette-border);
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] .campo-recuerdame label {
+    color: var(--palette-text);
+}
+
+:root[data-theme="dark"] #o {
+    color: var(--palette-muted);
+}
+
+@media (max-width: 560px) {
+    .theme-toggle {
+        width: 42px;
+        height: 42px;
+        min-height: 42px;
+    }
+}
+
+/* ========================================================
+   ESTILO VISUAL UNIFICADO DE COCINA (KDS) PARA TODAS LAS INTERFACES
+   Requesty: Rojo Actual (#8A3539), Negro (#160B0F) y Dorado (#C99B45)
+   ======================================================== */
+
+/* 1. CAJAS DE RESUMEN Y STATS ICONICAS (MESAS, REPORTES, CUENTAS) */
+.mesas-stats .stat-card,
+.kpi-container .kpi-card,
+.resumen-cuentas > div {
+    position: relative !important;
+    background: var(--palette-card, #FFFFFF) !important;
+    border-radius: 14px !important;
+    padding: 18px 22px !important;
+    border: 2px solid rgba(201, 155, 69, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(31, 17, 22, 0.06) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    transition: transform 0.24s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.24s ease !important;
+}
+
+.mesas-stats .stat-card:hover,
+.kpi-container .kpi-card:hover,
+.resumen-cuentas > div:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 24px rgba(31, 17, 22, 0.12) !important;
+}
+
+/* Bordes y estados icónicos tipo Cocina */
+.stat-card-disponibles,
+.kpi-container .kpi-card:nth-child(3) {
+    border: 2px solid #2E7D32 !important;
+    box-shadow: 0 4px 18px rgba(46, 125, 50, 0.14) !important;
+}
+
+.stat-card-ocupadas,
+.kpi-container .kpi-card:nth-child(2) {
+    border: 2px solid #8A3539 !important;
+    box-shadow: 0 4px 18px rgba(138, 53, 57, 0.16) !important;
+}
+
+.kpi-container .kpi-card:nth-child(1),
+.resumen-cuentas > div:first-child {
+    border: 2px solid var(--palette-gold, #C99B45) !important;
+    box-shadow: 0 4px 18px rgba(201, 155, 69, 0.16) !important;
+}
+
+.kpi-container .kpi-card:nth-child(4) {
+    border: 2px solid #6E262B !important;
+    box-shadow: 0 4px 18px rgba(110, 38, 43, 0.14) !important;
+}
+
+/* Tipografía de números y títulos de resumen */
+.stat-value,
+.kpi-value {
+    font-size: 32px !important;
+    font-weight: 900 !important;
+    color: #160B0F !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.5px !important;
+}
+
+.stat-label,
+.kpi-label {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: var(--palette-gold-hover, #B08536) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+}
+
+.stat-card-disponibles .stat-label { color: #166534 !important; }
+.stat-card-ocupadas .stat-label { color: #8A3539 !important; }
+
+/* 2. BARRAS DE FILTROS EN PÍLDORAS (MESAS, PEDIDOS, CAJA, REPORTES) */
+.mesas-filters,
+.filter-tabs,
+.catalogo-filtros,
+main > header nav,
+.filters-section {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 14px !important;
+    background: var(--palette-card, #FFFFFF) !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.32) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 14px rgba(31, 17, 22, 0.05) !important;
+    flex-wrap: wrap !important;
+}
+
+.filter-btn,
+.tab-btn,
+.catalogo-filtros button,
+main > header nav button,
+.mesas-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 7px 16px !important;
+    border-radius: 999px !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.32) !important;
+    background: #FAF7F4 !important;
+    color: #1F1116 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.filter-btn:hover,
+.tab-btn:hover,
+.catalogo-filtros button:hover,
+main > header nav button:hover,
+.mesas-action-btn:hover {
+    background: rgba(201, 155, 69, 0.16) !important;
+    border-color: var(--palette-gold, #C99B45) !important;
+    color: var(--palette-red, #8A3539) !important;
+    transform: translateY(-1px) !important;
+}
+
+.filter-btn.active,
+.tab-btn.active,
+.catalogo-filtros button.active,
+main > header nav button.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border-color: var(--palette-gold, #C99B45) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 3px 10px rgba(138, 53, 57, 0.38) !important;
+}
+
+/* 3. PLANO DE MESAS: ASPECTO DE FICHAS TÁCTILES CON SOMBRA Y SELLO */
+.mesa-card {
+    position: relative !important;
+    background: #FAF7EE !important;
+    border: 1.5px solid rgba(210, 198, 182, 0.75) !important;
+    border-radius: 12px !important;
+    padding: 16px 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    box-shadow: 0 4px 14px rgba(31, 17, 22, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.24s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.24s ease !important;
+    overflow: visible !important;
+    user-select: none !important;
+}
+
+.mesa-card::before,
+.mesa-card::after {
+    content: "";
+    position: absolute;
+    bottom: 6px;
+    width: 40%;
+    height: 14px;
+    box-shadow: 0 12px 18px rgba(0, 0, 0, 0.2);
+    z-index: -1;
+    pointer-events: none;
+    transition: transform 0.25s ease;
+}
+
+.mesa-card::before { left: 6px; transform: rotate(-3deg); }
+.mesa-card::after { right: 6px; transform: rotate(3deg); }
+
+.mesa-card:hover {
+    transform: translateY(-4px) scale(1.025) !important;
+    box-shadow: 0 12px 28px rgba(31, 17, 22, 0.14) !important;
+    border-color: var(--palette-gold, #C99B45) !important;
+}
+
+.mesa-card.libre {
+    border-left: 5px solid #16A34A !important;
+}
+
+.mesa-card.ocupada {
+    border-left: 5px solid #8A3539 !important;
+}
+
+.mesa-card.reservada {
+    border-left: 5px solid #C99B45 !important;
+}
+
+.mesa-number {
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    color: #160B0F !important;
+    letter-spacing: -0.5px !important;
+}
+
+/* Insignias de estado estilo Cocina */
+.mesa-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 3px 10px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.mesa-card.libre .mesa-status {
+    background: #DCFCE7 !important;
+    color: #166534 !important;
+    border: 1px solid #86EFAC !important;
+}
+
+.mesa-card.ocupada .mesa-status {
+    background: #FCE8E9 !important;
+    color: #9C3D42 !important;
+    border: 1px solid #F7C6C8 !important;
+}
+
+.mesa-card.reservada .mesa-status {
+    background: #FFF4DE !important;
+    color: #B58428 !important;
+    border: 1px solid #FFE4A8 !important;
+}
+
+/* 4. TABLA DE PEDIDOS Y FACTURAS: ESTILO LIBRO CONTABLE / RECIBO */
+.table-card,
+.ventas-pedidos {
+    background: #FFFFFF !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.32) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 6px 20px rgba(31, 17, 22, 0.06) !important;
+    overflow: hidden !important;
+}
+
+.orders-table,
+.tabla-inventario {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+.orders-table th,
+.tabla-inventario th {
+    background: #FAF6F4 !important;
+    color: #160B0F !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    border-bottom: 2px solid var(--palette-gold, #C99B45) !important;
+    padding: 12px 14px !important;
+}
+
+.orders-table td,
+.tabla-inventario td {
+    padding: 12px 14px !important;
+    border-bottom: 1px solid rgba(201, 155, 69, 0.15) !important;
+    font-size: 13px !important;
+    color: #1F1116 !important;
+}
+
+.orders-table tr:hover,
+.tabla-inventario tr:hover {
+    background: rgba(201, 155, 69, 0.06) !important;
+}
+
+/* Insignias de estado de pedido estilo Cocina */
+.badge-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 4px 12px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.status-nuevo,
+.badge-status:contains("cola") {
+    background: #FFF4DE !important;
+    color: #B58428 !important;
+    border: 1px solid #FFE4A8 !important;
+}
+
+.status-preparando {
+    background: #FCE8E9 !important;
+    color: #9C3D42 !important;
+    border: 1px solid #F7C6C8 !important;
+}
+
+.status-listo {
+    background: #DCFCE7 !important;
+    color: #166534 !important;
+    border: 1px solid #86EFAC !important;
+}
+
+/* 5. CAJA: TARJETAS DE RECIBO Y RESUMEN DE TOTALES */
+.card-totales,
+#pedido-resumen {
+    position: relative !important;
+    background: #FAF7EE !important;
+    border: 1.5px solid rgba(201, 155, 69, 0.38) !important;
+    border-radius: 14px !important;
+    padding: 24px !important;
+    box-shadow: 0 8px 24px rgba(31, 17, 22, 0.08) !important;
+}
+
+.total-destacado {
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.5px !important;
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
+    background: rgba(201, 155, 69, 0.12) !important;
+    border: 1px dashed var(--palette-gold, #C99B45) !important;
+    color: #160B0F !important;
+}
+
+.total-destacado span {
+    color: #8A3539 !important;
+    font-size: 30px !important;
+}
+
+/* 6. MODO OSCURO PARA TODAS LAS INTERFACES UNIFICADAS */
+:root[data-theme="dark"] .mesas-stats .stat-card,
+:root[data-theme="dark"] .kpi-container .kpi-card,
+:root[data-theme="dark"] .resumen-cuentas > div {
+    background: var(--palette-card, #341C25) !important;
+    border-color: rgba(201, 155, 69, 0.28) !important;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35) !important;
+}
+
+:root[data-theme="dark"] .stat-card-disponibles,
+:root[data-theme="dark"] .kpi-container .kpi-card:nth-child(3) {
+    border: 2px solid #2E7D32 !important;
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.25) !important;
+}
+
+:root[data-theme="dark"] .stat-card-ocupadas,
+:root[data-theme="dark"] .kpi-container .kpi-card:nth-child(2) {
+    border: 2px solid #A8484D !important;
+    box-shadow: 0 6px 20px rgba(168, 72, 77, 0.25) !important;
+}
+
+:root[data-theme="dark"] .kpi-container .kpi-card:nth-child(1),
+:root[data-theme="dark"] .resumen-cuentas > div:first-child {
+    border: 2px solid var(--palette-gold, #E4B353) !important;
+    box-shadow: 0 6px 20px rgba(228, 179, 83, 0.25) !important;
+}
+
+:root[data-theme="dark"] .stat-value,
+:root[data-theme="dark"] .kpi-value {
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .mesas-filters,
+:root[data-theme="dark"] .filter-tabs,
+:root[data-theme="dark"] .catalogo-filtros,
+:root[data-theme="dark"] main > header nav,
+:root[data-theme="dark"] .filters-section {
+    background: var(--palette-card, #341C25) !important;
+    border-color: rgba(201, 155, 69, 0.25) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+:root[data-theme="dark"] .filter-btn,
+:root[data-theme="dark"] .tab-btn,
+:root[data-theme="dark"] .catalogo-filtros button,
+:root[data-theme="dark"] main > header nav button,
+:root[data-theme="dark"] .mesas-action-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(201, 155, 69, 0.28) !important;
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .filter-btn:hover,
+:root[data-theme="dark"] .tab-btn:hover,
+:root[data-theme="dark"] .catalogo-filtros button:hover,
+:root[data-theme="dark"] main > header nav button:hover,
+:root[data-theme="dark"] .mesas-action-btn:hover {
+    background: rgba(201, 155, 69, 0.2) !important;
+    border-color: var(--palette-gold, #E4B353) !important;
+    color: var(--palette-gold, #E4B353) !important;
+}
+
+:root[data-theme="dark"] .filter-btn.active,
+:root[data-theme="dark"] .tab-btn.active,
+:root[data-theme="dark"] .catalogo-filtros button.active,
+:root[data-theme="dark"] main > header nav button.active {
+    background: linear-gradient(135deg, #8A3539 0%, #6E262B 100%) !important;
+    border-color: var(--palette-gold, #E4B353) !important;
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .mesa-card {
+    background: linear-gradient(180deg, #2E1824 0%, #221019 100%) !important;
+    border-color: rgba(201, 155, 69, 0.32) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+:root[data-theme="dark"] .mesa-number {
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .table-card,
+:root[data-theme="dark"] .ventas-pedidos {
+    background: #27141E !important;
+    border-color: rgba(201, 155, 69, 0.28) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+:root[data-theme="dark"] .orders-table th,
+:root[data-theme="dark"] .tabla-inventario th {
+    background: #1C0C14 !important;
+    color: var(--palette-gold, #E4B353) !important;
+}
+
+:root[data-theme="dark"] .orders-table td,
+:root[data-theme="dark"] .tabla-inventario td {
+    color: #F5EBEA !important;
+    border-bottom-color: rgba(201, 155, 69, 0.15) !important;
+}
+
+:root[data-theme="dark"] .card-totales,
+:root[data-theme="dark"] #pedido-resumen {
+    background: linear-gradient(180deg, #2E1824 0%, #221019 100%) !important;
+    border-color: rgba(201, 155, 69, 0.35) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+:root[data-theme="dark"] .total-destacado {
+    background: rgba(201, 155, 69, 0.15) !important;
+    color: #FFFFFF !important;
+}
+
+:root[data-theme="dark"] .total-destacado span {
+    color: var(--palette-gold, #E4B353) !important;
+}
+

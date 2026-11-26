@@ -138,4 +138,64 @@ INSERT INTO notificacion (mensaje, tipo, id_usuario, id_pedido, id_ingrediente) 
 INSERT INTO reporte (tipo, fecha_inicio, fecha_fin, id_usuario) VALUES
     ('VENTAS_DIARIAS', '2026-11-18', '2026-11-18', 1);
 
+-- Roles, usuarios, mesas, categorias y catalogo operativo adicional
+INSERT INTO rol (nombre, descripcion) VALUES
+    ('COCINA', 'Personal de preparacion y gestion de comandas en cocina'),
+    ('CLIENTE', 'Cliente registrado para menu digital, seguimiento y PQRS');
+
+INSERT INTO usuario (nombre, apellido, documento_cifrado, documento_hash, correo, telefono, contrasena, id_rol) VALUES
+    ('Claudia', 'Torres', fn_cifrar_documento('1004004004'), fn_hash_documento('1004004004'), 'cocina@restaurante.local', '3004445566', 'CocinaRest2026*', 4),
+    ('Ana', 'Lopez', fn_cifrar_documento('1098765432'), fn_hash_documento('1098765432'), 'ana.lopez@correo.com', '3104445566', 'ClienteRest2026*', 5);
+
+INSERT INTO mesa (numero_mesa, capacidad, codigo_qr, estado, ocupantes_actuales, id_cliente_actual) VALUES
+    (2, 2, 'QR-MESA-002', 'DISPONIBLE', 0, NULL),
+    (3, 4, 'QR-MESA-003', 'DISPONIBLE', 0, NULL),
+    (4, 4, 'QR-MESA-004', 'DISPONIBLE', 0, NULL),
+    (5, 6, 'QR-MESA-005', 'DISPONIBLE', 0, NULL),
+    (6, 2, 'QR-MESA-006', 'DISPONIBLE', 0, NULL),
+    (7, 4, 'QR-MESA-007', 'DISPONIBLE', 0, NULL),
+    (8, 4, 'QR-MESA-008', 'DISPONIBLE', 0, NULL),
+    (9, 2, 'QR-MESA-009', 'DISPONIBLE', 0, NULL),
+    (10, 6, 'QR-MESA-010', 'DISPONIBLE', 0, NULL);
+
+INSERT INTO categoria (nombre, descripcion) VALUES
+    ('Desayuno', 'Platos tradicionales de manana y caldos'),
+    ('Almuerzo', 'Platos fuertes y especialidades de la casa'),
+    ('Bebida', 'Jugos naturales y bebidas frias');
+
+INSERT INTO ingrediente (nombre, unidad_medida, stock_actual, stock_minimo, costo) VALUES
+    ('Costilla', 'g', 0, 1000, 28.00),
+    ('Papa', 'g', 0, 1500, 6.00),
+    ('Cilantro', 'g', 0, 100, 10.00),
+    ('Huevos', 'unidad', 0, 30, 600.00),
+    ('Mora', 'g', 0, 500, 12.00),
+    ('Arroz', 'g', 0, 1500, 5.00),
+    ('Frijoles', 'g', 0, 1500, 9.00);
+
+INSERT INTO inventario (id_ingrediente, tipo_movimiento, cantidad, motivo, id_usuario) VALUES
+    (4, 'ENTRADA', 9000, 'Compra inicial cocina', 1),
+    (5, 'ENTRADA', 11250, 'Compra inicial cocina', 1),
+    (6, 'ENTRADA', 500, 'Compra inicial cocina', 1),
+    (7, 'ENTRADA', 120, 'Compra inicial cocina', 1),
+    (8, 'ENTRADA', 3600, 'Compra inicial bebidas', 1),
+    (9, 'ENTRADA', 6750, 'Compra inicial despensa', 1),
+    (10, 'ENTRADA', 6750, 'Compra inicial despensa', 1);
+
+INSERT INTO producto (nombre, descripcion, precio, impuesto_porcentaje, imagen, disponible, tiempo_preparacion, id_categoria) VALUES
+    ('Caldo de costilla', 'Caldo tradicional con costilla, papa y cilantro', 8000.00, 8.00, 'img/tarjeta/caldo-de-costilla.jpg', TRUE, 12, 2),
+    ('Jugo de mora', 'Jugo natural de mora fresca en agua o leche', 6000.00, 8.00, 'img/tarjeta/jugo-de-mora.jpg', TRUE, 5, 4),
+    ('Huevos pericos', 'Huevos revueltos con tomate y cebolla', 7000.00, 8.00, 'img/tarjeta/huevos-pericos.jpg', TRUE, 8, 2),
+    ('Bandeja paisa', 'Plato tipico completo con frijoles, arroz, carne, huevo y chorizo', 30000.00, 8.00, 'img/tarjeta/bandeja-paisa.jpg', TRUE, 18, 3);
+
+INSERT INTO producto_ingrediente (id_producto, id_ingrediente, cantidad) VALUES
+    (2, 4, 200),
+    (2, 5, 250),
+    (2, 6, 5),
+    (3, 8, 80),
+    (4, 7, 2),
+    (5, 9, 150),
+    (5, 10, 150),
+    (5, 1, 100),
+    (5, 7, 1);
+
 COMMIT;

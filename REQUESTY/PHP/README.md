@@ -1,52 +1,98 @@
-# Requesty - Sistema de Gestión Gastronómica
-**Programa ADSO · Ficha 3478025 · Entrega y Sustentación 4.º Trimestre**
+# Requesty - Sistema de Gestión Gastronómica (Arquitectura MVC PHP)
+
+Este proyecto ha sido migrado completamente del formato estático HTML/JS a una arquitectura **MVC (Modelo - Vista - Controlador)** en **PHP 8+**, optimizado para ejecutarse en servidores locales como **XAMPP** o cualquier entorno Apache/Nginx con PHP y MySQL.
 
 ---
 
-## 1. Integrantes del Equipo
-- **Brayan Santiago Cuta**
-- **Equipo de Desarrollo Requesty**
+## 📁 Estructura del Proyecto (MVC)
 
----
-
-## 2. Requisitos del Sistema
-- **Servidor Web**: Apache (vía XAMPP con módulo `mod_rewrite` habilitado y `AllowOverride All`).
-- **Lenguaje**: PHP 8.2 o superior (con extensiones `pdo`, `pdo_mysql`, `pdo_pgsql`, `mbstring`, `json`, `openssl`).
-- **Base de Datos**: MySQL / MariaDB (o PostgreSQL 17).
-- **Móvil**: Android Studio (Ladybug / Iguana) con JDK 17 y Kotlin 1.9+.
-
----
-
-## 3. Estructura del Proyecto (Conforme a la Guía ADSO)
-
-```
-requesty/
-├── public/                 <- Única carpeta pública accesible desde la web
-│   ├── index.php           <- Front Controller del sistema
-│   ├── .htaccess           <- Reescritura limpia y conservación de Authorization Header
-│   └── assets/             <- CSS, JS, imágenes y logo oficial
+```text
+Requesty/
 ├── app/
-│   ├── config/             <- config.php (BASE_URL) y Database.php (PDO)
-│   ├── core/               <- Router.php, Auth.php (CSRF, roles y tokens)
-│   ├── controllers/        <- AuthController, PedidoController, ReporteController, etc.
-│   │   └── api/            <- AuthApiController.php, PedidoApiController.php
-│   ├── models/             <- Usuario.php, Pedido.php, Producto.php, Caja.php, etc.
-│   └── views/              <- Vistas organizadas por módulo (auth, pedidos, cocina, etc.)
-├── database/               <- Scripts DDL + DML (schema.sql, requesty_database.sql)
-├── postman/                <- Colección de pruebas exportada (requesty.json)
-├── docs/                   <- Documentación de flujo principal y arquitectura
-└── mobile/                 <- Proyecto Android Studio (Kotlin + Retrofit + Jetpack Compose)
+│   ├── config/
+│   │   ├── config.php              # Configuración global, BASE_URL, sesiones y permisos
+│   │   └── Database.php            # Conexión Singleton PDO a MySQL con respaldo resiliente
+│   ├── core/
+│   │   ├── App.php                 # Inicializador del sistema
+│   │   ├── Controller.php          # Controlador base (vistas, modelos, respuestas JSON, auth)
+│   │   ├── Model.php               # Modelo base (consultas preparadas PDO)
+│   │   └── Router.php              # Enrutador Front Controller (URLs limpias y parámetros)
+│   ├── models/
+│   │   ├── Usuario.php             # Gestión de usuarios, autenticación y permisos
+│   │   ├── Pedido.php              # Pedidos, detalles y estados operativos
+│   │   ├── Producto.php            # Menú, categorías, insumos e inventario
+│   │   ├── Mesa.php                # Mesas, ocupación y asignación
+│   │   ├── Caja.php                # Pagos, facturas electrónicas y cierres de caja
+│   │   └── Pqrs.php                # Peticiones, Quejas, Reclamos y Sugerencias
+│   ├── controllers/
+│   │   ├── AuthController.php      # Login, registro y cierre de sesión
+│   │   ├── PedidoController.php    # Módulo de pedidos
+│   │   ├── CocinaController.php    # Módulo KDS cocina
+│   │   ├── MenuController.php      # Módulo del catálogo y menú
+│   │   ├── CajaController.php      # Módulo de cobros y facturación
+│   │   ├── MesaController.php      # Módulo de distribución de mesas
+│   │   ├── ReporteController.php   # Reportes, inventario y cuentas del personal
+│   │   ├── PqrsController.php      # Módulo de PQRS para clientes
+│   │   ├── ApiController.php       # Endpoints AJAX para sincronización en tiempo real
+│   │   └── ErrorController.php     # Manejo de errores HTTP 404
+│   └── views/
+│       ├── layouts/
+│       │   ├── header.php          # Encabezado HTML y estilos base
+│       │   ├── sidebar.php         # Menú lateral dinámico y responsivo
+│       │   ├── topbar.php          # Barra superior del restaurante
+│       │   └── footer.php          # Scripts base y cierre de etiquetas
+│       ├── auth/
+│       │   ├── login.php           # Vista de inicio de sesión
+│       │   └── registro.php        # Vista de registro de cuenta
+│       ├── pedidos/index.php       # Vista de gestión operativa de pedidos
+│       ├── cocina/index.php        # Pantalla KDS de cocina
+│       ├── menu/index.php          # Catálogo interactivo de platos
+│       ├── caja/index.php          # Punto de venta, facturas y cierre de caja
+│       ├── mesas/index.php         # Estado y asignación de mesas
+│       ├── reportes/index.php      # Dashboard con KPIs, gráficas y personal
+│       ├── pqrs/index.php          # Formulario de registro de PQRS
+│       └── error/404.php           # Página personalizada de error 404
+│
+├── css/                            # Estilos CSS de cada módulo
+├── js/                             # Scripts de interactividad cliente
+├── img/                            # Imágenes de productos y diseño
+├── database/
+│   ├── requesty_database.sql       # Script SQL optimizado para importar en MySQL/phpMyAdmin
+│   └── *_backup.json               # Almacenamiento JSON para respaldo local
+│
+├── index.php                       # Front Controller único (punto de entrada central del sistema)
+└── .htaccess                       # Reglas de reescritura Apache para URLs limpias
 ```
 
 ---
 
-## 4. Instalación y Puesta en Marcha
+## 🚀 Cómo ejecutar en XAMPP
 
-1. **Clonar o copiar el proyecto** en `C:\xampp\htdocs\Requesty - BETA v_0.2 UPDATE\`.
-2. **Iniciar servicios**: Iniciar Apache y MySQL en el panel de control de XAMPP.
-3. **Acceder a la aplicación**:
-   - Abrir en el navegador: `http://localhost/Requesty%20-%20BETA%20v_0.2%20UPDATE/public/`
-4. **Usuarios de Prueba preconfigurados**:
-   - **Administrador**: `admin@requesty.com` / Clave: `Admin123*`
-   - **Mesero**: `mesero@requesty.com` / Clave: `12345678`
-   - **Cajero**: `cajero@requesty.com` / Clave: `12345678`
+1. **Colocar en htdocs**:
+   Asegúrate de que la carpeta esté dentro de `C:\xampp\htdocs\` (por ejemplo: `C:\xampp\htdocs\Requesty - BETA v_0.2 UPDATE`).
+
+2. **Iniciar servicios en el Panel de Control de XAMPP**:
+   - Inicia **Apache**.
+   - (Opcional recomendado) Inicia **MySQL**.
+
+3. **(Opcional) Importar la Base de Datos MySQL**:
+   - Abre `http://localhost/phpmyadmin/`.
+   - Crea una base de datos llamada `REQUESTY` o haz clic en **Importar** y selecciona el archivo:
+     `database/requesty_database.sql`.
+   *Nota: Si aún no has iniciado MySQL, el sistema funciona de inmediato utilizando los respaldos de datos locales de forma resiliente.*
+
+4. **Abrir en el navegador**:
+   - Visita: `http://localhost/Requesty%20-%20BETA%20v_0.2%20UPDATE/`
+   - O directamente: `http://localhost/Requesty%20-%20BETA%20v_0.2%20UPDATE/index.php`
+
+---
+
+## 👥 Cuentas de demostración iniciales
+
+| Rol | Correo Electrónico | Contraseña | Módulos Permitidos |
+|---|---|---|---|
+| **Administrador** | `admin@requesty.com` | `admin123` | Todos los módulos (Mesas, Pedidos, Cocina, Menú, Caja, Reportes, Cuentas, PQRS) |
+| **Cajero** | `cajero@requesty.com` | `caja123` | Menú, Mesas, Pedidos, Caja y facturación |
+| **Mesero** | `mesero@requesty.com` | `mesero123` | Menú, Mesas, Pedidos |
+| **Cocina** | `cocina@requesty.com` | `cocina123` | Menú, Pedidos, Cocina (KDS) |
+| **Cliente** | `cliente@gmail.com` | `cliente123` | Catálogo de menú, Mis pedidos, PQRS |
