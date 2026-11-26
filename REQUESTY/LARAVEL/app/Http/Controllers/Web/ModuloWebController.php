@@ -66,11 +66,15 @@ class ModuloWebController extends Controller
 
     public function mesas(Request $request)
     {
+        $user = $request->attributes->get('requesty_user');
+        $rol = strtoupper((string) ($user['rol'] ?? ''));
+
         return view('mesas.index', [
             'pageTitle' => 'Gestion de Mesas - Requesty',
             'currentPage' => 'mesas',
             'mesas' => (new Mesa())->getAll(),
-            'user' => $request->attributes->get('requesty_user'),
+            'puedeCrearMesas' => in_array($rol, ['ADMIN', 'ADMINISTRADOR'], true),
+            'user' => $user,
         ]);
     }
 

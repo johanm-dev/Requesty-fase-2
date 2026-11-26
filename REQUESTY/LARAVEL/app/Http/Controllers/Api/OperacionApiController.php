@@ -28,10 +28,19 @@ class OperacionApiController extends Controller
             }
             FileRateLimiter::check($request, 'api_write:' . (int) $user['id'], 60, 60);
             $input = DtoValidator::parseJsonInput($request, [
-                'numero_mesa', 'estado', 'ocupantes', 'id_cliente', 'cliente_nombre', 'cliente_correo', 'cliente_telefono',
+                'numero_mesa', 'numeros_mesa', 'estado', 'ocupantes', 'id_cliente', 'cliente_nombre', 'cliente_correo', 'cliente_telefono',
             ]);
-            $num = DtoValidator::requireInt($input, 'numero_mesa');
             $estado = DtoValidator::requireEnum($input, 'estado', ['DISPONIBLE', 'OCUPADA', 'RESERVADA', 'INACTIVA']);
+
+            if (!empty($input['numeros_mesa']) && is_array($input['numeros_mesa'])) {
+                $numeros = array_values(array_unique(array_map('intval', $input['numeros_mesa'])));
+                $mesaModel->updateStatuses($numeros, $estado);
+                ActivityLogger::record((int) $user['id'], 'Mesas #' . implode(',', $numeros) . " cambiadas a {$estado}", 'MESAS', $request);
+
+                return response()->json(['success' => true]);
+            }
+
+            $num = DtoValidator::requireInt($input, 'numero_mesa');
 
             if ($estado === 'DISPONIBLE') {
                 $mesa = $mesaModel->release($num);
@@ -73,6 +82,21 @@ class OperacionApiController extends Controller
         }
 
         return response()->json(['success' => true, 'mesas' => $mesas]);
+    }
+
+    public function crearMesa(Request $request): JsonResponse
+    {
+        $user = $request->attributes->get('requesty_user');
+        if ($user['rol'] !== 'ADMIN') {
+            throw new ForbiddenException('Solo un administrador puede agregar mesas.');
+        }
+        FileRateLimiter::check($request, 'api_write:' . (int) $user['id'], 60, 60);
+        $input = DtoValidator::parseJsonInput($request, ['capacidad']);
+        $capacidad = DtoValidator::requireInt($input, 'capacidad', 1, 12);
+        $mesa = (new Mesa())->createMesa($capacidad);
+        ActivityLogger::record((int) $user['id'], 'Creacion de mesa #' . (int) $mesa['numero_mesa'], 'MESAS', $request);
+
+        return response()->json(['success' => true, 'mesa' => $mesa], 201);
     }
 
     public function pedidos(Request $request): JsonResponse

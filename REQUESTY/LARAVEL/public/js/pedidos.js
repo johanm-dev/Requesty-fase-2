@@ -139,8 +139,9 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const agregarId = urlParams.get("agregar");
+            const agregarQty = urlParams.get("cantidad") || 1;
             if (agregarId) {
-                abrirNuevoPedido(Number(agregarId));
+                abrirNuevoPedido(Number(agregarId), Number(agregarQty));
                 window.history.replaceState(null, "", "/pedidos");
             }
         } catch (err) {
@@ -219,7 +220,7 @@
         tableInput.required = canal === "Mesa";
     }
 
-    function abrirNuevoPedido(preselectProdId = null) {
+    function abrirNuevoPedido(preselectProdId = null, preselectQty = 1) {
         orderForm.reset();
         editOrderId.value = "";
         modalTitle.textContent = "Nuevo Pedido";
@@ -239,7 +240,7 @@
                     id_producto: Number(prod.id_producto),
                     nombre: prod.nombre,
                     precio: Number(prod.precio),
-                    cantidad: 1,
+                    cantidad: Math.max(1, Math.min(99, Number(preselectQty) || 1)),
                     receta: prod.receta || [],
                     termino_coccion: "",
                     observaciones: "",

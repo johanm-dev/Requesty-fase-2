@@ -94,4 +94,49 @@ class Mesa extends BasePgModel
             [':estado' => $est, ':num' => $numeroMesa]
         );
     }
+
+    public function updateStatuses(array $numerosMesa, string $estado): bool
+    {
+        $nuevoEstado = strtoupper(trim($estado));
+        if (!in_array($nuevoEstado, ['DISPONIBLE', 'OCUPADA', 'RESERVADA', 'INACTIVA'], true)) {
+            throw new DomainValidationException('El estado de mesa no es valido.');
+        }
+
+        $numerosMesa = array_values(array_unique(array_map('intval', $numerosMesa)));
+        if ($numerosMesa === [] || min($numerosMesa) < 1) {
+            throw new DomainValidationException('Selecciona al menos una mesa valida.');
+        }
+
+        return $this->transaction(function () use ($numerosMesa, $nuevoEstado): bool {
+            foreach ($numerosMesa as $num) {
+                $this->updateStatus((int) $num, $nuevoEstado);
+            }
+
+            return true;
+        });
+    }
+
+    public function createMesa(int $capacidad): array
+    {
+        if ($capacidad < 1 || $capacidad > 12) {
+            throw new DomainValidationException('La capacidad debe estar entre 1 y 12 puestos.');
+        }
+
+        return $this->transaction(function () use ($capacidad): array {
+            $siguiente = $this->fetchOne('SELECT COALESCE(MAX(numero_mesa), 0) + 1 AS numero_mesa FROM mesa');
+            $numeroMesa = (int) ($siguiente['numero_mesa'] ?? 1);
+            $codigoQr = sprintf('QR-MESA-%03d', $numeroMesa);
+            $mesa = $this->fetchOne(
+                "INSERT INTO mesa (numero_mesa, capacidad, codigo_qr, estado)
+                 VALUES (:numero, :capacidad, :qr, 'DISPONIBLE')
+                 RETURNING id_mesa, numero_mesa, capacidad, codigo_qr, estado",
+                [':numero' => $numeroMesa, ':capacidad' => $capacidad, ':qr' => $codigoQr]
+            );
+            if ($mesa === null) {
+                throw new DomainValidationException('No se pudo recuperar la mesa creada.');
+            }
+
+            return $mesa;
+        });
+    }
 }

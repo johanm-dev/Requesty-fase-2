@@ -45,6 +45,9 @@ Route::match(['get', 'post', 'put', 'patch'], '/inventario', [MenuApiController:
 Route::match(['get', 'post', 'put', 'patch'], '/ingredientes', [MenuApiController::class, 'inventario'])
     ->middleware('api.auth:ADMIN,CAJERO,MESERO,COCINA');
 
+Route::post('/mesas/crear', [OperacionApiController::class, 'crearMesa'])
+    ->middleware('api.auth:ADMIN');
+
 Route::match(['get', 'post', 'put'], '/mesas', [OperacionApiController::class, 'mesas'])
     ->middleware('api.auth');
 
