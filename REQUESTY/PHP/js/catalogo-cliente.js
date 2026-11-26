@@ -190,17 +190,55 @@ function renderizarSeguimientoPedidos(datosGuardados = localStorage.getItem("req
     }
 }
 
+let detalleProductoActual = null;
+let detalleCantidadActual = 1;
+
 function formatearPrecio(precio) {
     return new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(precio);
+}
+
+function obtenerIconoCategoria(categoria) {
+    const cat = String(categoria || "").toLowerCase();
+    if (cat.includes("toda") || cat.includes("all")) return "fa-utensils";
+    if (cat.includes("desayuno")) return "fa-egg";
+    if (cat.includes("almuerzo") || cat.includes("comida")) return "fa-bowl-food";
+    if (cat.includes("cena")) return "fa-plate-wheat";
+    if (cat.includes("bebida") || cat.includes("jugo") || cat.includes("juice")) return "fa-glass-water";
+    if (cat.includes("postre") || cat.includes("dulce")) return "fa-cake-candles";
+    if (cat.includes("hamburguesa") || cat.includes("burger")) return "fa-burger";
+    if (cat.includes("sopa") || cat.includes("caldo")) return "fa-mug-hot";
+    if (cat.includes("carne") || cat.includes("asado")) return "fa-drumstick-bite";
+    return "fa-kitchen-set";
 }
 
 function renderizarFiltros(productos) {
     const categorias = [...new Set(productos.map((producto) => producto.categoria))];
     const opciones = ["Todas", ...categorias];
     if (!opciones.includes(filtroActual)) filtroActual = "Todas";
-    filtrosCatalogo.innerHTML = opciones.map((categoria) =>
-        `<button type="button" data-categoria="${escaparHTML(categoria)}" aria-pressed="${categoria === filtroActual}">${escaparHTML(categoria)}</button>`
-    ).join("");
+
+    const conteos = {
+        "Todas": productos.length
+    };
+    productos.forEach(p => {
+        conteos[p.categoria] = (conteos[p.categoria] || 0) + 1;
+    });
+
+    filtrosCatalogo.innerHTML = opciones.map((categoria) => {
+        const esActiva = categoria === filtroActual;
+        const total = conteos[categoria] || 0;
+        const icono = obtenerIconoCategoria(categoria);
+        return `
+            <button type="button" class="categoria-kiosk-btn ${esActiva ? "activo" : ""}" data-categoria="${escaparHTML(categoria)}" aria-pressed="${esActiva}">
+                <div class="categoria-kiosk-icono">
+                    <i class="fa-solid ${icono}" aria-hidden="true"></i>
+                </div>
+                <div class="categoria-kiosk-textos">
+                    <strong class="categoria-kiosk-nombre">${escaparHTML(categoria)}</strong>
+                    <span class="categoria-kiosk-conteo">${total} ${total === 1 ? "ítem" : "ítems"}</span>
+                </div>
+            </button>
+        `;
+    }).join("");
 }
 
 function renderizarCatalogo() {
@@ -213,35 +251,56 @@ function renderizarCatalogo() {
     });
 
     const cantidadDisponibles = visibles.filter(producto => producto.disponible).length;
-    document.getElementById("conteo-menu").textContent = `${visibles.length} ${visibles.length === 1 ? "plato" : "platos"} en el menú · ${cantidadDisponibles} ${cantidadDisponibles === 1 ? "disponible" : "disponibles"}`;
+    const conteoEl = document.getElementById("conteo-menu");
+    if (conteoEl) {
+        conteoEl.textContent = `${visibles.length} ${visibles.length === 1 ? "plato" : "platos"} en el menú · ${cantidadDisponibles} ${cantidadDisponibles === 1 ? "disponible" : "disponibles"}`;
+    }
+
     if (!visibles.length) {
         contenedorCatalogo.innerHTML = '<p class="catalogo-vacio">No encontramos productos con esos filtros.</p>';
         return;
     }
 
-    contenedorCatalogo.innerHTML = visibles.map((producto) => {
+    contenedorCatalogo.innerHTML = visibles.map((producto, index) => {
         const faltaStock = producto.ingredientesAgotados.length > 0;
         const mensajeDisponibilidad = producto.disponible
             ? "Disponible"
             : faltaStock
                 ? `No Disponible · Falta stock de: ${producto.ingredientesAgotados.join(", ")}`
                 : "No Disponible · No se pudo verificar el inventario";
+        
+        const esRecomendado = index % 3 === 0;
+        const esDescuento = index === 1;
+
         return `
-            <article class="plato ${producto.disponible ? "" : "agotado"}">
-                ${producto.imagen && producto.imagenActiva ? `<img class="catalogo-imagen" src="${escaparHTML(producto.imagen)}" data-respaldo="${escaparHTML(producto.imagenRespaldo)}" alt="${escaparHTML(producto.nombre)}" loading="lazy">` : ""}
+            <article class="plato ${producto.disponible ? "" : "agotado"}" data-producto-card="${escaparHTML(producto.id)}">
+                <div class="plato-imagen-contenedor">
+                    ${producto.imagen && producto.imagenActiva ? `<img class="catalogo-imagen" src="${escaparHTML(producto.imagen)}" data-respaldo="${escaparHTML(producto.imagenRespaldo)}" alt="${escaparHTML(producto.nombre)}" loading="lazy">` : `<div class="catalogo-imagen-placeholder"><i class="fa-solid fa-utensils"></i></div>`}
+                    <div class="plato-overlay-badges">
+                        ${esRecomendado && producto.disponible ? `<span class="plato-badge-kiosk badge-recomendado"><i class="fa-solid fa-star"></i> Recomendado</span>` : ""}
+                        ${esDescuento && producto.disponible ? `<span class="plato-badge-kiosk badge-descuento"><i class="fa-solid fa-tag"></i> 20% OFF</span>` : ""}
+                    </div>
+                </div>
                 <div class="plato-info">
-                    <span class="plato-categoria">${escaparHTML(producto.categoria)}</span>
-                    <span class="estado-disponibilidad ${producto.disponible ? "" : "agotado"}" role="status">${escaparHTML(mensajeDisponibilidad)}</span>
+                    <div class="plato-info-top">
+                        <span class="plato-categoria">${escaparHTML(producto.categoria)}</span>
+                        <span class="estado-disponibilidad ${producto.disponible ? "" : "agotado"}" role="status">${escaparHTML(mensajeDisponibilidad)}</span>
+                    </div>
                     <div class="plato-titulo">
                         <h2 class="${producto.disponible ? "" : "agotado"}">${escaparHTML(producto.nombre)}</h2>
                         <span class="plato-precio ${producto.disponible ? "" : "agotado"}">${producto.precio === null ? "Sin precio" : `$${formatearPrecio(producto.precio)}`}</span>
                     </div>
                     <p class="plato-ingredientes"><strong>Ingredientes:</strong> ${escaparHTML(producto.ingredientes.join(", "))}</p>
-                    <button class="plato-detalle" type="button" data-producto="${escaparHTML(producto.id)}">Ver detalle</button>
-                    ${puedeComprar ? `<button class="agregar-carrito ${producto.disponible ? "" : "sin-stock"}" type="button" data-agregar-carrito="${escaparHTML(producto.id)}" ${producto.disponible ? "" : "disabled"} aria-label="${escaparHTML(producto.disponible ? `Agregar ${producto.nombre} al pedido` : `${producto.nombre} no disponible. ${mensajeDisponibilidad}`)}" title="${escaparHTML(mensajeDisponibilidad)}">${producto.disponible ? "Agregar al pedido" : "Falta de stock"}</button>` : ""}
+                    <div class="plato-acciones-kiosk">
+                        <button class="plato-detalle" type="button" data-producto="${escaparHTML(producto.id)}">
+                            <i class="fa-solid fa-bars-staggered"></i> Ver detalle
+                        </button>
+                        ${puedeComprar ? `<button class="agregar-carrito ${producto.disponible ? "" : "sin-stock"}" type="button" data-agregar-carrito="${escaparHTML(producto.id)}" ${producto.disponible ? "" : "disabled"} aria-label="${escaparHTML(producto.disponible ? `Agregar ${producto.nombre} al pedido` : `${producto.nombre} no disponible. ${mensajeDisponibilidad}`)}" title="${escaparHTML(mensajeDisponibilidad)}">${producto.disponible ? "+ Pedir" : "Falta de stock"}</button>` : ""}
+                    </div>
                 </div>
             </article>`;
     }).join("");
+
     contenedorCatalogo.querySelectorAll(".catalogo-imagen").forEach((imagen) => {
         imagen.addEventListener("error", () => {
             const respaldo = imagen.dataset.respaldo;
@@ -255,42 +314,123 @@ function renderizarCatalogo() {
             imagen.replaceWith(aviso);
         }, { once: true });
     });
+}
 
+function actualizarTotalesDrawer() {
+    if (!detalleProductoActual) return;
+    const precioUnitario = Number(detalleProductoActual.precio) || 0;
+    const subtotal = precioUnitario * detalleCantidadActual;
+    const precioBaseEl = document.getElementById("ticket-precio-base");
+    const unidadesEl = document.getElementById("ticket-unidades");
+    const totalMontoEl = document.getElementById("ticket-total-monto");
+    const btnPrecioTotalEl = document.getElementById("drawer-btn-precio-total");
+    const qtyValEl = document.getElementById("drawer-qty-val");
+
+    if (qtyValEl) qtyValEl.textContent = detalleCantidadActual;
+    if (precioBaseEl) precioBaseEl.textContent = `$${formatearPrecio(precioUnitario)}`;
+    if (unidadesEl) unidadesEl.textContent = `${detalleCantidadActual}x`;
+    if (totalMontoEl) totalMontoEl.textContent = `$${formatearPrecio(subtotal)}`;
+    if (btnPrecioTotalEl) btnPrecioTotalEl.textContent = `$${formatearPrecio(subtotal)}`;
 }
 
 function mostrarDetalle(id) {
     const producto = leerCatalogoProductos().find((item) => String(item.id) === String(id));
     if (!producto) return;
-    document.getElementById("categoria-detalle-producto").textContent = producto.categoria;
-    const nombreDetalle = document.getElementById("nombre-detalle-producto");
-    nombreDetalle.textContent = producto.nombre;
-    nombreDetalle.classList.toggle("agotado", !producto.disponible);
-    document.getElementById("precio-detalle-producto").textContent = producto.precio === null ? "Sin precio" : `$${formatearPrecio(producto.precio)}`;
-    document.getElementById("precio-detalle-producto").classList.toggle("agotado", !producto.disponible);
-    const estadoDisponibilidad = document.getElementById("estado-detalle-producto");
-    estadoDisponibilidad.textContent = producto.disponible
-        ? "Disponible"
-        : producto.ingredientesAgotados.length
-            ? `No Disponible · Falta stock de: ${producto.ingredientesAgotados.join(", ")}`
-            : "No Disponible · No se pudo verificar el inventario";
-    estadoDisponibilidad.classList.toggle("agotado", !producto.disponible);
-    document.getElementById("ingredientes-detalle-producto").textContent = producto.ingredientes.join(", ");
-    const imagenExistente = dialogoProducto.querySelector(".detalle-producto-imagen");
-    if (imagenExistente) imagenExistente.remove();
-    if (producto.imagen && producto.imagenActiva) {
-        const imagen = document.createElement("img");
-        imagen.className = "detalle-producto-imagen";
-        imagen.src = producto.imagen;
-        imagen.alt = producto.nombre;
-        imagen.dataset.respaldo = producto.imagenRespaldo;
-        imagen.addEventListener("error", () => {
-            if (imagen.dataset.respaldo && imagen.src !== new URL(imagen.dataset.respaldo, location.href).href) {
-                imagen.src = imagen.dataset.respaldo;
-            }
-        }, { once: true });
-        dialogoProducto.querySelector(".detalle-producto-cerrar").after(imagen);
+    detalleProductoActual = producto;
+    detalleCantidadActual = 1;
+
+    // Header del drawer: Mesa, Cliente y Fecha/Hora
+    const mesaBadgeEl = document.getElementById("drawer-mesa-badge");
+    if (mesaBadgeEl) {
+        mesaBadgeEl.textContent = mesaClienteActual ? `Mesa ${mesaClienteActual}` : (sesionCatalogo?.rol === "mesero" ? "Modo Mesero" : "Mesa 1");
     }
-    dialogoProducto.showModal();
+    const clienteNombreEl = document.getElementById("drawer-cliente-nombre");
+    if (clienteNombreEl) {
+        clienteNombreEl.textContent = sesionCatalogo?.nombre || "Cliente en sala";
+    }
+    const fechaEl = document.getElementById("drawer-fecha");
+    if (fechaEl) {
+        const ahora = new Date();
+        const opcionesHora = { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" };
+        fechaEl.textContent = ahora.toLocaleDateString("es-CO", opcionesHora);
+    }
+
+    // Categoría y Estado
+    const categoriaEl = document.getElementById("categoria-detalle-producto");
+    if (categoriaEl) categoriaEl.textContent = producto.categoria;
+    
+    const estadoEl = document.getElementById("estado-detalle-producto");
+    if (estadoEl) {
+        estadoEl.textContent = producto.disponible
+            ? "Disponible"
+            : producto.ingredientesAgotados.length
+                ? `No Disponible · Falta stock: ${producto.ingredientesAgotados.join(", ")}`
+                : "No Disponible · Sin inventario";
+        estadoEl.className = `estado-disponibilidad ${producto.disponible ? "" : "agotado"}`;
+    }
+
+    // Título y Precio
+    const nombreEl = document.getElementById("nombre-detalle-producto");
+    if (nombreEl) {
+        nombreEl.textContent = producto.nombre;
+        nombreEl.classList.toggle("agotado", !producto.disponible);
+    }
+    const precioEl = document.getElementById("precio-detalle-producto");
+    if (precioEl) {
+        precioEl.textContent = producto.precio === null ? "Sin precio" : `$${formatearPrecio(producto.precio)}`;
+        precioEl.classList.toggle("agotado", !producto.disponible);
+    }
+
+    // Imagen en el contenedor del drawer
+    const imagenWrap = document.getElementById("drawer-imagen-wrap");
+    if (imagenWrap) {
+        imagenWrap.innerHTML = "";
+        if (producto.imagen && producto.imagenActiva) {
+            const img = document.createElement("img");
+            img.className = "drawer-imagen-destacada";
+            img.src = producto.imagen;
+            img.alt = producto.nombre;
+            img.dataset.respaldo = producto.imagenRespaldo;
+            img.addEventListener("error", () => {
+                if (img.dataset.respaldo && img.src !== new URL(img.dataset.respaldo, location.href).href) {
+                    img.src = img.dataset.respaldo;
+                }
+            }, { once: true });
+            imagenWrap.appendChild(img);
+        } else {
+            imagenWrap.innerHTML = `<div class="drawer-imagen-placeholder"><i class="fa-solid fa-utensils"></i></div>`;
+        }
+    }
+
+    // Ingredientes en chips (estilo tablet POS)
+    const tagsContainer = document.getElementById("drawer-tags-ingredientes");
+    if (tagsContainer) {
+        tagsContainer.innerHTML = producto.ingredientes.map(ing => `
+            <span class="drawer-tag-chip"><i class="fa-solid fa-check"></i> ${escaparHTML(ing)}</span>
+        `).join("");
+    }
+
+    // Actualizar ticket financiero
+    actualizarTotalesDrawer();
+
+    // Estado del botón de acción
+    const btnAccion = document.getElementById("drawer-btn-accion");
+    if (btnAccion) {
+        btnAccion.disabled = !producto.disponible || !puedeComprar;
+        btnAccion.title = !puedeComprar ? "Solo los meseros pueden pedir directamente desde el menú" : (!producto.disponible ? "Producto agotado" : "Agregar pedido");
+        const btnTexto = document.getElementById("drawer-btn-texto");
+        if (btnTexto) {
+            btnTexto.innerHTML = producto.disponible ? `<i class="fa-solid fa-cart-plus"></i> Agregar al pedido` : `<i class="fa-solid fa-ban"></i> Falta stock`;
+        }
+    }
+
+    if (dialogoProducto) {
+        if (typeof dialogoProducto.showModal === "function") {
+            dialogoProducto.showModal();
+        } else {
+            dialogoProducto.setAttribute("open", "");
+        }
+    }
 }
 
 function claveCarritoCliente() {
@@ -371,6 +511,46 @@ document.getElementById("cerrar-detalle-producto").addEventListener("click", () 
 dialogoProducto.addEventListener("click", (evento) => {
     if (evento.target === dialogoProducto) dialogoProducto.close();
 });
+
+const btnQtyMinus = document.getElementById("btn-qty-minus");
+if (btnQtyMinus) {
+    btnQtyMinus.addEventListener("click", () => {
+        if (detalleCantidadActual > 1) {
+            detalleCantidadActual -= 1;
+            actualizarTotalesDrawer();
+        }
+    });
+}
+
+const btnQtyPlus = document.getElementById("btn-qty-plus");
+if (btnQtyPlus) {
+    btnQtyPlus.addEventListener("click", () => {
+        if (detalleCantidadActual < 99) {
+            detalleCantidadActual += 1;
+            actualizarTotalesDrawer();
+        }
+    });
+}
+
+const btnDrawerAccion = document.getElementById("drawer-btn-accion");
+if (btnDrawerAccion) {
+    btnDrawerAccion.addEventListener("click", () => {
+        if (!puedeComprar || !detalleProductoActual || !detalleProductoActual.disponible) return;
+        const producto = detalleProductoActual;
+        const item = carrito.find((actual) => String(actual.id) === String(producto.id));
+        if (item) item.cantidad = Math.min(99, item.cantidad + detalleCantidadActual);
+        else carrito.push({ id: producto.id, cantidad: detalleCantidadActual, terminoCoccion: "", ingredientesExcluidos: [], extras: [], personalizacionAbierta: false });
+        try {
+            guardarCarrito();
+            dialogoProducto.close();
+            document.getElementById("mensaje-pedido").textContent = `${detalleCantidadActual}x ${producto.nombre} agregado al pedido. Ve a Pedidos para finalizarlo.`;
+        } catch (error) {
+            if (item) item.cantidad -= detalleCantidadActual;
+            else carrito.pop();
+            document.getElementById("mensaje-pedido").textContent = error.message || "No se pudo guardar el pedido.";
+        }
+    });
+}
 
 window.addEventListener("storage", (evento) => {
     if (evento.key === "requestyPedidos") renderizarSeguimientoPedidos(evento.newValue, true);
