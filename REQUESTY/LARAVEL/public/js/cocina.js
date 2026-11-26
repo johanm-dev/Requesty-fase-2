@@ -1,6 +1,6 @@
 /**
  * Requesty KDS - Comandas Simples en Riel Metálico (Laravel + PostgreSQL)
- * Tickets térmicos limpios sujetos al riel con animación de arrugado y sincronización API
+ * Con colores Amarillo y Rojo, vibración de prioridad y opción/animación de arrugar y tirar
  */
 (function () {
     const eventoPedidos = "requesty-pedidos-actualizados";
@@ -21,8 +21,9 @@
             mesa: 3,
             destination: "Mesa 3",
             channel: "Mesa",
+            prioridad: "alta",
             time: "20:15",
-            receivedAt: new Date(Date.now() - 8 * 60000).toISOString(),
+            receivedAt: new Date(Date.now() - 22 * 60000).toISOString(),
             status: "En preparación",
             esDemo: true,
             items: [
@@ -36,7 +37,7 @@
             destination: "Mesa 7",
             channel: "Mesa",
             time: "20:17",
-            receivedAt: new Date(Date.now() - 6 * 60000).toISOString(),
+            receivedAt: new Date(Date.now() - 14 * 60000).toISOString(),
             status: "En preparación",
             esDemo: true,
             items: [
@@ -168,9 +169,13 @@
         return Math.max(0, Math.floor((ahora - obtenerFechaRecepcion(pedido)) / 60000));
     }
 
+    function esPedidoPrioritario(pedido, espera) {
+        return pedido.prioridad === "alta" || pedido.priority === "alta" || espera >= minutosCriticos;
+    }
+
     function claseAlerta(pedido, espera) {
         if (pedido.status === nombresEstados.listo) return "alerta-listo";
-        if (espera >= minutosCriticos) return "alerta-critica";
+        if (esPedidoPrioritario(pedido, espera)) return "alerta-critica";
         if (espera >= minutosAlerta) return "alerta-advertencia";
         return "alerta-normal";
     }
@@ -245,6 +250,8 @@
         const estado = pedido.status;
         const espera = minutosEnEspera(pedido, ahora);
         const claseEspera = claseAlerta(pedido, espera);
+        const esPrioridad = esPedidoPrioritario(pedido, espera);
+        const clasePrioridad = esPrioridad ? "prioridad-alta prioridad-vibracion" : "";
         const { titulo } = extraerEtiquetaDestino(pedido);
 
         const fechaRecepcion = new Date(obtenerFechaRecepcion(pedido));
@@ -254,31 +261,39 @@
                 ? "20:15"
                 : fechaRecepcion.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false });
 
+        let etiquetaEstado = "En espera";
         let botonAccion = `<button type="button" class="btn-accion-libreta btn-iniciar" data-estado-pedido="${escaparHTML(pedido.id)}" data-nuevo-estado="${nombresEstados.preparacion}">
-            Iniciar preparación
+            Iniciar
         </button>`;
 
         if (estado === nombresEstados.preparacion) {
+            etiquetaEstado = esPrioridad ? "Urgente · En preparación" : (espera >= minutosAlerta ? "Demorado · En preparación" : "En preparación");
             botonAccion = `<button type="button" class="btn-accion-libreta btn-completar" data-completar-pedido="${escaparHTML(pedido.id)}">
                 <i class="fa-solid fa-check"></i> Listo
             </button>`;
         } else if (estado === nombresEstados.listo) {
+            etiquetaEstado = "Listo para servir";
             botonAccion = `<button type="button" class="btn-accion-libreta btn-retirar" data-completar-pedido="${escaparHTML(pedido.id)}">
                 Retirar
             </button>`;
+        } else if (esPrioridad) {
+            etiquetaEstado = "Urgente · En espera";
+        } else if (espera >= minutosAlerta) {
+            etiquetaEstado = "Demorado · En espera";
         }
 
         const productos = Array.isArray(pedido.items) && pedido.items.length
             ? pedido.items.map(renderizarItem).join("")
             : '<li class="item-producto-kds"><div class="item-principal"><span class="item-nombre">Sin productos</span></div></li>';
 
-        return `<article class="libreta-comanda ${claseEspera}" data-pedido-id="${escaparHTML(pedido.id)}" id="comanda-${escaparHTML(pedido.id)}">
-            <button type="button" class="btn-desechar-kds" data-desechar-pedido="${escaparHTML(pedido.id)}" title="Quitar comanda #${escaparHTML(pedido.id)}" aria-label="Quitar comanda #${escaparHTML(pedido.id)}">
-                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        return `<article class="libreta-comanda ${claseEspera} ${clasePrioridad}" data-pedido-id="${escaparHTML(pedido.id)}" id="comanda-${escaparHTML(pedido.id)}">
+            <button type="button" class="btn-desechar-kds" data-desechar-pedido="${escaparHTML(pedido.id)}" title="Arrugar y tirar comanda #${escaparHTML(pedido.id)}" aria-label="Tirar comanda #${escaparHTML(pedido.id)}">
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
             </button>
 
             <div class="libreta-encabezado">
                 <h2 class="comanda-titulo-simple">${escaparHTML(titulo)}</h2>
+                <span class="comanda-estado-tag">${escaparHTML(etiquetaEstado)}</span>
             </div>
 
             <div class="libreta-cuerpo">
@@ -290,9 +305,14 @@
             <div class="libreta-pie">
                 <div class="comanda-hora-fila">
                     <span>Hora: ${hora}</span>
-                    <span class="comanda-tiempo-badge">#${escaparHTML(pedido.id)}</span>
+                    <span class="comanda-tiempo-badge">${espera}m · #${escaparHTML(pedido.id)}</span>
                 </div>
-                ${botonAccion}
+                <div class="comanda-acciones-pie">
+                    ${botonAccion}
+                    <button type="button" class="btn-tirar-pie" data-desechar-pedido="${escaparHTML(pedido.id)}" title="Arrugar y tirar comanda">
+                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Tirar
+                    </button>
+                </div>
             </div>
         </article>`;
     }
@@ -347,8 +367,10 @@
             const { titulo } = extraerEtiquetaDestino(p);
             const espera = minutosEnEspera(p, ahora);
             const clase = claseAlerta(p, espera);
+            const esPrioridad = esPedidoPrioritario(p, espera);
+            const iconoPrioridad = esPrioridad ? '<i class="fa-solid fa-bolt" style="color: #F87171; margin-right: 2px;"></i>' : '';
             return `<button type="button" class="pildora-comanda-btn ${clase}" data-scroll-comanda="comanda-${escaparHTML(p.id)}">
-                <span>${escaparHTML(titulo)}</span>
+                ${iconoPrioridad}<span>${escaparHTML(titulo)}</span>
                 <span style="opacity: 0.7;">#${escaparHTML(p.id)}</span>
             </button>`;
         }).join("");

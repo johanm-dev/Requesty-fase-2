@@ -1,6 +1,6 @@
 /* ========================================================
    REQUESTY KDS - RIEL METÁLICO PORTA-COMANDAS Y TICKETS SIMPLES
-   Diseño limpio estilo comanda térmica sujeta en riel de acero
+   Con estados Amarillo / Rojo, Animación de Vibración y Arrugar/Tirar
    ======================================================== */
 
 :root {
@@ -230,7 +230,7 @@
 }
 
 /* ========================================================
-   RIEL METÁLICO DE ACERO INOXIDABLE (COMO LA IMAGEN ADJUNTA)
+   RIEL METÁLICO DE ACERO INOXIDABLE
    ======================================================== */
 .kds-riel-wrapper {
     position: relative;
@@ -262,7 +262,6 @@
     z-index: 20;
 }
 
-/* Labio frontal metálico que prensa las comandas */
 .cuerda-cable {
     width: calc(100% - 56px);
     margin: 0 auto;
@@ -282,7 +281,6 @@
         inset 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
-/* Tornillos metálicos en los extremos del riel */
 .cuerda-soporte {
     position: absolute;
     top: 50%;
@@ -314,14 +312,13 @@
 .cuerda-soporte-izq { left: 12px; }
 .cuerda-soporte-der { right: 12px; }
 
-/* Contenedor horizontal de comandas sujetas al riel */
 .contenedor-libretas {
     display: flex;
     align-items: flex-start;
     gap: 28px;
     overflow-x: auto;
     overflow-y: visible;
-    padding: 4px 20px 34px 20px;
+    padding: 4px 20px 38px 20px;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
     scrollbar-width: thin;
@@ -338,31 +335,29 @@
 }
 
 /* ========================================================
-   TICKET DE COMANDA SIMPLE (COMO LA IMAGEN DE REFERENCIA)
+   TICKET DE COMANDA SIMPLE + ESTADOS AMARILLO Y ROJO + VIBRACIÓN
    ======================================================== */
 .libreta-comanda {
     position: relative;
-    flex: 0 0 235px;
-    width: 235px;
+    flex: 0 0 245px;
+    width: 245px;
     background: var(--papel-ticket, #FFFFFF);
     color: var(--texto-comanda, #1A1A1A);
-    border-radius: 0 0 3px 3px;
+    border-radius: 0 0 4px 4px;
     display: flex;
     flex-direction: column;
     scroll-snap-align: start;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
     transform-origin: top center;
-    border: 1px solid #E2E2E2;
+    border: 1px solid #DFDFDF;
     border-top: none;
     user-select: none;
-    /* Sombra superior proyectada por el riel metálico + sombra suave del papel */
     box-shadow:
         inset 0 7px 9px -5px rgba(0, 0, 0, 0.38),
         0 10px 20px rgba(0, 0, 0, 0.14),
         0 3px 6px rgba(0, 0, 0, 0.08);
 }
 
-/* Sombra inferior curvada tipo papel térmico suelto */
 .libreta-comanda::after {
     content: "";
     position: absolute;
@@ -376,89 +371,162 @@
     transform: rotate(-1.2deg);
 }
 
-/* Ligera caída natural del papel en el riel */
-.libreta-comanda:nth-child(3n+1) {
-    transform: rotate(-0.7deg);
-}
-
-.libreta-comanda:nth-child(3n+2) {
-    transform: rotate(0.5deg);
-}
-
-.libreta-comanda:nth-child(3n+3) {
-    transform: rotate(-0.4deg);
-}
+.libreta-comanda:nth-child(3n+1) { transform: rotate(-0.7deg); }
+.libreta-comanda:nth-child(3n+2) { transform: rotate(0.5deg); }
+.libreta-comanda:nth-child(3n+3) { transform: rotate(-0.4deg); }
 
 .libreta-comanda:hover {
     transform: translateY(2px) rotate(0deg) !important;
     box-shadow:
         inset 0 7px 9px -5px rgba(0, 0, 0, 0.38),
-        0 16px 28px rgba(0, 0, 0, 0.2),
-        0 4px 10px rgba(0, 0, 0, 0.1) !important;
+        0 16px 28px rgba(0, 0, 0, 0.22),
+        0 4px 10px rgba(0, 0, 0, 0.12) !important;
     z-index: 15;
 }
 
-/* Indicador superior discreto de estado (borde sutil bajo el riel) */
+/* ========================================================
+   COLOR AMARILLO (DEMORA MEDIA / ADVERTENCIA)
+   ======================================================== */
 .libreta-comanda.alerta-advertencia {
-    border-bottom: 3px solid #D97706;
+    background: linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%) !important;
+    border-color: #F59E0B !important;
+    border-bottom: 4px solid #D97706 !important;
+    box-shadow:
+        inset 0 7px 9px -5px rgba(0, 0, 0, 0.35),
+        0 10px 22px rgba(245, 158, 11, 0.24) !important;
 }
 
+.libreta-comanda.alerta-advertencia .libreta-encabezado,
+.libreta-comanda.alerta-advertencia .libreta-pie {
+    border-color: rgba(217, 119, 6, 0.45);
+}
+
+.libreta-comanda.alerta-advertencia .comanda-titulo-simple {
+    color: #92400E;
+}
+
+.libreta-comanda.alerta-advertencia .comanda-estado-tag {
+    background: #F59E0B;
+    color: #FFFFFF;
+}
+
+/* ========================================================
+   COLOR ROJO + ANIMACIÓN DE VIBRACIÓN (URGENTE / CRÍTICO)
+   ======================================================== */
+.libreta-comanda.alerta-critica,
+.libreta-comanda.prioridad-alta {
+    background: linear-gradient(180deg, #FFF5F5 0%, #FEE2E2 100%) !important;
+    border-color: #EF4444 !important;
+    border-bottom: 4px solid #DC2626 !important;
+    box-shadow:
+        inset 0 7px 9px -5px rgba(0, 0, 0, 0.35),
+        0 12px 26px rgba(220, 38, 38, 0.32) !important;
+}
+
+.libreta-comanda.alerta-critica .libreta-encabezado,
+.libreta-comanda.prioridad-alta .libreta-encabezado,
+.libreta-comanda.alerta-critica .libreta-pie,
+.libreta-comanda.prioridad-alta .libreta-pie {
+    border-color: rgba(220, 38, 38, 0.45);
+}
+
+.libreta-comanda.alerta-critica .comanda-titulo-simple,
+.libreta-comanda.prioridad-alta .comanda-titulo-simple {
+    color: #991B1B;
+}
+
+.libreta-comanda.alerta-critica .comanda-estado-tag,
+.libreta-comanda.prioridad-alta .comanda-estado-tag {
+    background: #DC2626;
+    color: #FFFFFF;
+}
+
+/* Animación continua de vibración para comandas urgentes/rojas */
+.libreta-comanda.prioridad-vibracion,
 .libreta-comanda.alerta-critica {
-    border-bottom: 3px solid #DC2626;
+    animation: vibrarComandaUrgente 2.2s infinite ease-in-out;
 }
 
+.libreta-comanda.prioridad-vibracion:hover,
+.libreta-comanda.alerta-critica:hover {
+    animation-play-state: paused;
+}
+
+@keyframes vibrarComandaUrgente {
+    0%, 65%, 100% {
+        transform: rotate(-0.5deg) translate3d(0, 0, 0);
+    }
+    70% {
+        transform: rotate(1.3deg) translate3d(-2px, 0, 0);
+    }
+    75% {
+        transform: rotate(-1.5deg) translate3d(2px, 0, 0);
+    }
+    80% {
+        transform: rotate(1.2deg) translate3d(-2px, 0, 0);
+    }
+    85% {
+        transform: rotate(-1.1deg) translate3d(2px, 0, 0);
+    }
+    90% {
+        transform: rotate(0.7deg) translate3d(-1px, 0, 0);
+    }
+}
+
+/* Estado listo (borde verde limpio) */
 .libreta-comanda.alerta-listo {
-    border-bottom: 3px solid #16A34A;
+    border-bottom: 4px solid #16A34A;
 }
 
-/* Ocultar elementos antiguos recargados si existieran */
-.pinza-comanda,
-.papel-troquelado-superior,
-.libreta-seccion-titulo {
-    display: none !important;
+.libreta-comanda.alerta-listo .comanda-estado-tag {
+    background: #16A34A;
+    color: #FFFFFF;
 }
 
-/* Botón discreto en la esquina para descartar el papel */
+/* ========================================================
+   OPCIÓN VISIBLE DE TIRAR / DESECHAR COMANDA A LA PAPELERA
+   ======================================================== */
 .btn-desechar-kds {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: #999999;
-    font-size: 13px;
+    border: 1px solid rgba(185, 28, 28, 0.25);
+    background: rgba(255, 255, 255, 0.9);
+    color: #B91C1C;
+    font-size: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease;
-}
-
-.libreta-comanda:hover .btn-desechar-kds {
     opacity: 1;
+    transition: all 0.18s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    z-index: 5;
 }
 
 .btn-desechar-kds:hover {
-    background: rgba(220, 38, 38, 0.12);
-    color: #DC2626;
+    background: #DC2626;
+    border-color: #DC2626;
+    color: #FFFFFF;
+    transform: scale(1.12);
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.35);
 }
 
 /* ========================================================
    ENCABEZADO SIMPLE: "Mesa: 3" o "Delivery" CENTRADO
    ======================================================== */
 .libreta-encabezado {
-    padding: 18px 18px 10px 18px;
+    padding: 16px 14px 10px 14px;
     text-align: center;
     border-bottom: 1.5px dashed var(--papel-dash, #A8A8A8);
     margin: 0 14px;
 }
 
 .comanda-titulo-simple {
-    font-size: 23px;
+    font-size: 22px;
     font-weight: 800;
     color: #111111;
     letter-spacing: -0.3px;
@@ -466,11 +534,17 @@
     margin: 0;
 }
 
-.comanda-subtitulo-simple {
-    font-size: 11px;
-    font-weight: 600;
-    color: #777777;
-    margin-top: 2px;
+.comanda-estado-tag {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    background: #EAEAEA;
+    color: #444444;
 }
 
 /* ========================================================
@@ -519,7 +593,6 @@
     flex: 1;
 }
 
-/* Especificaciones simples debajo del plato (sin cápsulas ni íconos) */
 .lista-especificaciones {
     list-style: none;
     margin: 1px 0 0 22px;
@@ -537,7 +610,7 @@
 }
 
 /* ========================================================
-   PIE SIMPLE: "Hora: 20:15" Y ACCIÓN LIMPIA
+   PIE SIMPLE: "Hora: 20:15" Y BOTONES DE ACCIÓN + TIRAR
    ======================================================== */
 .libreta-pie {
     padding: 10px 14px 14px 14px;
@@ -559,28 +632,39 @@
 
 .comanda-tiempo-badge {
     font-size: 11.5px;
-    font-weight: 700;
-    color: #666666;
+    font-weight: 800;
+    color: #555555;
 }
 
-.libreta-comanda.alerta-critica .comanda-tiempo-badge {
+.libreta-comanda.alerta-advertencia .comanda-tiempo-badge {
+    color: #B45309;
+}
+
+.libreta-comanda.alerta-critica .comanda-tiempo-badge,
+.libreta-comanda.prioridad-alta .comanda-tiempo-badge {
     color: #DC2626;
 }
 
+.comanda-acciones-pie {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .btn-accion-libreta {
-    width: 100%;
+    flex: 1;
     padding: 7px 10px;
     border-radius: 5px;
-    border: 1px solid #D0D0D0;
-    background: #F7F7F7;
-    color: #222222;
+    border: 1px solid #CCCCCC;
+    background: #FFFFFF;
+    color: #1F1F1F;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     transition: all 0.18s ease;
 }
 
@@ -591,37 +675,50 @@
 }
 
 .btn-accion-libreta.btn-completar {
-    background: #F0FDF4;
-    border-color: #86EFAC;
-    color: #166534;
-}
-
-.btn-accion-libreta.btn-completar:hover {
     background: #16A34A;
-    border-color: #16A34A;
+    border-color: #15803D;
     color: #FFFFFF;
 }
 
-.btn-accion-libreta.btn-retirar {
-    background: #F3F4F6;
-    border-color: #D1D5DB;
-    color: #374151;
+.btn-accion-libreta.btn-completar:hover {
+    background: #15803D;
 }
 
-.btn-accion-libreta.btn-retirar:hover {
-    background: #374151;
-    border-color: #374151;
+.btn-tirar-pie {
+    padding: 7px 10px;
+    border-radius: 5px;
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    background: rgba(254, 226, 226, 0.65);
+    color: #B91C1C;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.18s ease;
+}
+
+.btn-tirar-pie:hover {
+    background: #DC2626;
+    border-color: #DC2626;
     color: #FFFFFF;
 }
 
 /* ========================================================
-   ANIMACIÓN DE ARRUGADO Y DESCARTE DE PAPEL
+   ANIMACIÓN 3D DE ARRUGADO Y LANZAMIENTO A LA PAPELERA
    ======================================================== */
 .libreta-comanda.animacion-arrugar {
-    animation: arrugarHojaPapelFluida 0.55s cubic-bezier(0.2, 0.9, 0.3, 1) forwards !important;
+    animation: arrugarHojaPapelFluida 0.58s cubic-bezier(0.2, 0.9, 0.3, 1) forwards !important;
     pointer-events: none !important;
     z-index: 100 !important;
     transform-origin: 50% 20% !important;
+    will-change: transform, opacity !important;
+}
+
+.libreta-comanda.animacion-arrugar::after {
+    display: none !important;
 }
 
 @keyframes arrugarHojaPapelFluida {
@@ -629,17 +726,29 @@
         transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
         opacity: 1;
     }
-    25% {
-        transform: translate3d(2px, 16px, 0) scale(0.75, 0.7) rotate(-8deg);
+    16% {
+        transform: translate3d(0, 10px, 0) scale(0.88, 0.94) rotate(-4deg) skewX(-4deg);
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.25);
+        opacity: 1;
+    }
+    38% {
+        transform: translate3d(4px, 28px, 0) scale(0.58, 0.52) rotate(16deg) skewX(8deg);
+        border-radius: 16px;
+        box-shadow: 0 14px 24px rgba(0, 0, 0, 0.35);
         opacity: 0.95;
     }
-    55% {
-        transform: translate3d(-4px, 55px, 0) scale(0.32, 0.28) rotate(28deg);
-        border-radius: 40%;
-        opacity: 0.85;
+    60% {
+        transform: translate3d(-3px, 60px, 0) scale(0.26, 0.24) rotate(-35deg);
+        border-radius: 50%;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        opacity: 0.9;
+    }
+    80% {
+        transform: translate3d(14px, 260px, 0) scale(0.18) rotate(90deg);
+        opacity: 0.6;
     }
     100% {
-        transform: translate3d(20px, 480px, 0) scale(0.08) rotate(140deg);
+        transform: translate3d(28px, 620px, 0) scale(0.06) rotate(180deg);
         opacity: 0;
     }
 }
@@ -714,8 +823,20 @@
     color: var(--palette-gold-light, #E4B353);
 }
 
+.pildora-comanda-btn.alerta-advertencia {
+    border-color: #F59E0B;
+    background: rgba(245, 158, 11, 0.18);
+    color: #FDE68A;
+}
+
+.pildora-comanda-btn.alerta-critica {
+    border-color: #EF4444;
+    background: rgba(220, 38, 38, 0.24);
+    color: #FCA5A5;
+}
+
 /* ========================================================
-   MODO OSCURO (MANTIENE EL TICKET DE PAPEL BLANCO LEGIBLE)
+   MODO OSCURO
    ======================================================== */
 :root[data-theme="dark"] .tarjeta-resumen.kds-caja-iconica {
     background: var(--palette-card, #341C25);
@@ -740,7 +861,6 @@
     color: #FFFFFF;
 }
 
-/* En modo oscuro el ticket sigue viéndose como papel térmico claro y limpio */
 :root[data-theme="dark"] .libreta-comanda {
     background: #FBFBFB;
     border-color: #CCCCCC;
@@ -751,7 +871,7 @@
 
 @media (max-width: 680px) {
     .libreta-comanda {
-        flex: 0 0 215px;
-        width: 215px;
+        flex: 0 0 220px;
+        width: 220px;
     }
 }
