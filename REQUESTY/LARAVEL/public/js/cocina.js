@@ -577,13 +577,36 @@
         }
     });
 
-    document.getElementById("btnRestaurarDemo")?.addEventListener("click", () => {
+    document.getElementById("btnRestaurarDemo")?.addEventListener("click", async () => {
         comandasRetiradas.clear();
         comandasDesechadas.clear();
         const noDemos = pedidosMemoria.filter(p => !p.esDemo);
         const nuevosDemos = pedidosDemoKds.map(p => ({ ...p, comandaRetirada: false }));
         pedidosMemoria = [...noDemos, ...nuevosDemos];
         mostrarPedidos();
+
+        if (window.RequestyAPI && typeof window.RequestyAPI.get === "function") {
+            try {
+                const [resProd, resMesas] = await Promise.all([
+                    window.RequestyAPI.get("api/productos"),
+                    window.RequestyAPI.get("api/mesas")
+                ]);
+                const prods = (resProd?.productos || []).filter(p => p.disponible !== false);
+                const mesas = resMesas?.mesas || [];
+                if (prods.length > 0 && mesas.length > 0) {
+                    await window.RequestyAPI.post("api/pedidos", {
+                        id_mesa: Number(mesas[0].id_mesa || 1),
+                        observaciones: "Comanda de ejemplo KDS",
+                        items: [{
+                            id_producto: Number(prods[0].id_producto),
+                            cantidad: 1,
+                            observaciones: "Jamón y Queso"
+                        }]
+                    });
+                    await sincronizarDesdeServidor();
+                }
+            } catch (e) {}
+        }
     });
 
     sincronizarDesdeServidor();

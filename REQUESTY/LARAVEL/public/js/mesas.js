@@ -99,6 +99,16 @@
     }
 
     function iniciarMesas() {
+        const bootEl = elemento("mesasBootData");
+        if (bootEl) {
+            try {
+                const parsed = JSON.parse(bootEl.dataset.mesas || "[]");
+                if (Array.isArray(parsed)) window.requestyMesasIniciales = parsed;
+            } catch {
+                window.requestyMesasIniciales = [];
+            }
+            window.requestyPuedeCrearMesa = bootEl.dataset.puedeCrear === "1";
+        }
         const iniciales = Array.isArray(window.requestyMesasIniciales) ? window.requestyMesasIniciales : [];
         mesas = iniciales.map((m) => normalizarMesaServidor(m, []));
         combinaciones = leerCombinaciones();

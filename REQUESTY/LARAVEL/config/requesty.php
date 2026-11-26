@@ -19,12 +19,12 @@ return [
     ],
 
     'permisos_por_rol' => [
-        'admin' => ['menu', 'mesas', 'pedidos', 'cocina', 'caja', 'pqrs', 'reportes'],
-        'administrador' => ['menu', 'mesas', 'pedidos', 'cocina', 'caja', 'pqrs', 'reportes'],
-        'cajero' => ['menu', 'mesas', 'pedidos', 'caja'],
-        'mesero' => ['menu', 'mesas', 'pedidos'],
-        'cocina' => ['menu', 'pedidos', 'cocina'],
-        'cliente' => ['menu', 'pqrs', 'caja'],
+        'admin' => ['inicio', 'menu', 'mesas', 'pedidos', 'cocina', 'caja', 'pqrs', 'reportes'],
+        'administrador' => ['inicio', 'menu', 'mesas', 'pedidos', 'cocina', 'caja', 'pqrs', 'reportes'],
+        'cajero' => ['inicio', 'menu', 'mesas', 'pedidos', 'caja'],
+        'mesero' => ['inicio', 'menu', 'mesas', 'pedidos'],
+        'cocina' => ['inicio', 'menu', 'pedidos', 'cocina'],
+        'cliente' => ['inicio', 'menu', 'pqrs', 'caja'],
     ],
 
     'pagina_inicial_por_rol' => [

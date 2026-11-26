@@ -332,6 +332,9 @@
         const btn = e.target.closest("button[data-tab]");
         if (!btn || modoClienteCaja) return;
         const tabId = btn.dataset.tab;
+        document.querySelectorAll("#caja-tabs-nav button[data-tab]").forEach((b) => {
+            b.classList.toggle("active", b === btn);
+        });
         ["ventas", "facturas", "cierre"].forEach((id) => {
             document.getElementById(id).style.display = id === tabId ? "block" : "none";
         });

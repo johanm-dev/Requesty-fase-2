@@ -11,13 +11,6 @@ node_modules/
 .vscode/
 build/
 .gradle/
-storage/ratelimit/*.json
-storage/db/*.json
-storage/db/.pg_offline
-REQUESTY/PHP/.env
-REQUESTY/PHP/storage/ratelimit/*.json
-REQUESTY/PHP/storage/db/*.json
-REQUESTY/PHP/storage/db/.pg_offline
 REQUESTY/LARAVEL/.env
 REQUESTY/LARAVEL/vendor/
 REQUESTY/LARAVEL/node_modules/

@@ -69,4 +69,25 @@ abstract class BasePgModel
             $this->db->rollBack();
         }
     }
+
+    protected function transaction(callable $callback): mixed
+    {
+        $startedHere = !$this->db->inTransaction();
+        if ($startedHere) {
+            $this->db->beginTransaction();
+        }
+        try {
+            $result = $callback();
+            if ($startedHere && $this->db->inTransaction()) {
+                $this->db->commit();
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            if ($startedHere && $this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+    }
 }

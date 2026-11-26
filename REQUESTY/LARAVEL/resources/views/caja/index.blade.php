@@ -9,7 +9,7 @@
             <header>
                 <h2>Caja y Facturación</h2>
                 <nav id="caja-tabs-nav">
-                    <button type="button" data-tab="ventas">🛒 Ventas y Cobro</button>
+                    <button type="button" class="active" data-tab="ventas">🛒 Ventas y Cobro</button>
                     <button type="button" data-tab="facturas">📄 Historial y facturas</button>
                     <button type="button" data-tab="cierre">💰 Turno y Cierre de Caja</button>
                 </nav>

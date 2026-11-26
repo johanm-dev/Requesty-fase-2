@@ -1,15 +1,15 @@
-# Requesty — Sistema Integral de Gestión de Restaurantes
+# Requesty — Sistema Integral de Gestión de Restaurantes (Laravel 13 + PostgreSQL 17+)
 
-Sistema web MVC + API REST construido con **PHP 8.2+** y **PostgreSQL 17+** (esquema `restaurante`, 25 tablas base, 5 vistas, triggers transaccionales e integridad criptográfica).
+Sistema web full-stack y API REST construido con **Laravel 13 (PHP 8.2+)** y **PostgreSQL 17+** (esquema `restaurante`, 25 tablas base, 5 vistas, triggers transaccionales, `pgcrypto` AES-256 + Blind Index HMAC-SHA256 y rol de mínimo privilegio `app_restaurante_rw`).
 
 ---
 
-## 1. Estructura Limpia del Proyecto
+## 1. Estructura del Repositorio
 
-- `database/schema.sql`: Esquema completo PostgreSQL (25 tablas, 5 vistas, Bcrypt, AES-256 + Blind Index HMAC-SHA256, rol de mínimo privilegio `app_restaurante_rw`).
-- `database/seed_demo.sql`: Datos iniciales operativos (roles, cuentas demo, mesas, menú, recetas, caja, factura y notificaciones).
-- `database/qa_suite.sql`: Suite de certificación SQL (cobertura 25/25 tablas y 39 pruebas positivas/Red-Team).
-- `REQUESTY/PHP/`: Aplicación canónica PHP MVC (`index.php`, `app/config/`, `app/core/`, `app/controllers/`, `app/models/`, `app/views/`, `css/`, `img/tarjeta/`, `js/`, `tests/`).
+- `database/schema.sql`: Esquema completo PostgreSQL (`restaurante`, 25 tablas, 5 vistas, funciones `fn_*`, triggers, Bcrypt y AES-256 `pgcrypto`).
+- `database/seed_demo.sql`: Semilla certificada (roles, cuentas demo, mesas, menú, recetas, inventario, caja, factura y notificaciones).
+- `database/qa_suite.sql`: Suite de certificación SQL sobre las 25 tablas.
+- `REQUESTY/LARAVEL/`: Aplicación principal en **Laravel 13** conectada directamente a PostgreSQL (`app/`, `config/`, `public/`, `resources/views/`, `routes/`, `tests/`).
 
 ---
 
@@ -19,17 +19,18 @@ Sistema web MVC + API REST construido con **PHP 8.2+** y **PostgreSQL 17+** (esq
 # 1. Crear e inicializar la base de datos en PostgreSQL 17+
 psql -U postgres -d postgres -c "CREATE DATABASE restaurante_db;"
 psql -U postgres -d restaurante_db -v ON_ERROR_STOP=1 -f database/schema.sql
-psql -U postgres -d restaurante_db -c "ALTER ROLE app_restaurante_rw WITH LOGIN PASSWORD 'AppRestaurante_Local2026!';"
-PGOPTIONS="-c restaurante.encryption_key=DemoAppSecKey_AES256_32Bytes_2026!" psql -U postgres -d restaurante_db -v ON_ERROR_STOP=1 -f database/seed_demo.sql
+PGOPTIONS="-c restaurante.encryption_key=ClaveMaestraPgcryptoRestaurante2026" psql -U postgres -d restaurante_db -v ON_ERROR_STOP=1 -f database/seed_demo.sql
 
-# 2. Copiar configuración local (sin commitear .env)
-cp REQUESTY/PHP/.env.example REQUESTY/PHP/.env
+# 2. Configurar variables de entorno en Laravel
+cd REQUESTY/LARAVEL
+cp .env.example .env
 
-# 3. Levantar el servidor local PHP conectado a PostgreSQL
-php -S 127.0.0.1:8098 -t REQUESTY/PHP REQUESTY/PHP/index.php
+# 3. Levantar el servidor Laravel conectado a PostgreSQL
+php artisan optimize:clear
+php artisan serve --host=127.0.0.1 --port=8099
 ```
 
-Abre `http://127.0.0.1:8098` en el navegador. *(Gestión de cuentas por parte del Administrador: **Reportes → Cuentas del personal**).*
+Abre `http://127.0.0.1:8099` en el navegador.
 
 ---
 
@@ -45,10 +46,11 @@ Abre `http://127.0.0.1:8098` en el navegador. *(Gestión de cuentas por parte de
 
 ---
 
-## 4. Verificación QA
+## 4. Verificación y Suites QA
 
 ```bash
-PGOPTIONS="-c restaurante.encryption_key=DemoAppSecKey_AES256_32Bytes_2026!" psql -U postgres -d restaurante_db -v ON_ERROR_STOP=1 -f database/qa_suite.sql
-TEST_BASE_URL=http://127.0.0.1:8098 php REQUESTY/PHP/tests/redteam_http_qa.php
-TEST_BASE_URL=http://127.0.0.1:8098 php REQUESTY/PHP/tests/e2e_25tables_qa.php
+cd REQUESTY/LARAVEL
+php artisan test
+TEST_BASE_URL=http://127.0.0.1:8099 php tests/Qa/redteam_http_qa.php
+TEST_BASE_URL=http://127.0.0.1:8099 php tests/Qa/e2e_25tables_qa.php
 ```

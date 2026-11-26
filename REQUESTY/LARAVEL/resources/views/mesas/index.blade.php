@@ -152,10 +152,9 @@
 
 <ul class="toast-list" id="toastList" aria-label="Notificaciones" aria-live="polite"></ul>
 
-<script>
-    window.requestyMesasIniciales = @json(array_values($mesas ?? []));
-    window.requestyPuedeCrearMesa = @json(!empty($puedeCrearMesas));
-</script>
+<div id="mesasBootData" hidden
+     data-mesas="{{ json_encode(array_values($mesas ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) }}"
+     data-puede-crear="{{ !empty($puedeCrearMesas) ? '1' : '0' }}"></div>
 <script src="{{ asset('js/auth.js') }}"></script>
 <script src="{{ asset('js/mesas.js') }}"></script>
 </body>
